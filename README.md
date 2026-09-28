@@ -35,7 +35,7 @@ Instrucciones paso a paso para ejecutar el proyecto en local.
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/juan-acl/sports-cart.git
+git clone https://github.com/juan-acl/Ecommerce-sport-items
 cd sports-cart
 ```
 
