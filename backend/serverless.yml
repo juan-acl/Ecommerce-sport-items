@@ -1,0 +1,16 @@
+service: sports-cart-api
+frameworkVersion: '3'
+
+useDotenv: true
+
+plugins: ${file(serverless/config/plugins.yml)}
+
+provider: ${file(serverless/config/provider.yml)}
+
+custom: ${file(serverless/config/custom.yml)}
+
+functions:
+  auth: ${file(serverless/functions/auth.yml)}
+  products: ${file(serverless/functions/products.yml)}
+  cart: ${file(serverless/functions/cart.yml)}
+  orders: ${file(serverless/functions/orders.yml)}

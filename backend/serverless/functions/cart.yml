@@ -1,0 +1,11 @@
+handler: src/handlers/cart.handler
+description: Gestión del carrito de compras del usuario
+events:
+  - http:
+      path: /v1/cart
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/cart/{proxy+}
+      method: ANY
+      cors: true

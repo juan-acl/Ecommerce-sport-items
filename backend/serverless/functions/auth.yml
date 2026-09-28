@@ -1,0 +1,7 @@
+handler: src/handlers/auth.handler
+description: Autenticación - login y registro de usuarios
+events:
+  - http:
+      path: /v1/auth/{proxy+}
+      method: ANY
+      cors: true

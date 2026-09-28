@@ -1,0 +1,11 @@
+handler: src/handlers/orders.handler
+description: Checkout, historial de órdenes y notificaciones
+events:
+  - http:
+      path: /v1/orders
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/orders/{proxy+}
+      method: ANY
+      cors: true

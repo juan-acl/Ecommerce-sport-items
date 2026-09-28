@@ -1,0 +1,11 @@
+handler: src/handlers/products.handler
+description: Gestión de productos deportivos - listado, búsqueda y filtros
+events:
+  - http:
+      path: /v1/products
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/products/{proxy+}
+      method: ANY
+      cors: true

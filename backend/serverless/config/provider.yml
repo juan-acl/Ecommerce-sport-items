@@ -1,0 +1,7 @@
+name: aws
+runtime: nodejs20.x
+region: ${env:AWS_REGION, 'us-east-1'}
+stage: ${opt:stage, 'dev'}
+memorySize: 512
+timeout: 30
+environment: ${file(serverless/config/environment.yml)}
