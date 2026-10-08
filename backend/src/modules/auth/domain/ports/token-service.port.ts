@@ -1,6 +1,5 @@
 export interface TokenPayload {
-  sub: string;
-  email: string;
+  sub: string; // sessionId — the only field; role/email come from the session in DB
 }
 
 export interface TokenServicePort {

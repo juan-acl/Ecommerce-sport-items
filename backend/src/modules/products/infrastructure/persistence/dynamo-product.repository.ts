@@ -1,4 +1,10 @@
-import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  DeleteCommand,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { Product } from '@modules/products/domain/entities/product.entity';
 import {
   ListProductsParams,
@@ -80,6 +86,34 @@ export class DynamoProductRepository implements ProductRepository {
       Limit: limit,
       ExclusiveStartKey: exclusiveStartKey,
     };
+  }
+
+  async save(product: Product): Promise<void> {
+    await this.client.send(
+      new PutCommand({
+        TableName: this.tableName,
+        Item: ProductMapper.toItem(product),
+        ConditionExpression: 'attribute_not_exists(PK)',
+      }),
+    );
+  }
+
+  async update(product: Product): Promise<void> {
+    await this.client.send(
+      new PutCommand({
+        TableName: this.tableName,
+        Item: ProductMapper.toItem(product),
+      }),
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.client.send(
+      new DeleteCommand({
+        TableName: this.tableName,
+        Key: { PK: `PRODUCT#${id}`, SK: 'METADATA' },
+      }),
+    );
   }
 
   private encodeCursor(key: Record<string, unknown>): string {

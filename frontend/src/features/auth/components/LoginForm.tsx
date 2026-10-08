@@ -37,14 +37,8 @@ export function LoginForm() {
   };
 
   return (
-    <div className="space-y-unit-xl">
+    <div className="space-y-unit-xl flex-1 flex flex-col">
       <div>
-        <div className="flex items-center gap-unit-sm mb-unit-lg">
-          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-cta">
-            <span className="material-symbols-outlined !text-white text-3xl">sports</span>
-          </div>
-          <h2 className="text-headline-sm text-primary tracking-tight">SportCart</h2>
-        </div>
         <h3 className="text-headline-md text-on-surface mb-unit-xs">Bienvenido de nuevo</h3>
         <p className="text-body-md text-on-surface-variant">
           Inicia sesión con tus credenciales para continuar.
@@ -101,7 +95,7 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div className="pt-unit-lg border-t border-outline-variant flex justify-center items-center gap-unit-xs">
+      <div className="mt-auto pt-unit-lg border-t border-outline-variant flex justify-center items-center gap-unit-xs">
         <span className="text-body-md text-on-surface-variant">¿No tienes cuenta?</span>
         <Link
           to={ROUTES.REGISTER}

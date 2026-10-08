@@ -14,3 +14,7 @@ functions:
   products: ${file(serverless/functions/products.yml)}
   cart: ${file(serverless/functions/cart.yml)}
   orders: ${file(serverless/functions/orders.yml)}
+  adminProducts: ${file(serverless/functions/admin-products.yml)}
+  adminUsers: ${file(serverless/functions/admin-users.yml)}
+  adminOrders: ${file(serverless/functions/admin-orders.yml)}
+  adminRoles: ${file(serverless/functions/admin-roles.yml)}

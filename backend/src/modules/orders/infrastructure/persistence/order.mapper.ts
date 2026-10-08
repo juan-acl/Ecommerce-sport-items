@@ -2,13 +2,16 @@ import { Order, OrderProps } from '@modules/orders/domain/entities/order.entity'
 import { OrderItem } from '@modules/orders/domain/entities/order-item.entity';
 import { OrderStatus } from '@modules/orders/domain/value-objects/order-status.vo';
 import { ShippingAddress } from '@modules/orders/domain/value-objects/shipping-address.vo';
-import { KEY_PREFIXES } from '@shared/infrastructure/dynamodb/single-table.constants';
 
 export class OrderMapper {
   static toItem(order: Order) {
     return {
-      PK: `${KEY_PREFIXES.USER}${order.userId}`,
-      SK: `${KEY_PREFIXES.ORDER}${order.createdAt}#${order.id}`,
+      PK: `ORDER#${order.id}`,
+      SK: 'METADATA',
+      GSI1PK: 'ORDER',
+      GSI1SK: `${order.createdAt}#${order.id}`,
+      GSI2PK: `USER#${order.userId}`,
+      GSI2SK: `ORDER#${order.createdAt}#${order.id}`,
       id: order.id,
       userId: order.userId,
       items: order.items.map((i) => i.toJSON()),

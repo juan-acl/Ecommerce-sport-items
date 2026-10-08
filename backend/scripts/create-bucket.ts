@@ -21,7 +21,6 @@ async function main() {
     console.log(`Bucket "${bucket}" creado.`);
   }
 
-  // Política para hacer las imágenes de productos accesibles públicamente
   const policy = {
     Version: '2012-10-17',
     Statement: [

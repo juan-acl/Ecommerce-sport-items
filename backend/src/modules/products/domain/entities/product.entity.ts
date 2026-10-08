@@ -4,6 +4,7 @@ export interface ProductProps {
   category: string;
   price: number;
   stock: number;
+  minStock: number;
   description: string;
   imageUrl: string;
   createdAt: string;
@@ -13,6 +14,7 @@ export class Product {
   constructor(private readonly props: ProductProps) {
     if (props.price < 0) throw new Error('El precio no puede ser negativo');
     if (props.stock < 0) throw new Error('El stock no puede ser negativo');
+    if (props.minStock === undefined) this.props = { ...props, minStock: 0 };
   }
 
   get id(): string {
@@ -29,6 +31,9 @@ export class Product {
   }
   get stock(): number {
     return this.props.stock;
+  }
+  get minStock(): number {
+    return this.props.minStock ?? 0;
   }
   get description(): string {
     return this.props.description;

@@ -1,4 +1,10 @@
-import { DynamoDBDocumentClient, QueryCommand, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
 import { Order } from '@modules/orders/domain/entities/order.entity';
 import {
@@ -7,7 +13,12 @@ import {
 } from '@modules/orders/domain/repositories/order.repository';
 import { InsufficientStockException } from '@modules/products/domain/exceptions/insufficient-stock.exception';
 import { PaginatedResult, PaginationParams } from '@shared/domain/value-objects/pagination.vo';
-import { KEY_PREFIXES, SK_VALUES } from '@shared/infrastructure/dynamodb/single-table.constants';
+import {
+  KEY_PREFIXES,
+  SK_VALUES,
+  TABLE,
+} from '@shared/infrastructure/dynamodb/single-table.constants';
+import { OrderStatus } from '@modules/orders/domain/value-objects/order-status.vo';
 import { OrderMapper } from './order.mapper';
 import { logger } from '@/shared/infrastructure/logging/winston.logger';
 
@@ -94,13 +105,14 @@ export class DynamoOrderRepository implements OrderRepository {
     const result = await this.client.send(
       new QueryCommand({
         TableName: this.tableName,
-        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+        IndexName: TABLE.GSI2,
+        KeyConditionExpression: 'GSI2PK = :pk AND begins_with(GSI2SK, :skPrefix)',
         ExpressionAttributeValues: {
-          ':pk': `${KEY_PREFIXES.USER}${userId}`,
-          ':skPrefix': KEY_PREFIXES.ORDER,
+          ':pk': `USER#${userId}`,
+          ':skPrefix': 'ORDER#',
         },
         Limit: limit,
-        ScanIndexForward: false, // lo ordenamos de forma descendente
+        ScanIndexForward: false,
         ExclusiveStartKey: exclusiveStartKey,
       }),
     );
@@ -121,19 +133,64 @@ export class DynamoOrderRepository implements OrderRepository {
     const result = await this.client.send(
       new QueryCommand({
         TableName: this.tableName,
-        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
+        IndexName: TABLE.GSI2,
+        KeyConditionExpression: 'GSI2PK = :pk AND begins_with(GSI2SK, :skPrefix)',
         FilterExpression: 'id = :orderId',
         ExpressionAttributeValues: {
-          ':pk': `${KEY_PREFIXES.USER}${userId}`,
-          ':skPrefix': KEY_PREFIXES.ORDER,
+          ':pk': `USER#${userId}`,
+          ':skPrefix': 'ORDER#',
           ':orderId': orderId,
         },
-        // Limit: 1,
       }),
     );
 
     if (!result.Items || result.Items.length === 0) return null;
     return OrderMapper.toDomain(result.Items[0]);
+  }
+
+  async findById(orderId: string): Promise<Order | null> {
+    const result = await this.client.send(
+      new GetCommand({
+        TableName: this.tableName,
+        Key: { PK: `ORDER#${orderId}`, SK: 'METADATA' },
+      }),
+    );
+    if (!result.Item) return null;
+    return OrderMapper.toDomain(result.Item);
+  }
+
+  async listAll(params: PaginationParams): Promise<PaginatedResult<Order>> {
+    const { limit, cursor } = params;
+    const exclusiveStartKey = cursor ? this.decodeCursor(cursor) : undefined;
+    const result = await this.client.send(
+      new QueryCommand({
+        TableName: this.tableName,
+        IndexName: TABLE.GSI1,
+        KeyConditionExpression: 'GSI1PK = :pk',
+        ExpressionAttributeValues: { ':pk': 'ORDER' },
+        Limit: limit,
+        ScanIndexForward: false,
+        ExclusiveStartKey: exclusiveStartKey,
+      }),
+    );
+    const orders = (result.Items ?? []).map((it) => OrderMapper.toDomain(it));
+    const nextCursor = result.LastEvaluatedKey
+      ? this.encodeCursor(result.LastEvaluatedKey)
+      : undefined;
+    return { items: orders, count: orders.length, nextCursor };
+  }
+
+  async updateStatus(orderId: string, status: OrderStatus): Promise<void> {
+    await this.client.send(
+      new UpdateCommand({
+        TableName: this.tableName,
+        Key: { PK: `ORDER#${orderId}`, SK: 'METADATA' },
+        UpdateExpression: 'SET #status = :status',
+        ExpressionAttributeNames: { '#status': 'status' },
+        ExpressionAttributeValues: { ':status': status },
+        ConditionExpression: 'attribute_exists(PK)',
+      }),
+    );
   }
 
   private encodeCursor(key: Record<string, unknown>): string {

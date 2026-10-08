@@ -6,15 +6,27 @@ export const TABLE = {
 
 export const KEY_PREFIXES = {
   USER: 'USER#',
+  SESSION: 'SESSION#',
   PRODUCT: 'PRODUCT#',
   CATEGORY: 'CATEGORY#',
   EMAIL: 'EMAIL#',
   CART: 'CART#',
   ORDER: 'ORDER#',
+  SUPPLIER: 'SUPPLIER#',
+  PURCHASE: 'PURCHASE#',
+  SALE: 'SALE#',
+  PAYMENT: 'PAYMENT#',
+  DISCOUNT: 'DISCOUNT#',
+  APPROVAL: 'APPROVAL#',
+  MOVEMENT: 'MOVEMENT#',
+  AUDIT: 'AUDIT#',
+  ENTITY: 'ENTITY#',
+  ROLE: 'ROLE#',
 } as const;
 
 export const SK_VALUES = {
   PROFILE: 'PROFILE',
   METADATA: 'METADATA',
   USER: 'USER',
+  PAYMENT: 'PAYMENT',
 } as const;

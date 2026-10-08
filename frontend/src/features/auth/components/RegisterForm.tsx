@@ -47,14 +47,8 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="space-y-unit-xl">
+    <div className="space-y-unit-xl flex-1 flex flex-col">
       <div>
-        <div className="flex items-center gap-unit-sm mb-unit-lg lg:hidden">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined !text-white text-lg">sports</span>
-          </div>
-          <span className="text-headline-sm text-primary">SportCart</span>
-        </div>
         <h3 className="text-headline-md text-on-surface mb-unit-xs">Crear cuenta</h3>
         <p className="text-body-md text-on-surface-variant">
           Comienza tu camino al equipamiento deportivo premium.
@@ -132,7 +126,7 @@ export function RegisterForm() {
         </Button>
       </form>
 
-      <div className="pt-unit-lg border-t border-outline-variant text-center">
+      <div className="mt-auto pt-unit-lg border-t border-outline-variant text-center">
         <span className="text-body-md text-on-surface-variant">¿Ya tienes cuenta? </span>
         <Link
           to={ROUTES.LOGIN}

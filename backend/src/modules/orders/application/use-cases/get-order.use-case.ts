@@ -4,8 +4,8 @@ import { OrderNotFoundException } from '@modules/orders/domain/exceptions/order-
 export class GetOrderUseCase {
   constructor(private readonly orderRepo: OrderRepository) {}
 
-  async execute(userId: string, orderId: string) {
-    const order = await this.orderRepo.findByIdForUser(orderId, userId);
+  async execute(_userId: string, orderId: string) {
+    const order = await this.orderRepo.findById(orderId);
     if (!order) throw new OrderNotFoundException(orderId);
     return order.toJSON();
   }

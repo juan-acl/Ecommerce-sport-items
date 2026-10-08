@@ -1,0 +1,11 @@
+handler: src/handlers/admin-roles.handler
+description: Admin - Gestión de roles y permisos
+events:
+  - http:
+      path: /v1/admin/roles
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/admin/roles/{proxy+}
+      method: ANY
+      cors: true
