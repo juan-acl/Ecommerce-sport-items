@@ -5,66 +5,73 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Surfaces — clean zinc/slate scale
-        surface: '#fafafa',
-        'surface-bright': '#fafafa',
-        'surface-dim': '#e4e4e7',
+        // Paleta basada en el frontend (Deep Oceanic Blue) adaptada a un panel sobrio.
+        // Surfaces — neutros fríos
+        surface: '#f6f8fa',
+        'surface-bright': '#f6f8fa',
+        'surface-dim': '#e6e9ee',
         'surface-container-lowest': '#ffffff',
-        'surface-container-low': '#f4f4f5',
-        'surface-container': '#f4f4f5',
-        'surface-container-high': '#e4e4e7',
-        'surface-container-highest': '#d4d4d8',
-        'surface-variant': '#e4e4e7',
-        'on-surface': '#09090b',          // zinc-950
-        'on-surface-variant': '#71717a',  // zinc-500
-        'inverse-surface': '#18181b',     // zinc-900
-        'inverse-on-surface': '#fafafa',
-        'surface-tint': '#6366f1',
+        'surface-container-low': '#f6f8fa',
+        'surface-container': '#eef1f5',
+        'surface-container-high': '#e6e9ee',
+        'surface-container-highest': '#dde2e8',
+        'surface-variant': '#e6e9ee',
+        'on-surface': '#111c2d',
+        'on-surface-variant': '#5b636a',
+        'inverse-surface': '#111c2d',
+        'inverse-on-surface': '#f7f8fa',
+        'surface-tint': '#006b58',
 
         // Outline
-        outline: '#a1a1aa',               // zinc-400
-        'outline-variant': '#e4e4e7',     // zinc-200
+        outline: '#8a9197',
+        'outline-variant': '#e4e8ed',
 
-        // Primary — Indigo
-        primary: '#4f46e5',               // indigo-600
+        // Primary — Deep Oceanic Blue
+        primary: '#006b58',
+        'primary-dark': '#005142',
         'on-primary': '#ffffff',
-        'primary-container': '#eef2ff',   // indigo-50
-        'on-primary-container': '#4338ca',
-        'inverse-primary': '#a5b4fc',
-        'primary-fixed': '#e0e7ff',
-        'primary-fixed-dim': '#c7d2fe',
-        'on-primary-fixed': '#312e81',
-        'on-primary-fixed-variant': '#4338ca',
+        'primary-container': '#ddfbf2',
+        'on-primary-container': '#005142',
+        'inverse-primary': '#54dcbc',
+        'primary-fixed': '#74f9d7',
+        'primary-fixed-dim': '#54dcbc',
+        'on-primary-fixed': '#002019',
+        'on-primary-fixed-variant': '#005142',
 
-        // Secondary — Emerald (positive / revenue)
-        secondary: '#059669',             // emerald-600
+        // Secondary — Verdant Teal (positivo / ingresos)
+        secondary: '#0e8a94',
         'on-secondary': '#ffffff',
-        'secondary-container': '#ecfdf5', // emerald-50
-        'on-secondary-container': '#047857',
-        'secondary-fixed': '#d1fae5',
-        'secondary-fixed-dim': '#a7f3d0',
-        'on-secondary-fixed': '#064e3b',
-        'on-secondary-fixed-variant': '#065f46',
+        'secondary-container': '#e0f7f8',
+        'on-secondary-container': '#0b5f67',
+        'secondary-fixed': '#74f9d7',
+        'secondary-fixed-dim': '#54dcbc',
+        'on-secondary-fixed': '#002019',
+        'on-secondary-fixed-variant': '#005142',
 
-        // Tertiary — neutral zinc
-        tertiary: '#52525b',
+        // Acentos cian / menta del login del frontend
+        sky: '#bdf1f4',
+        mint: '#74f9d7',
+        'mint-dim': '#54dcbc',
+
+        // Tertiary — neutro
+        tertiary: '#45484a',
         'on-tertiary': '#ffffff',
-        'tertiary-container': '#f4f4f5',
-        'on-tertiary-container': '#3f3f46',
-        'tertiary-fixed': '#e4e4e7',
-        'tertiary-fixed-dim': '#d4d4d8',
-        'on-tertiary-fixed': '#09090b',
-        'on-tertiary-fixed-variant': '#52525b',
+        'tertiary-container': '#f3f5f8',
+        'on-tertiary-container': '#2e3233',
+        'tertiary-fixed': '#e0e3e5',
+        'tertiary-fixed-dim': '#c4c7c9',
+        'on-tertiary-fixed': '#191c1e',
+        'on-tertiary-fixed-variant': '#444749',
 
         // Error
-        error: '#dc2626',                 // red-600
+        error: '#ba1a1a',
         'on-error': '#ffffff',
-        'error-container': '#fef2f2',     // red-50
-        'on-error-container': '#991b1b',  // red-800
+        'error-container': '#fdf1f0',
+        'on-error-container': '#93000a',
 
         // Background
-        background: '#fafafa',
-        'on-background': '#09090b',
+        background: '#f6f8fa',
+        'on-background': '#111c2d',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -78,12 +85,12 @@ export default {
         'headline-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.025em', fontWeight: '700' }],
       },
       borderRadius: {
-        DEFAULT: '0.5rem',
+        DEFAULT: '0.375rem',
         sm: '0.25rem',
-        md: '0.625rem',
-        lg: '0.75rem',
-        xl: '1rem',
-        '2xl': '1.25rem',
+        md: '0.375rem',
+        lg: '0.5rem',
+        xl: '0.625rem',
+        '2xl': '0.75rem',
         full: '9999px',
       },
       spacing: {
@@ -96,10 +103,12 @@ export default {
         'unit-xl': '2rem',
       },
       boxShadow: {
-        card: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-        cta: '0 4px 14px rgba(79,70,229,0.25)',
-        'primary-glow': '0 4px 14px rgba(79,70,229,0.25)',
-        dropdown: '0 4px 16px rgba(0,0,0,0.10)',
+        card: '0 1px 2px rgba(17, 28, 45, 0.04)',
+        cta: 'none',
+        'primary-glow': 'none',
+        dropdown: '0 8px 24px -6px rgba(17, 28, 45, 0.14)',
+        modal: '0 24px 48px -12px rgba(17, 28, 45, 0.25)',
+        soft: '0 1px 2px rgba(17, 28, 45, 0.04), 0 4px 16px -8px rgba(17, 28, 45, 0.08)',
       },
     },
   },

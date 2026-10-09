@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BarChart2,
   AlertCircle,
+  LayoutDashboard,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useGetProductsQuery } from "@features/products/api/productsApi";
@@ -41,11 +42,11 @@ const STATUS_CONFIG: Record<
 > = {
   pending: { color: "text-amber-600", bg: "bg-amber-50", bar: "bg-amber-400" },
   paid: {
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-    bar: "bg-emerald-500",
+    color: "text-secondary",
+    bg: "bg-secondary-container",
+    bar: "bg-secondary",
   },
-  shipped: { color: "text-blue-600", bg: "bg-blue-50", bar: "bg-blue-500" },
+  shipped: { color: "text-primary", bg: "bg-primary-container", bar: "bg-primary" },
   cancelled: { color: "text-red-500", bg: "bg-red-50", bar: "bg-red-400" },
 };
 
@@ -211,12 +212,15 @@ export function DashboardPage() {
   const statusKeys: OrderStatus[] = ["pending", "paid", "shipped", "cancelled"];
 
   return (
-    <div className="space-y-6 max-w-screen-2xl">
-      <div>
-        <h1 className="text-headline-sm text-on-surface">Dashboard</h1>
-        <p className="text-body-md text-on-surface-variant mt-0.5">
-          Vista general de operaciones
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-[#ddfbf2] text-[#006b58] flex items-center justify-center shrink-0 ring-1 ring-inset ring-[#006b58]/10">
+          <LayoutDashboard size={20} strokeWidth={1.75} />
+        </div>
+        <div>
+          <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight text-on-surface">Dashboard</h1>
+          <p className="text-body-md text-on-surface-variant mt-0.5">Vista general de operaciones</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -224,8 +228,8 @@ export function DashboardPage() {
           label="Ingresos confirmados"
           value={formatCurrency(m.totalRevenue)}
           sub={`${m.confirmedOrders.length} órdenes · conv. ${m.conversionRate}%`}
-          icon={<TrendingUp size={16} />}
-          iconClass="bg-indigo-50 text-indigo-600"
+          icon={<TrendingUp size={18} strokeWidth={1.75} />}
+          iconClass="bg-[#ddfbf2] text-[#006b58]"
         />
         <KpiCard
           label="Ticket promedio"
@@ -235,15 +239,15 @@ export function DashboardPage() {
               ? `${formatCurrency(m.pendingRevenue)} en pendientes`
               : "Sin pendientes"
           }
-          icon={<BarChart2 size={16} />}
-          iconClass="bg-violet-50 text-violet-600"
+          icon={<BarChart2 size={18} strokeWidth={1.75} />}
+          iconClass="bg-[#e0f7f8] text-[#0e8a94]"
         />
         <KpiCard
           label="Clientes registrados"
           value={String(m.clientCount)}
           sub={`${orders.length} órdenes en total`}
-          icon={<Users size={16} />}
-          iconClass="bg-sky-50 text-sky-600"
+          icon={<Users size={18} strokeWidth={1.75} />}
+          iconClass="bg-[#ddfbf2] text-[#006b58]"
         />
         <KpiCard
           label="Alertas de inventario"
@@ -255,22 +259,22 @@ export function DashboardPage() {
                 ? `${m.lowStock.length} con stock bajo`
                 : "Inventario saludable"
           }
-          icon={<AlertCircle size={16} />}
+          icon={<AlertCircle size={18} strokeWidth={1.75} />}
           iconClass={
             m.outOfStock.length > 0
-              ? "bg-red-50 text-red-600"
+              ? "bg-error-container text-error"
               : m.lowStock.length > 0
                 ? "bg-amber-50 text-amber-600"
-                : "bg-emerald-50 text-emerald-600"
+                : "bg-[#e0f7f8] text-[#0e8a94]"
           }
         />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        <div className="xl:col-span-8 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant flex items-center justify-between">
+        <div className="xl:col-span-8 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between">
             <div>
-              <p className="text-body-md font-semibold text-on-surface">
+              <p className="text-[14px] font-semibold tracking-tight text-on-surface">
                 Tendencia — últimos 7 días
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -339,9 +343,9 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="xl:col-span-4 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant">
-            <p className="text-body-md font-semibold text-on-surface">
+        <div className="xl:col-span-4 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">
+            <p className="text-[14px] font-semibold tracking-tight text-on-surface">
               Pipeline de órdenes
             </p>
             <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -427,10 +431,10 @@ export function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        <div className="xl:col-span-7 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant flex items-center justify-between">
+        <div className="xl:col-span-7 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between">
             <div>
-              <p className="text-body-md font-semibold text-on-surface">
+              <p className="text-[14px] font-semibold tracking-tight text-on-surface">
                 Productos más vendidos
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -482,10 +486,10 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="xl:col-span-5 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant flex items-center justify-between">
+        <div className="xl:col-span-5 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between">
             <div>
-              <p className="text-body-md font-semibold text-on-surface">
+              <p className="text-[14px] font-semibold tracking-tight text-on-surface">
                 Mejores clientes
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -506,7 +510,7 @@ export function DashboardPage() {
                   <div key={i}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-[#ddfbf2] text-[#006b58] text-[10px] font-bold flex items-center justify-center flex-shrink-0">
                           {c.label[0]?.toUpperCase() ?? "?"}
                         </div>
                         <span className="text-body-md text-on-surface truncate">
@@ -539,9 +543,9 @@ export function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        <div className="xl:col-span-6 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant">
-            <p className="text-body-md font-semibold text-on-surface">
+        <div className="xl:col-span-6 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">
+            <p className="text-[14px] font-semibold tracking-tight text-on-surface">
               Ingresos por categoría
             </p>
             <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -577,7 +581,7 @@ export function DashboardPage() {
                       </div>
                       <div className="h-1 bg-surface-container-high rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-violet-500 rounded-full"
+                          className="h-full bg-primary rounded-full"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -589,10 +593,10 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="xl:col-span-6 bg-white border border-outline-variant rounded-xl shadow-card">
-          <div className="px-5 pt-4 pb-3 border-b border-outline-variant flex items-center justify-between">
+        <div className="xl:col-span-6 bg-white border border-outline-variant rounded-xl shadow-soft">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between">
             <div>
-              <p className="text-body-md font-semibold text-on-surface">
+              <p className="text-[14px] font-semibold tracking-tight text-on-surface">
                 Alertas de inventario
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -667,10 +671,10 @@ export function DashboardPage() {
       </div>
 
       {m.actionOrders.length > 0 && (
-        <div className="bg-white border border-outline-variant rounded-xl shadow-card overflow-hidden">
+        <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-outline-variant">
             <div>
-              <p className="text-body-md font-semibold text-on-surface">
+              <p className="text-[14px] font-semibold tracking-tight text-on-surface">
                 Órdenes pendientes de atención
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
@@ -764,19 +768,17 @@ function KpiCard({
   iconClass: string;
 }) {
   return (
-    <div className="bg-white border border-outline-variant rounded-xl shadow-card p-5">
-      <div className="flex items-start justify-between mb-3">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant">
-          {label}
-        </p>
-        <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconClass}`}
-        >
+    <div className="group bg-white border border-outline-variant rounded-xl shadow-soft p-5 transition-shadow hover:shadow-[0_8px_24px_-12px_rgba(17,28,45,0.18)]">
+      <div className="flex items-center justify-between">
+        <p className="text-[12px] font-medium text-on-surface-variant">{label}</p>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconClass}`}>
           {icon}
         </div>
       </div>
-      <p className="text-2xl font-bold text-on-surface tabular-nums">{value}</p>
-      <p className="text-label-md text-on-surface-variant mt-1">{sub}</p>
+      <p className="mt-3 text-[26px] leading-none font-bold tracking-[-0.02em] text-on-surface tabular-nums">
+        {value}
+      </p>
+      <p className="mt-2 text-[12px] text-on-surface-variant">{sub}</p>
     </div>
   );
 }

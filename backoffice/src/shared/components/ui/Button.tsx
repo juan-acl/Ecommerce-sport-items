@@ -13,18 +13,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-primary !text-white shadow-cta hover:bg-primary-container active:scale-[0.98]',
-  secondary: 'bg-secondary !text-white hover:opacity-90 active:scale-[0.98]',
+  primary: 'bg-primary !text-white hover:bg-primary-dark',
+  secondary: 'bg-secondary !text-white hover:bg-on-secondary-container',
   outline:
-    'border border-outline-variant !text-on-surface bg-transparent hover:bg-surface-container-low active:scale-95',
-  ghost: '!text-on-surface bg-transparent hover:bg-surface-container-low active:scale-95',
-  danger: 'bg-error !text-white hover:opacity-90 active:scale-[0.98]',
+    'border border-outline-variant !text-on-surface bg-white hover:bg-surface-container-low hover:border-outline/60',
+  ghost: '!text-on-surface-variant bg-transparent hover:bg-surface-container hover:!text-on-surface',
+  danger: 'bg-error !text-white hover:bg-on-error-container',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-sm',
-  lg: 'px-8 py-3.5 text-base',
+  sm: 'h-8 px-3 text-[13px]',
+  md: 'h-9 px-4 text-[13px]',
+  lg: 'h-11 px-6 text-sm',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -46,9 +46,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
+          'inline-flex items-center justify-center gap-2 rounded-md font-medium tracking-[-0.005em] transition-colors',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/40',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && 'w-full',

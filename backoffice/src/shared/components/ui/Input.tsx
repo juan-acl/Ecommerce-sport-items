@@ -13,16 +13,16 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, hint, icon, rightSlot, id, ...props }, ref) => {
     return (
-      <div className="space-y-unit-sm">
+      <div className="space-y-1.5">
         {label && (
-          <label htmlFor={id} className="block text-label-md text-on-surface-variant">
+          <label htmlFor={id} className="block text-[12px] font-medium text-on-surface">
             {label}
           </label>
         )}
         <div className="relative group">
           {icon && (
-            <div className="absolute inset-y-0 left-0 pl-unit-md flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-outline transition-colors group-focus-within:text-primary">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="material-symbols-outlined text-[18px] text-outline transition-colors group-focus-within:text-primary">
                 {icon}
               </span>
             </div>
@@ -31,24 +31,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={id}
             className={cn(
-              'w-full py-3.5 bg-white border border-outline-variant rounded-xl outline-none transition-all',
-              'focus:ring-2 focus:ring-primary focus:border-primary',
-              'placeholder:text-outline text-body-md text-on-surface',
-              icon ? 'pl-[3.25rem]' : 'pl-4',
-              rightSlot ? 'pr-12' : 'pr-4',
-              error && 'border-error focus:ring-error focus:border-error',
+              'w-full h-10 bg-white border border-outline-variant rounded-md outline-none transition-colors',
+              'hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary',
+              'placeholder:text-outline/80 text-body-md text-on-surface',
+              icon ? 'pl-10' : 'pl-3',
+              rightSlot ? 'pr-10' : 'pr-3',
+              error && 'border-error focus:ring-error/10 focus:border-error',
               className,
             )}
             {...props}
           />
           {rightSlot && (
-            <div className="absolute inset-y-0 right-0 pr-unit-md flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center">
               {rightSlot}
             </div>
           )}
         </div>
-        {hint && !error && <p className="text-[11px] text-outline px-1">{hint}</p>}
-        {error && <p className="text-label-md text-error px-1">{error}</p>}
+        {hint && !error && <p className="text-[11px] text-on-surface-variant">{hint}</p>}
+        {error && <p className="text-[11px] font-medium text-error">{error}</p>}
       </div>
     );
   },

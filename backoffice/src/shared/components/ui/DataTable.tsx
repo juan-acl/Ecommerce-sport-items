@@ -157,19 +157,19 @@ export function DataTable<T>({
   }, [onLastPage, totalPages, serverPagination]);
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-card overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-outline-variant">
+    <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
+      <div className="flex items-center justify-between gap-3 px-5 h-16 border-b border-outline-variant">
         <div className="flex items-center gap-2 min-w-0">
           {title && (
-            <span className="text-body-md font-semibold text-on-surface">{title}</span>
+            <span className="text-[14px] font-semibold tracking-tight text-on-surface">{title}</span>
           )}
           {!isLoading && (
             <span
               className={cn(
-                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border tabular-nums transition-colors',
+                'inline-flex items-center px-1.5 py-px rounded text-[11px] font-medium tabular-nums transition-colors',
                 isFiltering
-                  ? 'bg-primary/10 text-primary border-primary/20'
-                  : 'bg-surface-container text-on-surface-variant border-outline-variant',
+                  ? 'bg-[#ddfbf2] text-[#006b58]'
+                  : 'bg-surface-container text-on-surface-variant',
               )}
             >
               {isFiltering ? `${sorted.length} / ${data.length}` : sorted.length}
@@ -202,7 +202,7 @@ export function DataTable<T>({
                 value={search}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="pl-8 pr-3 h-8 text-body-md border border-outline-variant rounded-md bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary w-48 transition-all"
+                className="pl-8 pr-3 h-8 text-body-md border border-outline-variant rounded-md bg-surface-container-low text-on-surface placeholder:text-outline focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary w-56 transition-all"
               />
             </div>
           )}
@@ -211,7 +211,7 @@ export function DataTable<T>({
               type="button"
               onClick={onRefresh}
               disabled={isLoading}
-              className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors disabled:opacity-40"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-outline-variant bg-white text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors disabled:opacity-40"
               title="Actualizar"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
@@ -224,21 +224,21 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full text-body-md border-collapse">
           <thead>
-            <tr className="bg-surface-container-low border-b border-outline-variant">
+            <tr className="border-b border-outline-variant bg-surface-container-low">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   style={col.width ? { width: col.width } : undefined}
                   onClick={col.sortable ? () => handleSort(col.key) : undefined}
                   className={cn(
-                    'px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap select-none transition-colors',
+                    'px-5 h-10 text-left text-[11px] font-semibold uppercase tracking-[0.06em] whitespace-nowrap select-none transition-colors',
                     col.align === 'right' && 'text-right',
                     col.align === 'center' && 'text-center',
                     sortKey === col.key
                       ? 'text-primary'
                       : 'text-on-surface-variant',
                     col.sortable &&
-                      'cursor-pointer hover:bg-surface-container-high hover:text-on-surface',
+                      'cursor-pointer hover:text-on-surface',
                   )}
                 >
                   <span className="inline-flex items-center gap-1">
@@ -314,7 +314,7 @@ export function DataTable<T>({
               pageData.map((item) => (
                 <tr
                   key={keyExtractor(item)}
-                  className="hover:bg-surface-container-low/60 transition-colors"
+                  className="hover:bg-surface-container-low transition-colors"
                 >
                   {columns.map((col) => (
                     <td
@@ -336,7 +336,7 @@ export function DataTable<T>({
       </div>
 
       {!isLoading && sorted.length > 0 && (
-        <div className="flex items-center justify-between gap-4 px-5 py-3 border-t border-outline-variant bg-surface-container-low">
+        <div className="flex items-center justify-between gap-4 px-5 h-14 border-t border-outline-variant bg-surface-container-low/60">
           <p className="text-body-md text-on-surface-variant whitespace-nowrap">
             Mostrando{' '}
             <span className="font-medium text-on-surface">
@@ -360,7 +360,7 @@ export function DataTable<T>({
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="h-7 pl-2 pr-5 text-body-md border border-outline-variant rounded-md bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                className="h-7 pl-2 pr-5 text-body-md border border-outline-variant rounded-md bg-white text-on-surface focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary cursor-pointer"
               >
                 {pageSizes.map((s) => (
                   <option key={s} value={s}>
@@ -433,8 +433,8 @@ function PageBtn({
       className={cn(
         'inline-flex items-center justify-center w-7 h-7 rounded-md border border-outline-variant text-on-surface-variant transition-all',
         disabled || loading
-          ? 'opacity-35 cursor-not-allowed bg-surface-container-low'
-          : 'bg-surface-container-lowest hover:bg-surface-container hover:border-outline hover:text-on-surface cursor-pointer',
+          ? 'opacity-35 cursor-not-allowed'
+          : 'bg-white hover:bg-surface-container-low hover:text-on-surface cursor-pointer',
       )}
     >
       {loading ? <Loader2 size={13} className="animate-spin" /> : children}

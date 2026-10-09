@@ -7,7 +7,7 @@ function LoginBackground() {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(0, 53, 74, 0.13) 1px, transparent 1px)",
+            "radial-gradient(rgba(0, 107, 88, 0.13) 1px, transparent 1px)",
           backgroundSize: "22px 22px",
           maskImage:
             "radial-gradient(ellipse 65% 55% at 50% 45%, #000 25%, transparent 78%)",
@@ -19,7 +19,7 @@ function LoginBackground() {
       <div className="login-float-slow absolute -bottom-56 -left-40 h-[500px] w-[500px] rounded-full bg-[#74f9d7]/15 blur-[130px]" />
       <span
         className="select-none absolute -bottom-[0.26em] left-1/2 -translate-x-1/2 whitespace-nowrap text-[20vw] font-extrabold leading-none tracking-tighter text-transparent"
-        style={{ WebkitTextStroke: "1px rgba(0, 53, 74, 0.07)" }}
+        style={{ WebkitTextStroke: "1px rgba(0, 107, 88, 0.07)" }}
       >
         ADMIN
       </span>
@@ -37,7 +37,7 @@ export function LoginPage() {
       <div className="relative z-10 flex min-h-screen flex-col px-6 py-6 sm:px-10">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 bg-[#00354a]" />
+            <span className="h-2.5 w-2.5 bg-[#006b58]" />
             <span className="text-body-md font-bold tracking-tight">
               SportsCart
             </span>
@@ -49,12 +49,12 @@ export function LoginPage() {
 
         <main className="flex flex-1 items-center justify-center py-12">
           <div className="login-rise w-full max-w-[360px]">
-            <div className="flex items-end justify-between border-b-2 border-[#00354a] pb-3">
+            <div className="flex items-end justify-between border-b-2 border-[#006b58] pb-3">
               <span className="text-body-md font-bold">
                 Panel de administración
               </span>
               <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#71787d]">
-                <span className="tabular-nums text-[#00354a]">01</span>
+                <span className="tabular-nums text-[#006b58]">01</span>
                 <span className="h-px w-6 bg-[#006b58]" />
                 Acceso
               </span>
@@ -62,7 +62,7 @@ export function LoginPage() {
 
             <h1 className="mt-9 text-[32px] font-light leading-[1.1] tracking-tight">
               Acceso al{" "}
-              <span className="font-bold text-[#00354a]">sistema.</span>
+              <span className="font-bold text-[#006b58]">sistema.</span>
             </h1>
             <p className="mt-2 text-body-md text-[#41484d]">
               Ingresa tus credenciales corporativas para continuar.

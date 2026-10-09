@@ -84,7 +84,7 @@ export function LoginForm() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="p-1 rounded text-[#71787d] hover:text-[#00354a] transition-colors"
+            className="p-1 rounded text-[#71787d] hover:text-[#006b58] transition-colors"
             tabIndex={-1}
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
@@ -98,7 +98,7 @@ export function LoginForm() {
           type="submit"
           fullWidth
           isLoading={isLoading}
-          className="group h-12 rounded-sm justify-between px-5 bg-[#00354a] shadow-none hover:bg-[#0a4d68] focus:ring-[#00354a]/40"
+          className="group h-12 rounded-sm justify-between px-5 bg-[#006b58] shadow-none hover:bg-[#005142] focus:ring-[#006b58]/40"
         >
           <span>Ingresar al panel</span>
           <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -112,6 +112,6 @@ function field(hasError: boolean) {
   return cn(
     'rounded-none border-0 border-b bg-transparent pl-0 py-2.5 text-body-lg text-[#111c2d]',
     'placeholder:text-[#c0c7cd] focus:ring-0',
-    hasError ? 'border-error focus:border-error' : 'border-[#c0c7cd] focus:border-[#00354a]',
+    hasError ? 'border-error focus:border-error' : 'border-[#c0c7cd] focus:border-[#006b58]',
   );
 }

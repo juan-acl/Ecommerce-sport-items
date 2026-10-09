@@ -145,7 +145,7 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
               {...register('role')}
               id="role"
               disabled={rolesLoading}
-              className="w-full py-3.5 pl-4 pr-4 bg-white border border-outline-variant rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary focus:border-primary text-body-md text-on-surface disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+              className="w-full h-10 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
             >
               {rolesLoading ? (
                 <option value="">Cargando roles...</option>

@@ -17,7 +17,7 @@ export function Spinner({ size = 'md', className }: Readonly<SpinnerProps>) {
   return (
     <span
       className={cn(
-        'material-symbols-outlined animate-spin text-primary',
+        'material-symbols-outlined animate-spin text-[#006b58]',
         sizeStyles[size],
         className,
       )}

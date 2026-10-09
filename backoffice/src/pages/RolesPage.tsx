@@ -269,7 +269,7 @@ function RoleFormModal({ isOpen, onClose, role }: RoleFormModalProps) {
             placeholder="Descripción del rol..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full py-3 px-4 bg-white border border-outline-variant rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary focus:border-primary text-body-md text-on-surface resize-none"
+            className="w-full py-2.5 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface resize-none"
           />
         </div>
         <div>
@@ -305,7 +305,7 @@ function RoleUsersSection({ roleName }: { roleName: string }) {
       <div className="divide-y divide-outline-variant/50">
         {visible.map((user) => (
           <div key={user.id} className="flex items-center gap-3 py-2.5">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
               <span className="text-primary font-semibold text-sm">
                 {user.name.charAt(0).toUpperCase()}
               </span>
@@ -356,12 +356,17 @@ export function RolesPage() {
     allUsers.filter((u) => u.role === roleName).length;
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-headline-md text-on-surface">Roles y Permisos</h1>
-        <p className="text-body-md text-on-surface-variant mt-1">
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-[#ddfbf2] text-[#006b58] flex items-center justify-center shrink-0 ring-1 ring-inset ring-[#006b58]/10">
+          <Shield size={20} strokeWidth={1.75} />
+        </div>
+        <div>
+        <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight text-on-surface">Roles y Permisos</h1>
+        <p className="text-body-md text-on-surface-variant mt-0.5">
           Gestión de acceso al sistema
         </p>
+      </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
@@ -435,7 +440,7 @@ export function RolesPage() {
 
         <div className="xl:col-span-8">
           {!selectedRole ? (
-            <div className="bg-white border border-outline-variant rounded-xl shadow-card flex flex-col items-center justify-center py-20 px-6 text-center h-full min-h-[300px]">
+            <div className="bg-white border border-outline-variant rounded-lg flex flex-col items-center justify-center py-20 px-6 text-center h-full min-h-[300px]">
               <Shield size={40} className="text-on-surface-variant/40 mb-3" />
               <p className="text-headline-sm text-on-surface-variant">
                 Selecciona un rol para ver sus permisos
@@ -445,11 +450,11 @@ export function RolesPage() {
               </p>
             </div>
           ) : (
-            <div className="bg-white border border-outline-variant rounded-xl shadow-card overflow-hidden">
+            <div className="bg-white border border-outline-variant rounded-lg overflow-hidden">
               <div className="flex items-start justify-between px-6 py-5 border-b border-outline-variant">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Shield size={18} className="text-primary" />
+                  <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center">
+                    <Shield size={18} className="text-[#006b58]" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

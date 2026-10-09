@@ -248,7 +248,7 @@ export function ProductFormModal({
             </div>
           ) : (
             <div
-              className="w-full h-44 rounded-xl border-2 border-dashed border-outline-variant bg-surface-container/40 flex flex-col items-center justify-center gap-2 text-on-surface-variant cursor-pointer transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              className="w-full h-44 rounded-xl border-2 border-dashed border-outline-variant bg-surface-container/40 flex flex-col items-center justify-center gap-2 text-on-surface-variant cursor-pointer transition-colors hover:border-primary hover:bg-primary-container/60 hover:text-primary"
               onClick={() => fileInputRef.current?.click()}
             >
               <ImagePlus size={28} />
@@ -296,7 +296,7 @@ export function ProductFormModal({
           <select
             {...register("category")}
             id="category"
-            className="w-full py-3.5 pl-4 pr-4 bg-white border border-outline-variant rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary focus:border-primary text-body-md text-on-surface capitalize"
+            className="w-full h-10 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface capitalize"
           >
             <option value="">Seleccionar categoría</option>
             {CATEGORIES.map((cat) => (
@@ -353,7 +353,7 @@ export function ProductFormModal({
             id="description"
             rows={3}
             placeholder="Descripción del producto..."
-            className="w-full py-3.5 px-4 bg-white border border-outline-variant rounded-xl outline-none transition-all focus:ring-2 focus:ring-primary focus:border-primary text-body-md text-on-surface placeholder:text-outline resize-none"
+            className="w-full py-2.5 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface placeholder:text-outline resize-none"
           />
           {errors.description && (
             <p className="text-label-md text-error px-1">

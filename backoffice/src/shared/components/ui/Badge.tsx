@@ -9,18 +9,19 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-surface-container text-on-surface',
-  success: 'bg-secondary-container text-on-secondary-container',
-  warning: 'bg-yellow-100 text-yellow-800',
-  error: 'bg-error-container text-on-error-container',
-  info: 'bg-blue-100 text-blue-800',
+  default: 'bg-surface-container-low text-on-surface-variant ring-outline-variant before:bg-outline',
+  success: 'bg-[#ddfbf2] text-[#005142] ring-[#006b58]/20 before:bg-[#006b58]',
+  warning: 'bg-amber-50 text-amber-800 ring-amber-600/15 before:bg-amber-500',
+  error: 'bg-error-container text-on-error-container ring-error/15 before:bg-error',
+  info: 'bg-[#e0f7f8] text-[#0e8a94] ring-[#0e8a94]/20 before:bg-[#0e8a94]',
 };
 
 export function Badge({ variant = 'default', children, className }: Readonly<BadgeProps>) {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-label-md font-semibold',
+        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ring-1 ring-inset',
+        "before:content-[''] before:h-1.5 before:w-1.5 before:rounded-full",
         variantStyles[variant],
         className,
       )}

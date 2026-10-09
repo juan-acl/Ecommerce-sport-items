@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, UserCheck } from 'lucide-react';
 import { useGetClientsQuery, useDeleteClientMutation } from '@features/clients/api/clientsApi';
 import { ClientsTable } from '@features/clients/components/ClientsTable';
 import { ClientFormModal } from '@features/clients/components/ClientFormModal';
@@ -54,12 +54,17 @@ export function ClientsPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-headline-md text-on-surface">Clientes</h1>
-        <p className="text-body-md text-on-surface-variant mt-1">
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-[#ddfbf2] text-[#006b58] flex items-center justify-center shrink-0 ring-1 ring-inset ring-[#006b58]/10">
+          <UserCheck size={20} strokeWidth={1.75} />
+        </div>
+        <div>
+        <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight text-on-surface">Clientes</h1>
+        <p className="text-body-md text-on-surface-variant mt-0.5">
           Gestión de clientes registrados
         </p>
+      </div>
       </div>
 
       <ClientsTable
