@@ -1,3 +1,4 @@
+import { ShoppingBag } from 'lucide-react';
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -8,7 +9,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-unit-sm mb-4">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="material-symbols-outlined !text-white text-lg">sports</span>
+                <ShoppingBag size={16} className="text-white" strokeWidth={2.5} />
               </div>
               <span className="text-headline-sm text-primary">SportCart</span>
             </div>

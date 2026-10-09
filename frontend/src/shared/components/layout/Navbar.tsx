@@ -1,3 +1,4 @@
+import { ShoppingBag } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { selectIsAuthenticated, selectCurrentUser, logout } from '@features/auth/store/authSlice';
 import { ROUTES } from '@shared/constants/routes';
@@ -37,7 +38,7 @@ export function Navbar() {
       <nav className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
         <Link to={ROUTES.HOME} className="flex items-center gap-unit-sm">
           <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center shadow-cta">
-            <span className="material-symbols-outlined !text-white text-xl">sports</span>
+            <ShoppingBag size={18} className="text-white" strokeWidth={2.5} />
           </div>
           <span className="text-headline-sm text-primary tracking-tight">SportCart</span>
         </Link>

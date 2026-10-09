@@ -9,6 +9,7 @@ import { ROUTES } from '@shared/constants/routes';
 import { useLoginMutation } from '../api/authApi';
 import { loginSchema, type LoginFormData } from '../api/schemas';
 import { useAuth } from '../hooks/useAuth';
+import { fieldClass } from './fieldStyles';
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -37,21 +38,22 @@ export function LoginForm() {
   };
 
   return (
-    <div className="space-y-unit-xl flex-1 flex flex-col">
-      <div>
-        <h3 className="text-headline-md text-on-surface mb-unit-xs">Bienvenido de nuevo</h3>
-        <p className="text-body-md text-on-surface-variant">
-          Inicia sesión con tus credenciales para continuar.
-        </p>
-      </div>
+    <div>
+      <h1 className="text-[40px] leading-[1.05] font-light tracking-tight text-on-surface">
+        Hola de <span className="font-extrabold text-primary">nuevo.</span>
+      </h1>
+      <p className="mt-3 text-body-md text-on-surface-variant">
+        Inicia sesión con tus credenciales para continuar.
+      </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-unit-lg">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-7" noValidate>
         <Input
           id="email"
           type="email"
           label="Correo electrónico"
           placeholder="nombre@ejemplo.com"
-          icon="mail"
+          autoComplete="email"
+          className={fieldClass(!!errors.email)}
           error={errors.email?.message}
           {...register('email')}
         />
@@ -63,47 +65,55 @@ export function LoginForm() {
             </label>
             <button
               type="button"
-              className="text-label-md text-primary hover:text-on-primary-fixed-variant transition-colors"
+              className="text-label-md text-outline hover:text-primary transition-colors"
             >
-              ¿Olvidaste tu contraseña?
+              ¿La olvidaste?
             </button>
           </div>
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
-            icon="lock"
+            autoComplete="current-password"
+            className={fieldClass(!!errors.password)}
             error={errors.password?.message}
             rightSlot={
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="text-outline hover:text-primary transition-colors"
+                className="text-label-md uppercase tracking-wider text-outline hover:text-primary transition-colors"
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
-                <span className="material-symbols-outlined">
-                  {showPassword ? 'visibility_off' : 'visibility'}
-                </span>
+                {showPassword ? 'Ocultar' : 'Ver'}
               </button>
             }
             {...register('password')}
           />
         </div>
 
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-          Iniciar sesión
+        <Button
+          type="submit"
+          fullWidth
+          size="lg"
+          isLoading={isLoading}
+          className="group !mt-10 h-14 rounded-full justify-between px-7"
+        >
+          <span>Iniciar sesión</span>
+          <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">
+            arrow_forward
+          </span>
         </Button>
       </form>
 
-      <div className="mt-auto pt-unit-lg border-t border-outline-variant flex justify-center items-center gap-unit-xs">
-        <span className="text-body-md text-on-surface-variant">¿No tienes cuenta?</span>
+      <p className="mt-8 text-body-md text-on-surface-variant">
+        ¿Primera vez aquí?{' '}
         <Link
           to={ROUTES.REGISTER}
-          className="text-label-md text-primary hover:underline font-semibold"
+          className="text-primary font-semibold hover:underline underline-offset-4"
         >
-          Crear cuenta
+          Crea una cuenta
         </Link>
-      </div>
+      </p>
     </div>
   );
 }

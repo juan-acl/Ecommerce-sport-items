@@ -9,6 +9,7 @@ import { ROUTES } from '@shared/constants/routes';
 import { useRegisterMutation } from '../api/authApi';
 import { registerSchema, type RegisterFormData } from '../api/schemas';
 import { useAuth } from '../hooks/useAuth';
+import { fieldClass } from './fieldStyles';
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -47,21 +48,22 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="space-y-unit-xl flex-1 flex flex-col">
-      <div>
-        <h3 className="text-headline-md text-on-surface mb-unit-xs">Crear cuenta</h3>
-        <p className="text-body-md text-on-surface-variant">
-          Comienza tu camino al equipamiento deportivo premium.
-        </p>
-      </div>
+    <div>
+      <h1 className="text-[40px] leading-[1.05] font-light tracking-tight text-on-surface">
+        Tu primer <span className="font-extrabold text-primary">paso.</span>
+      </h1>
+      <p className="mt-3 text-body-md text-on-surface-variant">
+        Comienza tu camino al equipamiento deportivo premium.
+      </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-unit-lg">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-7" noValidate>
         <Input
           id="name"
           type="text"
           label="Nombre completo"
           placeholder="Ana Pérez"
-          icon="person"
+          autoComplete="name"
+          className={fieldClass(!!errors.name)}
           error={errors.name?.message}
           {...register('name')}
         />
@@ -71,7 +73,8 @@ export function RegisterForm() {
           type="email"
           label="Correo electrónico"
           placeholder="nombre@ejemplo.com"
-          icon="mail"
+          autoComplete="email"
+          className={fieldClass(!!errors.email)}
           error={errors.email?.message}
           {...register('email')}
         />
@@ -81,60 +84,70 @@ export function RegisterForm() {
           type={showPassword ? 'text' : 'password'}
           label="Contraseña"
           placeholder="••••••••"
-          icon="lock"
+          autoComplete="new-password"
           hint="Mínimo 8 caracteres."
+          className={fieldClass(!!errors.password)}
           error={errors.password?.message}
           rightSlot={
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="text-outline hover:text-primary transition-colors"
+              className="text-label-md uppercase tracking-wider text-outline hover:text-primary transition-colors"
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
-              <span className="material-symbols-outlined">
-                {showPassword ? 'visibility_off' : 'visibility'}
-              </span>
+              {showPassword ? 'Ocultar' : 'Ver'}
             </button>
           }
           {...register('password')}
         />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <input
             id="terms"
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
+            className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-primary"
           />
-          <label htmlFor="terms" className="text-label-md text-on-surface-variant cursor-pointer">
+          <label
+            htmlFor="terms"
+            className="text-label-md font-normal text-on-surface-variant cursor-pointer"
+          >
             Acepto los{' '}
-            <a href="#" className="text-primary font-bold hover:underline">
+            <a href="#" className="text-on-surface underline underline-offset-2 hover:text-primary">
               Términos de Servicio
             </a>{' '}
             y la{' '}
-            <a href="#" className="text-primary font-bold hover:underline">
+            <a href="#" className="text-on-surface underline underline-offset-2 hover:text-primary">
               Política de Privacidad
             </a>
             .
           </label>
         </div>
 
-        <Button type="submit" fullWidth size="lg" isLoading={isLoading}>
-          Crear cuenta
-          <span className="material-symbols-outlined">arrow_forward</span>
+        <Button
+          type="submit"
+          fullWidth
+          size="lg"
+          isLoading={isLoading}
+          className="group !mt-10 h-14 rounded-full justify-between px-7"
+        >
+          <span>Crear cuenta</span>
+          <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">
+            arrow_forward
+          </span>
         </Button>
       </form>
 
-      <div className="mt-auto pt-unit-lg border-t border-outline-variant text-center">
-        <span className="text-body-md text-on-surface-variant">¿Ya tienes cuenta? </span>
+      <p className="mt-8 text-body-md text-on-surface-variant">
+        ¿Ya tienes cuenta?{' '}
         <Link
           to={ROUTES.LOGIN}
-          className="text-label-md text-primary hover:underline font-semibold"
+          className="text-primary font-semibold hover:underline underline-offset-4"
         >
           Inicia sesión
         </Link>
-      </div>
+      </p>
     </div>
   );
 }

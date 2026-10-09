@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppDispatch } from '@app/hooks';
 import { setCredentials } from '@features/auth/store/authSlice';
@@ -11,6 +11,7 @@ import { useLoginMutation } from '@features/auth/api/authApi';
 import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
 import { ROUTES } from '@shared/constants/routes';
+import { cn } from '@shared/utils/cn';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -58,16 +59,16 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       <Input
         {...register('email')}
         id="email"
         type="email"
         label="Correo electrónico"
         placeholder="usuario@sportscart.com"
-        icon="email"
         error={errors.email?.message}
         autoComplete="email"
+        className={field(!!errors.email)}
       />
 
       <Input
@@ -76,14 +77,14 @@ export function LoginForm() {
         type={showPassword ? 'text' : 'password'}
         label="Contraseña"
         placeholder="••••••••"
-        icon="lock"
         error={errors.password?.message}
         autoComplete="current-password"
+        className={field(!!errors.password)}
         rightSlot={
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="p-1 text-outline hover:text-on-surface transition-colors"
+            className="p-1 rounded text-[#71787d] hover:text-[#00354a] transition-colors"
             tabIndex={-1}
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
@@ -92,11 +93,25 @@ export function LoginForm() {
         }
       />
 
-      <div className="pt-1">
-        <Button type="submit" fullWidth isLoading={isLoading}>
-          Ingresar al panel
+      <div className="pt-5">
+        <Button
+          type="submit"
+          fullWidth
+          isLoading={isLoading}
+          className="group h-12 rounded-sm justify-between px-5 bg-[#00354a] shadow-none hover:bg-[#0a4d68] focus:ring-[#00354a]/40"
+        >
+          <span>Ingresar al panel</span>
+          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
         </Button>
       </div>
     </form>
+  );
+}
+
+function field(hasError: boolean) {
+  return cn(
+    'rounded-none border-0 border-b bg-transparent pl-0 py-2.5 text-body-lg text-[#111c2d]',
+    'placeholder:text-[#c0c7cd] focus:ring-0',
+    hasError ? 'border-error focus:border-error' : 'border-[#c0c7cd] focus:border-[#00354a]',
   );
 }
