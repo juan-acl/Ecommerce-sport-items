@@ -9,6 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Truck,
+  ShoppingCart,
+  Boxes,
+  Bell,
 } from "lucide-react";
 import { cn } from "@shared/utils/cn";
 import { ROUTES } from "@shared/constants/routes";
@@ -51,6 +55,13 @@ const NAV_GROUPS: NavGroup[] = [
         module: "products",
         action: "view",
       },
+      {
+        label: "Proveedores",
+        path: ROUTES.SUPPLIERS,
+        icon: Truck,
+        module: "suppliers",
+        action: "view",
+      },
     ],
   },
   {
@@ -80,6 +91,27 @@ const NAV_GROUPS: NavGroup[] = [
         path: ROUTES.ORDERS,
         icon: ShoppingBag,
         module: "orders",
+        action: "view",
+      },
+      {
+        label: "Compras",
+        path: ROUTES.PURCHASES,
+        icon: ShoppingCart,
+        module: "purchases",
+        action: "view",
+      },
+      {
+        label: "Inventario",
+        path: ROUTES.INVENTORY,
+        icon: Boxes,
+        module: "inventory",
+        action: "view",
+      },
+      {
+        label: "Alertas",
+        path: ROUTES.ALERTS,
+        icon: Bell,
+        module: "inventory",
         action: "view",
       },
       {
@@ -205,7 +237,7 @@ export function Sidebar({
         </button>
         {!collapsed && (
           <p className="px-3 pt-1 text-[10px] tabular-nums text-outline select-none">
-            v1.0.0 · Sprint 1
+            v2.0.0 · Sprint 2
           </p>
         )}
       </div>

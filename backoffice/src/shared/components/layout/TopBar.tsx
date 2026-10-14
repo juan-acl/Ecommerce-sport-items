@@ -13,6 +13,10 @@ const SECTION_TITLES: Record<string, string> = {
   [ROUTES.CLIENTS]: 'Clientes',
   [ROUTES.ORDERS]: 'Órdenes',
   [ROUTES.ROLES]: 'Roles y permisos',
+  [ROUTES.SUPPLIERS]: 'Proveedores',
+  [ROUTES.PURCHASES]: 'Compras',
+  [ROUTES.INVENTORY]: 'Inventario',
+  [ROUTES.ALERTS]: 'Alertas',
 };
 
 interface TopBarProps {

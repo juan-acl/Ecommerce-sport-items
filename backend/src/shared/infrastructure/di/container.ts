@@ -56,6 +56,30 @@ import { ListAllOrdersUseCase } from '@modules/orders/application/use-cases/list
 import { UpdateOrderStatusUseCase } from '@modules/orders/application/use-cases/update-order-status.use-case';
 import { AdminOrdersController } from '@modules/orders/presentation/admin-orders.controller';
 
+// Suppliers
+import { DynamoSupplierRepository } from '@modules/suppliers/infrastructure/persistence/dynamo-supplier.repository';
+import { ListSuppliersUseCase } from '@modules/suppliers/application/use-cases/list-suppliers.use-case';
+import { GetSupplierUseCase } from '@modules/suppliers/application/use-cases/get-supplier.use-case';
+import { CreateSupplierUseCase } from '@modules/suppliers/application/use-cases/create-supplier.use-case';
+import { UpdateSupplierUseCase } from '@modules/suppliers/application/use-cases/update-supplier.use-case';
+import { DeleteSupplierUseCase } from '@modules/suppliers/application/use-cases/delete-supplier.use-case';
+import { SuppliersController } from '@modules/suppliers/presentation/suppliers.controller';
+
+// Inventory
+import { DynamoMovementRepository } from '@modules/inventory/infrastructure/persistence/dynamo-movement.repository';
+import { ListMovementsUseCase } from '@modules/inventory/application/use-cases/list-movements.use-case';
+import { GetLowStockUseCase } from '@modules/inventory/application/use-cases/get-low-stock.use-case';
+import { InventoryController } from '@modules/inventory/presentation/inventory.controller';
+
+// Purchases
+import { DynamoPurchaseRepository } from '@modules/purchases/infrastructure/persistence/dynamo-purchase.repository';
+import { ListPurchasesUseCase } from '@modules/purchases/application/use-cases/list-purchases.use-case';
+import { GetPurchaseUseCase } from '@modules/purchases/application/use-cases/get-purchase.use-case';
+import { CreatePurchaseUseCase } from '@modules/purchases/application/use-cases/create-purchase.use-case';
+import { ReceivePurchaseUseCase } from '@modules/purchases/application/use-cases/receive-purchase.use-case';
+import { CancelPurchaseUseCase } from '@modules/purchases/application/use-cases/cancel-purchase.use-case';
+import { PurchasesController } from '@modules/purchases/presentation/purchases.controller';
+
 // Roles
 import { DynamoRoleRepository } from '@modules/roles/infrastructure/persistence/dynamo-role.repository';
 import { ListRolesUseCase } from '@modules/roles/application/use-cases/list-roles.use-case';
@@ -127,6 +151,30 @@ export interface AppContainer {
   listAllOrdersUseCase: ListAllOrdersUseCase;
   updateOrderStatusUseCase: UpdateOrderStatusUseCase;
   adminOrdersController: AdminOrdersController;
+
+  // Suppliers
+  supplierRepository: DynamoSupplierRepository;
+  listSuppliersUseCase: ListSuppliersUseCase;
+  getSupplierUseCase: GetSupplierUseCase;
+  createSupplierUseCase: CreateSupplierUseCase;
+  updateSupplierUseCase: UpdateSupplierUseCase;
+  deleteSupplierUseCase: DeleteSupplierUseCase;
+  suppliersController: SuppliersController;
+
+  // Inventory
+  movementRepository: DynamoMovementRepository;
+  listMovementsUseCase: ListMovementsUseCase;
+  getLowStockUseCase: GetLowStockUseCase;
+  inventoryController: InventoryController;
+
+  // Purchases
+  purchaseRepository: DynamoPurchaseRepository;
+  listPurchasesUseCase: ListPurchasesUseCase;
+  getPurchaseUseCase: GetPurchaseUseCase;
+  createPurchaseUseCase: CreatePurchaseUseCase;
+  receivePurchaseUseCase: ReceivePurchaseUseCase;
+  cancelPurchaseUseCase: CancelPurchaseUseCase;
+  purchasesController: PurchasesController;
 
   // Roles
   roleRepository: DynamoRoleRepository;
@@ -344,6 +392,83 @@ export function buildContainer(): AwilixContainer<AppContainer> {
     adminOrdersController: asFunction(
       ({ listAllOrdersUseCase, updateOrderStatusUseCase }) =>
         new AdminOrdersController(listAllOrdersUseCase, updateOrderStatusUseCase),
+    ).singleton(),
+
+    // Suppliers
+    supplierRepository: asFunction(
+      ({ dynamoClient, tableName }) => new DynamoSupplierRepository(dynamoClient, tableName),
+    ).singleton(),
+    listSuppliersUseCase: asFunction(
+      ({ supplierRepository }) => new ListSuppliersUseCase(supplierRepository),
+    ).singleton(),
+    getSupplierUseCase: asFunction(
+      ({ supplierRepository }) => new GetSupplierUseCase(supplierRepository),
+    ).singleton(),
+    createSupplierUseCase: asFunction(
+      ({ supplierRepository }) => new CreateSupplierUseCase(supplierRepository),
+    ).singleton(),
+    updateSupplierUseCase: asFunction(
+      ({ supplierRepository }) => new UpdateSupplierUseCase(supplierRepository),
+    ).singleton(),
+    deleteSupplierUseCase: asFunction(
+      ({ supplierRepository }) => new DeleteSupplierUseCase(supplierRepository),
+    ).singleton(),
+    suppliersController: asFunction(
+      ({ listSuppliersUseCase, getSupplierUseCase, createSupplierUseCase, updateSupplierUseCase, deleteSupplierUseCase }) =>
+        new SuppliersController(
+          listSuppliersUseCase,
+          getSupplierUseCase,
+          createSupplierUseCase,
+          updateSupplierUseCase,
+          deleteSupplierUseCase,
+        ),
+    ).singleton(),
+
+    // Inventory
+    movementRepository: asFunction(
+      ({ dynamoClient, tableName }) => new DynamoMovementRepository(dynamoClient, tableName),
+    ).singleton(),
+    listMovementsUseCase: asFunction(
+      ({ movementRepository }) => new ListMovementsUseCase(movementRepository),
+    ).singleton(),
+    getLowStockUseCase: asFunction(
+      ({ productRepository }) => new GetLowStockUseCase(productRepository),
+    ).singleton(),
+    inventoryController: asFunction(
+      ({ listMovementsUseCase, getLowStockUseCase }) =>
+        new InventoryController(listMovementsUseCase, getLowStockUseCase),
+    ).singleton(),
+
+    // Purchases
+    purchaseRepository: asFunction(
+      ({ dynamoClient, tableName }) => new DynamoPurchaseRepository(dynamoClient, tableName),
+    ).singleton(),
+    listPurchasesUseCase: asFunction(
+      ({ purchaseRepository }) => new ListPurchasesUseCase(purchaseRepository),
+    ).singleton(),
+    getPurchaseUseCase: asFunction(
+      ({ purchaseRepository }) => new GetPurchaseUseCase(purchaseRepository),
+    ).singleton(),
+    createPurchaseUseCase: asFunction(
+      ({ purchaseRepository, supplierRepository }) =>
+        new CreatePurchaseUseCase(purchaseRepository, supplierRepository),
+    ).singleton(),
+    receivePurchaseUseCase: asFunction(
+      ({ purchaseRepository, productRepository, movementRepository }) =>
+        new ReceivePurchaseUseCase(purchaseRepository, productRepository, movementRepository),
+    ).singleton(),
+    cancelPurchaseUseCase: asFunction(
+      ({ purchaseRepository }) => new CancelPurchaseUseCase(purchaseRepository),
+    ).singleton(),
+    purchasesController: asFunction(
+      ({ listPurchasesUseCase, getPurchaseUseCase, createPurchaseUseCase, receivePurchaseUseCase, cancelPurchaseUseCase }) =>
+        new PurchasesController(
+          listPurchasesUseCase,
+          getPurchaseUseCase,
+          createPurchaseUseCase,
+          receivePurchaseUseCase,
+          cancelPurchaseUseCase,
+        ),
     ).singleton(),
 
     // Roles

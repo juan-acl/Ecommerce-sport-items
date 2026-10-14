@@ -38,6 +38,7 @@ export function ShippingForm({ defaultValues, onSubmit, onBack }: ShippingFormPr
           label="Dirección completa"
           placeholder="5a Avenida 10-50 Zona 10"
           icon="home"
+          maxLength={200}
           error={errors.street?.message}
           {...register('street')}
         />
@@ -49,6 +50,7 @@ export function ShippingForm({ defaultValues, onSubmit, onBack }: ShippingFormPr
             label="Ciudad"
             placeholder="Guatemala"
             icon="location_city"
+            maxLength={100}
             error={errors.city?.message}
             {...register('city')}
           />
@@ -59,6 +61,7 @@ export function ShippingForm({ defaultValues, onSubmit, onBack }: ShippingFormPr
             label="País"
             placeholder="Guatemala"
             icon="public"
+            maxLength={100}
             error={errors.country?.message}
             {...register('country')}
           />
@@ -70,6 +73,9 @@ export function ShippingForm({ defaultValues, onSubmit, onBack }: ShippingFormPr
           label="Código postal"
           placeholder="01010"
           icon="markunread_mailbox"
+          maxLength={5}
+          inputMode="numeric"
+          pattern="[0-9]{5}"
           error={errors.postalCode?.message}
           {...register('postalCode')}
         />

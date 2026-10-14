@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Shield, Lock, Plus, Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   useGetRolesQuery,
   useCreateRoleMutation,
@@ -182,6 +183,23 @@ interface RoleFormModalProps {
   role?: RoleEntity | null;
 }
 
+const roleSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(50, "El nombre no puede exceder 50 caracteres")
+    .regex(
+      /^[\p{L}\s\-_]+$/u,
+      "Solo puede contener letras, espacios y guiones (sin números ni caracteres especiales)",
+    ),
+  description: z
+    .string()
+    .trim()
+    .max(200, "La descripción no puede exceder 200 caracteres")
+    .regex(/^[^<>{}@]*$/, "La descripción contiene caracteres no permitidos (@, <, >, etc.)"),
+});
+
 function RoleFormModal({ isOpen, onClose, role }: RoleFormModalProps) {
   const isEditing = !!role;
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
@@ -193,6 +211,7 @@ function RoleFormModal({ isOpen, onClose, role }: RoleFormModalProps) {
     role?.permissions ?? [],
   );
   const [nameError, setNameError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -200,26 +219,35 @@ function RoleFormModal({ isOpen, onClose, role }: RoleFormModalProps) {
       setDescription(role?.description ?? "");
       setPermissions(role?.permissions ?? []);
       setNameError("");
+      setDescriptionError("");
     }
   }, [isOpen, role]);
 
   const handleSubmit = async () => {
-    if (name.trim().length < 2) {
-      setNameError("Mínimo 2 caracteres");
+    const result = roleSchema.safeParse({ name, description });
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+      setNameError(fieldErrors.name?.[0] ?? "");
+      setDescriptionError(fieldErrors.description?.[0] ?? "");
       return;
     }
     setNameError("");
+    setDescriptionError("");
     try {
       if (isEditing && role) {
         await updateRole({
           id: role.id,
-          name,
-          description,
+          name: result.data.name,
+          description: result.data.description,
           permissions,
         }).unwrap();
         toast.success("Rol actualizado correctamente.");
       } else {
-        await createRole({ name, description, permissions }).unwrap();
+        await createRole({
+          name: result.data.name,
+          description: result.data.description,
+          permissions,
+        }).unwrap();
         toast.success("Rol creado correctamente.");
       }
       onClose();
@@ -253,24 +281,42 @@ function RoleFormModal({ isOpen, onClose, role }: RoleFormModalProps) {
           label="Nombre del rol"
           placeholder="Ej: supervisor"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (nameError) setNameError("");
+          }}
+          maxLength={50}
+          hint="Solo letras y espacios, sin números ni caracteres especiales."
           error={nameError}
         />
         <div className="space-y-1">
           <label
             htmlFor="role-description"
-            className="block text-label-md text-on-surface-variant"
+            className="block text-[12px] font-medium text-on-surface"
           >
             Descripción
           </label>
           <textarea
             id="role-description"
             rows={2}
+            maxLength={200}
             placeholder="Descripción del rol..."
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full py-2.5 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface resize-none"
+            onChange={(e) => {
+              setDescription(e.target.value);
+              if (descriptionError) setDescriptionError("");
+            }}
+            className={`w-full py-2.5 px-3 bg-white border rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface resize-none ${
+              descriptionError
+                ? "border-error focus:ring-error/10 focus:border-error"
+                : "border-outline-variant"
+            }`}
           />
+          {descriptionError && (
+            <p className="text-[11px] font-medium text-error">
+              {descriptionError}
+            </p>
+          )}
         </div>
         <div>
           <p className="text-label-md text-on-surface-variant font-semibold mb-3">

@@ -8,16 +8,18 @@ import { useCreateClientMutation, useUpdateClientMutation } from '@features/clie
 import { Modal } from '@shared/components/ui/Modal';
 import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
+import { PasswordStrengthIndicator } from '@shared/components/ui/PasswordStrengthIndicator';
+import { nameValidator, emailValidator, strongPasswordValidator } from '@shared/utils/validationSchemas';
 
 const createSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  name: nameValidator,
+  email: emailValidator,
+  password: strongPasswordValidator,
 });
 
 const editSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-  email: z.string().email('Email inválido'),
+  name: nameValidator,
+  email: emailValidator,
 });
 
 type CreateFormData = z.infer<typeof createSchema>;
@@ -38,10 +40,15 @@ export function ClientFormModal({ isOpen, onClose, client }: Readonly<ClientForm
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<CreateFormData | EditFormData>({
     resolver: zodResolver(isEditing ? editSchema : createSchema),
   });
+
+  const passwordValue = !isEditing
+    ? ((watch('password' as keyof (CreateFormData | EditFormData)) as string) ?? '')
+    : '';
 
   useEffect(() => {
     if (client) {
@@ -88,27 +95,33 @@ export function ClientFormModal({ isOpen, onClose, client }: Readonly<ClientForm
         <Input
           {...register('name')}
           id="name"
-          label="Nombre"
+          label="Nombre completo"
           placeholder="Nombre completo"
+          maxLength={100}
           error={errors.name?.message}
         />
         <Input
           {...register('email')}
           id="email"
           type="email"
-          label="Email"
+          label="Correo electrónico"
           placeholder="correo@ejemplo.com"
+          maxLength={254}
           error={errors.email?.message}
         />
         {!isEditing && (
-          <Input
-            {...register('password' as keyof (CreateFormData | EditFormData))}
-            id="password"
-            type="password"
-            label="Contraseña"
-            placeholder="Mínimo 6 caracteres"
-            error={(errors as { password?: { message?: string } }).password?.message}
-          />
+          <div>
+            <Input
+              {...register('password' as keyof (CreateFormData | EditFormData))}
+              id="password"
+              type="password"
+              label="Contraseña"
+              placeholder="Mínimo 8 caracteres"
+              maxLength={128}
+              error={(errors as { password?: { message?: string } }).password?.message}
+            />
+            <PasswordStrengthIndicator password={passwordValue} />
+          </div>
         )}
       </form>
     </Modal>

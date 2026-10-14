@@ -47,6 +47,14 @@ export const authApi = createApi({
         method: 'POST',
         body: data,
       }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(cartApi.util.invalidateTags(['Cart']));
+        } catch {
+          console.log('Login Failed, cart cache not invalidated');
+        }
+      },
       transformResponse: (response: ApiSuccessResponse<AuthResponse>) => response.data,
     }),
   }),

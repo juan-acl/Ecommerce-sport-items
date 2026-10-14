@@ -6,6 +6,9 @@ import { productsApi } from '@features/products/api/productsApi';
 import { clientsApi } from '@features/clients/api/clientsApi';
 import { ordersApi } from '@features/orders/api/ordersApi';
 import { rolesApi } from '@features/roles/api/rolesApi';
+import { suppliersApi } from '@features/suppliers/api/suppliersApi';
+import { purchasesApi } from '@features/purchases/api/purchasesApi';
+import { inventoryApi } from '@features/inventory/api/inventoryApi';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +19,9 @@ export const store = configureStore({
     [clientsApi.reducerPath]: clientsApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     [rolesApi.reducerPath]: rolesApi.reducer,
+    [suppliersApi.reducerPath]: suppliersApi.reducer,
+    [purchasesApi.reducerPath]: purchasesApi.reducer,
+    [inventoryApi.reducerPath]: inventoryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -25,6 +31,9 @@ export const store = configureStore({
       clientsApi.middleware,
       ordersApi.middleware,
       rolesApi.middleware,
+      suppliersApi.middleware,
+      purchasesApi.middleware,
+      inventoryApi.middleware,
     ),
 });
 

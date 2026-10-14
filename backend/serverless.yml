@@ -18,3 +18,6 @@ functions:
   adminUsers: ${file(serverless/functions/admin-users.yml)}
   adminOrders: ${file(serverless/functions/admin-orders.yml)}
   adminRoles: ${file(serverless/functions/admin-roles.yml)}
+  adminSuppliers: ${file(serverless/functions/admin-suppliers.yml)}
+  adminPurchases: ${file(serverless/functions/admin-purchases.yml)}
+  adminInventory: ${file(serverless/functions/admin-inventory.yml)}

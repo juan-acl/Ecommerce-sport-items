@@ -8,6 +8,7 @@ export interface ListProductsParams extends PaginationParams {
 export interface ProductRepository {
   list(params: ListProductsParams): Promise<PaginatedResult<Product>>;
   findById(id: string): Promise<Product | null>;
+  findBelowMinStock(): Promise<Product[]>;
   save(product: Product): Promise<void>;
   update(product: Product): Promise<void>;
   delete(id: string): Promise<void>;

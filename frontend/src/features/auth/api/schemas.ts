@@ -1,14 +1,20 @@
 import { z } from 'zod';
+import {
+  emailValidator,
+  nameValidator,
+  loginPasswordValidator,
+  strongPasswordValidator,
+} from '@shared/utils/validationSchemas';
 
 export const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(1, 'La contraseña es requerida'),
+  email: emailValidator,
+  password: loginPasswordValidator,
 });
 
 export const registerSchema = z.object({
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  name: nameValidator,
+  email: emailValidator,
+  password: strongPasswordValidator,
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

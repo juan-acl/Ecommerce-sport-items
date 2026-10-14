@@ -82,3 +82,50 @@ export interface ShippingAddress {
   country: string;
   postalCode: string;
 }
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  address: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type PurchaseStatus = 'pending' | 'received' | 'cancelled';
+
+export interface PurchaseItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitCost: number;
+  subtotal: number;
+}
+
+export interface Purchase {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  items: PurchaseItem[];
+  total: number;
+  status: PurchaseStatus;
+  notes?: string;
+  createdAt: string;
+  receivedAt?: string;
+}
+
+export type MovementType = 'purchase' | 'sale' | 'adjustment' | 'return';
+
+export interface InventoryMovement {
+  id: string;
+  productId: string;
+  productName: string;
+  type: MovementType;
+  quantity: number;
+  referenceId?: string;
+  note?: string;
+  createdAt: string;
+  createdBy: string;
+}

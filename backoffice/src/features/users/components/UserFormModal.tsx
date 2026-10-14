@@ -10,21 +10,23 @@ import { useGetRolesQuery } from '@features/roles/api/rolesApi';
 import { Modal } from '@shared/components/ui/Modal';
 import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
+import { PasswordStrengthIndicator } from '@shared/components/ui/PasswordStrengthIndicator';
+import { nameValidator, emailValidator, strongPasswordValidator } from '@shared/utils/validationSchemas';
 
 const baseFields = {
-  name: z.string().min(1, 'El nombre es requerido'),
-  email: z.string().email('Email inválido'),
+  name: nameValidator,
+  email: emailValidator,
   role: z.string().min(1, 'El rol es requerido'),
 };
 
 const createSchema = z.object({
   ...baseFields,
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  password: strongPasswordValidator,
 });
 
 const editSchema = z.object({
   ...baseFields,
-  password: z.string().min(6).optional().or(z.literal('')),
+  password: z.union([strongPasswordValidator, z.literal('')]).optional(),
 });
 
 type CreateFormData = z.infer<typeof createSchema>;
@@ -47,10 +49,13 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(isEditing ? editSchema : createSchema),
   });
+
+  const passwordValue = (watch('password' as keyof FormData) as string) ?? '';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -106,6 +111,7 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
           id="name"
           label="Nombre completo"
           placeholder="Ej: Carlos Mendoza López"
+          maxLength={100}
           error={errors.name?.message}
         />
         <Input
@@ -114,28 +120,34 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
           type="email"
           label="Correo electrónico"
           placeholder="correo@ejemplo.com"
+          maxLength={254}
           error={errors.email?.message}
         />
-        {!isEditing && (
-          <Input
-            {...register('password')}
-            id="password"
-            type="password"
-            label="Contraseña"
-            placeholder="Mínimo 6 caracteres"
-            error={(errors as { password?: { message?: string } }).password?.message}
-          />
-        )}
-        {isEditing && (
-          <Input
-            {...register('password')}
-            id="password"
-            type="password"
-            label="Nueva contraseña"
-            placeholder="Dejar vacío para no cambiar"
-            error={(errors as { password?: { message?: string } }).password?.message}
-          />
-        )}
+        <div>
+          {!isEditing && (
+            <Input
+              {...register('password')}
+              id="password"
+              type="password"
+              label="Contraseña"
+              placeholder="Mínimo 8 caracteres"
+              maxLength={128}
+              error={(errors as { password?: { message?: string } }).password?.message}
+            />
+          )}
+          {isEditing && (
+            <Input
+              {...register('password')}
+              id="password"
+              type="password"
+              label="Nueva contraseña"
+              placeholder="Dejar vacío para no cambiar"
+              maxLength={128}
+              error={(errors as { password?: { message?: string } }).password?.message}
+            />
+          )}
+          <PasswordStrengthIndicator password={passwordValue} />
+        </div>
         <div className="space-y-1.5">
           <label htmlFor="role" className="block text-label-md text-on-surface-variant">
             Rol

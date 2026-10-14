@@ -107,6 +107,34 @@ export class DynamoProductRepository implements ProductRepository {
     );
   }
 
+  async findBelowMinStock(): Promise<Product[]> {
+    const results: Product[] = [];
+    let exclusiveStartKey: Record<string, unknown> | undefined;
+
+    do {
+      const result = await this.client.send(
+        new QueryCommand({
+          TableName: this.tableName,
+          IndexName: TABLE.GSI1,
+          KeyConditionExpression: 'GSI1PK = :pk',
+          ExpressionAttributeValues: { ':pk': 'PRODUCT' },
+          ExclusiveStartKey: exclusiveStartKey,
+        }),
+      );
+
+      for (const item of result.Items ?? []) {
+        const product = ProductMapper.toDomain(item);
+        if (product.stock <= product.minStock) {
+          results.push(product);
+        }
+      }
+
+      exclusiveStartKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+    } while (exclusiveStartKey);
+
+    return results;
+  }
+
   async delete(id: string): Promise<void> {
     await this.client.send(
       new DeleteCommand({

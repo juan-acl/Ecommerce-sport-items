@@ -12,10 +12,11 @@ import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
 import { ROUTES } from '@shared/constants/routes';
 import { cn } from '@shared/utils/cn';
+import { emailValidator, loginPasswordValidator } from '@shared/utils/validationSchemas';
 
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(1, 'La contraseña es requerida'),
+  email: emailValidator,
+  password: loginPasswordValidator,
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -68,6 +69,7 @@ export function LoginForm() {
         placeholder="usuario@sportscart.com"
         error={errors.email?.message}
         autoComplete="email"
+        maxLength={254}
         className={field(!!errors.email)}
       />
 
@@ -79,6 +81,7 @@ export function LoginForm() {
         placeholder="••••••••"
         error={errors.password?.message}
         autoComplete="current-password"
+        maxLength={128}
         className={field(!!errors.password)}
         rightSlot={
           <button

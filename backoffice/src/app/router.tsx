@@ -9,6 +9,10 @@ import { UsersPage } from '@pages/UsersPage';
 import { ClientsPage } from '@pages/ClientsPage';
 import { OrdersPage } from '@pages/OrdersPage';
 import { RolesPage } from '@pages/RolesPage';
+import { SuppliersPage } from '@pages/SuppliersPage';
+import { PurchasesPage } from '@pages/PurchasesPage';
+import { InventoryPage } from '@pages/InventoryPage';
+import { AlertsPage } from '@pages/AlertsPage';
 import { NotFoundPage } from '@pages/NotFoundPage';
 import { ROUTES } from '@shared/constants/routes';
 
@@ -35,6 +39,10 @@ export const router = createBrowserRouter([
       { path: ROUTES.CLIENTS, element: <ClientsPage /> },
       { path: ROUTES.ORDERS, element: <OrdersPage /> },
       { path: ROUTES.ROLES, element: <RolesPage /> },
+      { path: ROUTES.SUPPLIERS, element: <SuppliersPage /> },
+      { path: ROUTES.PURCHASES, element: <PurchasesPage /> },
+      { path: ROUTES.INVENTORY, element: <InventoryPage /> },
+      { path: ROUTES.ALERTS, element: <AlertsPage /> },
       { path: ROUTES.NOT_FOUND, element: <NotFoundPage /> },
     ],
   },

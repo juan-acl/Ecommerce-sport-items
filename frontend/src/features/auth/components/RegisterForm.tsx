@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from '@shared/components/ui/Input';
 import { Button } from '@shared/components/ui/Button';
+import { PasswordStrengthIndicator } from '@shared/components/ui/PasswordStrengthIndicator';
 import { ROUTES } from '@shared/constants/routes';
 import { useRegisterMutation } from '../api/authApi';
 import { registerSchema, type RegisterFormData } from '../api/schemas';
@@ -21,10 +22,13 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  const passwordValue = watch('password') ?? '';
 
   const onSubmit = async (data: RegisterFormData) => {
     if (!acceptedTerms) {
@@ -63,6 +67,7 @@ export function RegisterForm() {
           label="Nombre completo"
           placeholder="Ana Pérez"
           autoComplete="name"
+          maxLength={100}
           className={fieldClass(!!errors.name)}
           error={errors.name?.message}
           {...register('name')}
@@ -74,32 +79,36 @@ export function RegisterForm() {
           label="Correo electrónico"
           placeholder="nombre@ejemplo.com"
           autoComplete="email"
+          maxLength={254}
           className={fieldClass(!!errors.email)}
           error={errors.email?.message}
           {...register('email')}
         />
 
-        <Input
-          id="password"
-          type={showPassword ? 'text' : 'password'}
-          label="Contraseña"
-          placeholder="••••••••"
-          autoComplete="new-password"
-          hint="Mínimo 8 caracteres."
-          className={fieldClass(!!errors.password)}
-          error={errors.password?.message}
-          rightSlot={
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="text-label-md uppercase tracking-wider text-outline hover:text-primary transition-colors"
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            >
-              {showPassword ? 'Ocultar' : 'Ver'}
-            </button>
-          }
-          {...register('password')}
-        />
+        <div>
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            label="Contraseña"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            maxLength={128}
+            className={fieldClass(!!errors.password)}
+            error={errors.password?.message}
+            rightSlot={
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="text-label-md uppercase tracking-wider text-outline hover:text-primary transition-colors"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              >
+                {showPassword ? 'Ocultar' : 'Ver'}
+              </button>
+            }
+            {...register('password')}
+          />
+          <PasswordStrengthIndicator password={passwordValue} />
+        </div>
 
         <div className="flex items-start gap-3">
           <input

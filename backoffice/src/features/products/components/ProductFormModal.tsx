@@ -14,19 +14,7 @@ import { Modal } from "@shared/components/ui/Modal";
 import { Button } from "@shared/components/ui/Button";
 import { Input } from "@shared/components/ui/Input";
 
-const productSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
-  category: z.string().min(1, "La categoría es requerida"),
-  price: z.number().positive("El precio debe ser mayor a 0"),
-  stock: z.number().int().gte(0, "El stock no puede ser negativo"),
-  minStock: z.number().int().gte(0, "El stock mínimo no puede ser negativo"),
-  description: z.string().min(1, "La descripción es requerida"),
-  imageUrl: z.string().url("URL de imagen inválida").or(z.literal("")),
-});
-
-type ProductFormData = z.infer<typeof productSchema>;
-
-const CATEGORIES = [
+const CATEGORY_VALUES = [
   "running",
   "football",
   "basketball",
@@ -35,7 +23,46 @@ const CATEGORIES = [
   "cycling",
   "fitness",
   "other",
-];
+] as const;
+
+const productSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(150, "El nombre no puede exceder 150 caracteres")
+    .regex(
+      /^[\p{L}\p{N}\s.,\-'/()+]+$/u,
+      "Solo puede contener letras, números, espacios y signos básicos",
+    ),
+  category: z.enum(CATEGORY_VALUES, {
+    errorMap: () => ({ message: "Selecciona una categoría válida" }),
+  }),
+  price: z
+    .number('El precio debe ser un número')
+    .positive("El precio debe ser mayor a 0")
+    .max(999999.99, "El precio no puede exceder Q999,999.99"),
+  stock: z
+    .number('El stock debe ser un número')
+    .int('El stock debe ser un número entero')
+    .min(0, "El stock no puede ser negativo")
+    .max(99999, "El stock no puede exceder 99,999"),
+  minStock: z
+    .number('El stock mínimo debe ser un número')
+    .int('El stock mínimo debe ser un número entero')
+    .min(0, "El stock mínimo no puede ser negativo")
+    .max(99999, "El stock mínimo no puede exceder 99,999"),
+  description: z
+    .string()
+    .trim()
+    .min(10, "La descripción debe tener al menos 10 caracteres")
+    .max(1000, "La descripción no puede exceder 1000 caracteres")
+    .regex(/^[^<>{}@]+$/, "La descripción contiene caracteres no permitidos (@, <, >, etc.)"),
+  imageUrl: z.string().url("URL de imagen inválida").or(z.literal("")),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
+
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -283,6 +310,7 @@ export function ProductFormModal({
           id="name"
           label="Nombre"
           placeholder="Ej: Zapatillas Running Pro"
+          maxLength={150}
           error={errors.name?.message}
         />
 
@@ -299,7 +327,7 @@ export function ProductFormModal({
             className="w-full h-10 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface capitalize"
           >
             <option value="">Seleccionar categoría</option>
-            {CATEGORIES.map((cat) => (
+            {CATEGORY_VALUES.map((cat) => (
               <option key={cat} value={cat} className="capitalize">
                 {cat}
               </option>
@@ -318,6 +346,8 @@ export function ProductFormModal({
             id="price"
             type="number"
             step="0.01"
+            min="0.01"
+            max="999999.99"
             label="Precio (GTQ)"
             placeholder="0.00"
             error={errors.price?.message}
@@ -326,6 +356,8 @@ export function ProductFormModal({
             {...register("stock", { valueAsNumber: true })}
             id="stock"
             type="number"
+            min="0"
+            max="99999"
             label="Stock"
             placeholder="0"
             error={errors.stock?.message}
@@ -336,6 +368,8 @@ export function ProductFormModal({
           {...register("minStock", { valueAsNumber: true })}
           id="minStock"
           type="number"
+          min="0"
+          max="99999"
           label="Stock mínimo"
           placeholder="0"
           error={errors.minStock?.message}
@@ -352,6 +386,7 @@ export function ProductFormModal({
             {...register("description")}
             id="description"
             rows={3}
+            maxLength={1000}
             placeholder="Descripción del producto..."
             className="w-full py-2.5 px-3 bg-white border border-outline-variant rounded-md outline-none transition-colors hover:border-outline/60 focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary text-body-md text-on-surface placeholder:text-outline resize-none"
           />
