@@ -111,7 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Alertas",
         path: ROUTES.ALERTS,
         icon: Bell,
-        module: "inventory",
+        module: "alerts",
         action: "view",
       },
       {

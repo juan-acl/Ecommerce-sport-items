@@ -7,6 +7,7 @@ export const SYSTEM_MODULES = [
   { id: 'suppliers',  label: 'Proveedores', actions: ['view', 'create', 'edit', 'delete'] },
   { id: 'purchases',  label: 'Compras',     actions: ['view', 'create', 'edit'] },
   { id: 'inventory',  label: 'Inventario',  actions: ['view'] },
+  { id: 'alerts',     label: 'Alertas',     actions: ['view'] },
   { id: 'roles',      label: 'Roles',       actions: ['view', 'create', 'edit'] },
 ] as const;
 

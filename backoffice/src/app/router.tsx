@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "@shared/components/layout/AdminLayout";
 import { GuestOnlyRoute } from "@features/auth/guards/GuestOnlyRoute";
 import { AdminRoute } from "@features/auth/guards/AdminRoute";
+import { ProtectedRoute } from "@features/auth/guards/ProtectedRoute";
 import { LoginPage } from "@pages/LoginPage";
 import { DashboardPage } from "@pages/DashboardPage";
 import { ProductsPage } from "@pages/ProductsPage";
@@ -33,16 +34,86 @@ export const router = createBrowserRouter([
       </AdminRoute>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: ROUTES.PRODUCTS, element: <ProductsPage /> },
-      { path: ROUTES.USERS, element: <UsersPage /> },
-      { path: ROUTES.CLIENTS, element: <ClientsPage /> },
-      { path: ROUTES.ORDERS, element: <OrdersPage /> },
-      { path: ROUTES.ROLES, element: <RolesPage /> },
-      { path: ROUTES.SUPPLIERS, element: <SuppliersPage /> },
-      { path: ROUTES.PURCHASES, element: <PurchasesPage /> },
-      { path: ROUTES.INVENTORY, element: <InventoryPage /> },
-      { path: ROUTES.ALERTS, element: <AlertsPage /> },
+      {
+        index: true,
+        element: (
+          <ProtectedRoute module="dashboard">
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PRODUCTS,
+        element: (
+          <ProtectedRoute module="products">
+            <ProductsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.USERS,
+        element: (
+          <ProtectedRoute module="users">
+            <UsersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.CLIENTS,
+        element: (
+          <ProtectedRoute module="clients">
+            <ClientsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ORDERS,
+        element: (
+          <ProtectedRoute module="orders">
+            <OrdersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ROLES,
+        element: (
+          <ProtectedRoute module="roles">
+            <RolesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.SUPPLIERS,
+        element: (
+          <ProtectedRoute module="suppliers">
+            <SuppliersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PURCHASES,
+        element: (
+          <ProtectedRoute module="purchases">
+            <PurchasesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.INVENTORY,
+        element: (
+          <ProtectedRoute module="inventory">
+            <InventoryPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ALERTS,
+        element: (
+          <ProtectedRoute module="alerts">
+            <AlertsPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: ROUTES.NOT_FOUND, element: <NotFoundPage /> },
     ],
   },
