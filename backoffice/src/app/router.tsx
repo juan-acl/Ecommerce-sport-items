@@ -1,20 +1,20 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { AdminLayout } from '@shared/components/layout/AdminLayout';
-import { GuestOnlyRoute } from '@features/auth/guards/GuestOnlyRoute';
-import { AdminRoute } from '@features/auth/guards/AdminRoute';
-import { LoginPage } from '@pages/LoginPage';
-import { DashboardPage } from '@pages/DashboardPage';
-import { ProductsPage } from '@pages/ProductsPage';
-import { UsersPage } from '@pages/UsersPage';
-import { ClientsPage } from '@pages/ClientsPage';
-import { OrdersPage } from '@pages/OrdersPage';
-import { RolesPage } from '@pages/RolesPage';
-import { SuppliersPage } from '@pages/SuppliersPage';
-import { PurchasesPage } from '@pages/PurchasesPage';
-import { InventoryPage } from '@pages/InventoryPage';
-import { AlertsPage } from '@pages/AlertsPage';
-import { NotFoundPage } from '@pages/NotFoundPage';
-import { ROUTES } from '@shared/constants/routes';
+import { createBrowserRouter } from "react-router-dom";
+import { AdminLayout } from "@shared/components/layout/AdminLayout";
+import { GuestOnlyRoute } from "@features/auth/guards/GuestOnlyRoute";
+import { AdminRoute } from "@features/auth/guards/AdminRoute";
+import { LoginPage } from "@pages/LoginPage";
+import { DashboardPage } from "@pages/DashboardPage";
+import { ProductsPage } from "@pages/ProductsPage";
+import { UsersPage } from "@pages/UsersPage";
+import { ClientsPage } from "@pages/ClientsPage";
+import { OrdersPage } from "@pages/OrdersPage";
+import { RolesPage } from "@pages/RolesPage";
+import { SuppliersPage } from "@pages/SuppliersPage";
+import { PurchasesPage } from "@pages/PurchasesPage";
+import { InventoryPage } from "@pages/InventoryPage";
+import { AlertsPage } from "@pages/AlertsPage";
+import { NotFoundPage } from "@pages/NotFoundPage";
+import { ROUTES } from "@shared/constants/routes";
 
 export const router = createBrowserRouter([
   {
