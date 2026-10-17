@@ -9,6 +9,8 @@ import { ProductRepository } from '@modules/products/domain/repositories/product
 import { ProductNotFoundException } from '@modules/products/domain/exceptions/product-not-found.exception';
 import { DEFAULT_SHIPPING_ADDRESS } from '@modules/orders/domain/value-objects/shipping-address.vo';
 import { LoggerPort } from '@shared/application/ports/logger.port';
+import { InventoryMovementRepository } from '@modules/inventory/domain/repositories/inventory-movement.repository';
+import { InventoryMovement } from '@modules/inventory/domain/entities/inventory-movement.entity';
 import { CheckoutDto } from '../dtos/checkout.dto';
 
 export interface CheckoutInput {
@@ -25,6 +27,7 @@ export class CheckoutUseCase {
     private readonly productRepo: ProductRepository,
     private readonly emailSender: EmailSenderPort,
     private readonly logger: LoggerPort,
+    private readonly movementRepo: InventoryMovementRepository,
   ) {}
 
   async execute(input: CheckoutInput) {
@@ -63,6 +66,7 @@ export class CheckoutUseCase {
     const order = Order.createPaid({
       id: uuid(),
       userId,
+      userEmail,
       items: orderItems,
       shippingAddress: dto.shippingAddress ?? DEFAULT_SHIPPING_ADDRESS,
       createdAt: new Date().toISOString(),
@@ -79,6 +83,25 @@ export class CheckoutUseCase {
       total: order.total,
       itemCount: order.items.length,
     });
+
+    try {
+      for (const item of order.items) {
+        const movement = new InventoryMovement({
+          id: uuid(),
+          productId: item.productId,
+          productName: item.productName,
+          type: 'sale',
+          quantity: -item.quantity,
+          referenceId: order.id,
+          note: `Venta orden ${order.id}`,
+          createdAt: new Date().toISOString(),
+          createdBy: userId,
+        });
+        await this.movementRepo.save(movement);
+      }
+    } catch (err) {
+      this.logger.error('Error registrando movimientos de venta', { orderId: order.id, error: (err as Error).message });
+    }
 
     this.logger.info('Enviando email de confirmación', {
       data: {

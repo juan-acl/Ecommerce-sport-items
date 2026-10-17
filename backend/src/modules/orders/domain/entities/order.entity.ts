@@ -5,6 +5,7 @@ import { ShippingAddress } from '../value-objects/shipping-address.vo';
 export interface OrderProps {
   id: string;
   userId: string;
+  userEmail?: string;
   items: OrderItem[];
   status: OrderStatus;
   shippingAddress: ShippingAddress;
@@ -23,6 +24,9 @@ export class Order {
   }
   get userId(): string {
     return this.props.userId;
+  }
+  get userEmail(): string | undefined {
+    return this.props.userEmail;
   }
   get items(): OrderItem[] {
     return [...this.props.items];
@@ -57,6 +61,7 @@ export class Order {
     return {
       id: this.props.id,
       userId: this.props.userId,
+      userEmail: this.props.userEmail,
       items: this.props.items.map((i) => i.toJSON()),
       subtotal: this.subtotal,
       total: this.total,

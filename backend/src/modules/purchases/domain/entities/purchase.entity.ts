@@ -34,7 +34,8 @@ export class Purchase {
   get receivedAt(): string | undefined { return this.props.receivedAt; }
 
   get canBeReceived(): boolean { return this.props.status === 'pending'; }
-  get canBeCancelled(): boolean { return this.props.status === 'pending'; }
+  get canBeCancelled(): boolean { return this.props.status === 'pending' || this.props.status === 'received'; }
+  get wasReceived(): boolean { return this.props.status === 'received'; }
 
   receive(): Purchase {
     return new Purchase({ ...this.props, status: 'received', receivedAt: new Date().toISOString() });

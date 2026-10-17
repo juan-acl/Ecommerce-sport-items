@@ -14,6 +14,7 @@ export class OrderMapper {
       GSI2SK: `ORDER#${order.createdAt}#${order.id}`,
       id: order.id,
       userId: order.userId,
+      userEmail: order.userEmail,
       items: order.items.map((i) => i.toJSON()),
       subtotal: order.subtotal,
       total: order.total,
@@ -46,6 +47,7 @@ export class OrderMapper {
     const props: OrderProps = {
       id: item.id as string,
       userId: item.userId as string,
+      userEmail: item.userEmail as string | undefined,
       items: orderItems,
       status: item.status as OrderStatus,
       shippingAddress: item.shippingAddress as ShippingAddress,

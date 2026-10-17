@@ -297,13 +297,14 @@ export function buildContainer(): AwilixContainer<AppContainer> {
     ).singleton(),
 
     checkoutUseCase: asFunction(
-      ({ orderRepository, cartRepository, productRepository, emailSender, appLogger }) =>
+      ({ orderRepository, cartRepository, productRepository, emailSender, appLogger, movementRepository }) =>
         new CheckoutUseCase(
           orderRepository,
           cartRepository,
           productRepository,
           emailSender,
           appLogger,
+          movementRepository,
         ),
     ).singleton(),
 
@@ -387,7 +388,8 @@ export function buildContainer(): AwilixContainer<AppContainer> {
       ({ orderRepository }) => new ListAllOrdersUseCase(orderRepository),
     ).singleton(),
     updateOrderStatusUseCase: asFunction(
-      ({ orderRepository }) => new UpdateOrderStatusUseCase(orderRepository),
+      ({ orderRepository, productRepository, movementRepository }) =>
+        new UpdateOrderStatusUseCase(orderRepository, productRepository, movementRepository),
     ).singleton(),
     adminOrdersController: asFunction(
       ({ listAllOrdersUseCase, updateOrderStatusUseCase }) =>
@@ -458,7 +460,8 @@ export function buildContainer(): AwilixContainer<AppContainer> {
         new ReceivePurchaseUseCase(purchaseRepository, productRepository, movementRepository),
     ).singleton(),
     cancelPurchaseUseCase: asFunction(
-      ({ purchaseRepository }) => new CancelPurchaseUseCase(purchaseRepository),
+      ({ purchaseRepository, productRepository, movementRepository }) =>
+        new CancelPurchaseUseCase(purchaseRepository, productRepository, movementRepository),
     ).singleton(),
     purchasesController: asFunction(
       ({ listPurchasesUseCase, getPurchaseUseCase, createPurchaseUseCase, receivePurchaseUseCase, cancelPurchaseUseCase }) =>

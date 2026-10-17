@@ -142,7 +142,7 @@ function Legend() {
 /* ---------- Página ---------- */
 
 export function AlertsPage() {
-  const { data: products = [], isLoading } = useGetLowStockQuery();
+  const { data: products = [], isLoading } = useGetLowStockQuery(undefined, { refetchOnMountOrArgChange: true });
   const [filter, setFilter] = useState<Filter>('Todos');
 
   const outOfStock = products.filter((p) => p.stock === 0);
