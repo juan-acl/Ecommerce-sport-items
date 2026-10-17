@@ -1,11 +1,17 @@
 import { z } from 'zod';
 
+const nitSchema = z
+  .string().trim().toUpperCase()
+  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Formato: 12345678-9 o CF')
+  .optional();
+
 export const CreateSupplierSchema = z.object({
   name: z
     .string().trim()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(150, 'El nombre no puede exceder 150 caracteres')
     .regex(/^[\p{L}\p{N}\s.,\-'&/()+]+$/u, 'El nombre contiene caracteres no permitidos'),
+  nit: nitSchema,
   contactName: z
     .string().trim()
     .min(2, 'El nombre de contacto debe tener al menos 2 caracteres')

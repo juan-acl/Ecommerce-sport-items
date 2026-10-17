@@ -13,6 +13,14 @@ import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
 import { emailValidator, nameValidator } from '@shared/utils/validationSchemas';
 
+const nitSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Usa el formato 12345678-9 o CF')
+  .optional()
+  .or(z.literal(''));
+
 const supplierSchema = z.object({
   name: z
     .string()
@@ -23,6 +31,7 @@ const supplierSchema = z.object({
       /^[\p{L}\p{N}\s.,\-'&/()+]+$/u,
       "Solo puede contener letras, números, espacios y signos básicos (.,'-&)",
     ),
+  nit: nitSchema,
   contactName: nameValidator,
   email: emailValidator,
   phone: z
@@ -69,13 +78,14 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: Readonly<Props>
     if (supplier) {
       reset({
         name: supplier.name,
+        nit: supplier.nit ?? '',
         contactName: supplier.contactName,
         email: supplier.email,
         phone: supplier.phone,
         address: supplier.address,
       });
     } else {
-      reset({ name: '', contactName: '', email: '', phone: '', address: '' });
+      reset({ name: '', nit: '', contactName: '', email: '', phone: '', address: '' });
     }
   }, [supplier, reset]);
 
@@ -120,6 +130,15 @@ export function SupplierFormModal({ isOpen, onClose, supplier }: Readonly<Props>
           placeholder="Ej. Adidas Guatemala S.A."
           maxLength={150}
           error={errors.name?.message}
+        />
+        <Input
+          {...register('nit')}
+          id="nit"
+          label="NIT del proveedor (emisor)"
+          placeholder="Ej. 12345678-9 o CF"
+          maxLength={12}
+          hint="Número de Identificación Tributaria del proveedor"
+          error={errors.nit?.message}
         />
         <Input
           {...register('contactName')}

@@ -12,6 +12,8 @@ export interface PurchaseProps {
   id: string;
   supplierId: string;
   supplierName: string;
+  supplierNit?: string;
+  buyerNit?: string;
   items: PurchaseItem[];
   total: number;
   status: PurchaseStatus;
@@ -26,6 +28,8 @@ export class Purchase {
   get id(): string { return this.props.id; }
   get supplierId(): string { return this.props.supplierId; }
   get supplierName(): string { return this.props.supplierName; }
+  get supplierNit(): string | undefined { return this.props.supplierNit; }
+  get buyerNit(): string | undefined { return this.props.buyerNit; }
   get items(): PurchaseItem[] { return this.props.items; }
   get total(): number { return this.props.total; }
   get status(): PurchaseStatus { return this.props.status; }

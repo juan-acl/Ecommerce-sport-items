@@ -1,6 +1,7 @@
 export interface SupplierProps {
   id: string;
   name: string;
+  nit?: string;
   contactName: string;
   email: string;
   phone: string;
@@ -14,6 +15,7 @@ export class Supplier {
 
   get id(): string { return this.props.id; }
   get name(): string { return this.props.name; }
+  get nit(): string | undefined { return this.props.nit; }
   get contactName(): string { return this.props.contactName; }
   get email(): string { return this.props.email; }
   get phone(): string { return this.props.phone; }

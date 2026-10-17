@@ -86,6 +86,7 @@ export interface ShippingAddress {
 export interface Supplier {
   id: string;
   name: string;
+  nit?: string;
   contactName: string;
   email: string;
   phone: string;
@@ -108,6 +109,8 @@ export interface Purchase {
   id: string;
   supplierId: string;
   supplierName: string;
+  supplierNit?: string;
+  buyerNit?: string;
   items: PurchaseItem[];
   total: number;
   status: PurchaseStatus;

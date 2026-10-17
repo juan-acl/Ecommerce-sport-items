@@ -5,6 +5,7 @@ export class SupplierMapper {
     const props: SupplierProps = {
       id: item.id as string,
       name: item.name as string,
+      nit: item.nit as string | undefined,
       contactName: item.contactName as string,
       email: item.email as string,
       phone: item.phone as string,

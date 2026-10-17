@@ -16,8 +16,14 @@ export const PurchaseItemSchema = z.object({
 
 export type PurchaseItemDto = z.infer<typeof PurchaseItemSchema>;
 
+const nitSchema = z
+  .string().trim().toUpperCase()
+  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Formato: 12345678-9 o CF')
+  .optional();
+
 export const CreatePurchaseSchema = z.object({
   supplierId: z.string().min(1, 'El proveedor es requerido'),
+  buyerNit: nitSchema,
   items: z
     .array(PurchaseItemSchema)
     .min(1, 'La compra debe tener al menos un producto')

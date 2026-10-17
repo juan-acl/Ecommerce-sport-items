@@ -24,8 +24,17 @@ const itemSchema = z.object({
     .max(999999.99, 'El costo no puede exceder Q999,999.99'),
 });
 
+const nitSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Usa el formato 12345678-9 o CF')
+  .optional()
+  .or(z.literal(''));
+
 const purchaseSchema = z.object({
   supplierId: z.string().min(1, 'Selecciona un proveedor'),
+  buyerNit: nitSchema,
   items: z.array(itemSchema).min(1, 'Agrega al menos un producto'),
   notes: z
     .string()
@@ -56,14 +65,14 @@ export function PurchaseFormModal({ isOpen, onClose, suppliers, products }: Read
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(purchaseSchema),
-    defaultValues: { supplierId: '', items: [{ productId: '', productName: '', quantity: 1, unitCost: 0 }], notes: '' },
+    defaultValues: { supplierId: '', buyerNit: '', items: [{ productId: '', productName: '', quantity: 1, unitCost: 0 }], notes: '' },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
   useEffect(() => {
     if (isOpen) {
-      reset({ supplierId: '', items: [{ productId: '', productName: '', quantity: 1, unitCost: 0 }], notes: '' });
+      reset({ supplierId: '', buyerNit: '', items: [{ productId: '', productName: '', quantity: 1, unitCost: 0 }], notes: '' });
     }
   }, [isOpen, reset]);
 
@@ -116,6 +125,16 @@ export function PurchaseFormModal({ isOpen, onClose, suppliers, products }: Read
             <p className="text-[11px] font-medium text-error">{errors.supplierId.message}</p>
           )}
         </div>
+
+        <Input
+          {...register('buyerNit')}
+          id="buyerNit"
+          label="NIT del comprador (receptor)"
+          placeholder="Ej. 12345678-9 o CF"
+          maxLength={12}
+          hint="Número de Identificación Tributaria del comprador"
+          error={errors.buyerNit?.message}
+        />
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">

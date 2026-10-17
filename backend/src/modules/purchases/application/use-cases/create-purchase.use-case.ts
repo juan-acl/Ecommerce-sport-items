@@ -26,6 +26,8 @@ export class CreatePurchaseUseCase {
       id: uuid(),
       supplierId: supplier.id,
       supplierName: supplier.name,
+      supplierNit: supplier.nit,
+      buyerNit: dto.buyerNit,
       items,
       total,
       status: 'pending',

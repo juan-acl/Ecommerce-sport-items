@@ -103,6 +103,35 @@ export function PurchaseDetailModal({ isOpen, onClose, purchase }: Readonly<Prop
           </span>
         </div>
 
+        {/* Datos de facturación */}
+        <div className="rounded-lg border border-outline-variant overflow-hidden">
+          <div className="px-3 py-2 bg-surface-container-low border-b border-outline-variant">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
+              Datos de facturación
+            </p>
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-outline-variant">
+            <div className="px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant mb-1">
+                Emisor
+              </p>
+              <p className="text-[13px] font-medium text-on-surface">{purchase.supplierName}</p>
+              <p className="text-[12px] font-mono text-on-surface-variant mt-0.5">
+                NIT: <span className="text-on-surface">{purchase.supplierNit || 'CF'}</span>
+              </p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant mb-1">
+                Receptor
+              </p>
+              <p className="text-[13px] font-medium text-on-surface">SportsCart</p>
+              <p className="text-[12px] font-mono text-on-surface-variant mt-0.5">
+                NIT: <span className="text-on-surface">{purchase.buyerNit || 'CF'}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-3 text-[13px]">
           <div>
             <p className="text-on-surface-variant">Fecha de creación</p>
