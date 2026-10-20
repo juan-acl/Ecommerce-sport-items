@@ -10,7 +10,11 @@ export const CreateSupplierSchema = z.object({
     .string().trim()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(150, 'El nombre no puede exceder 150 caracteres')
-    .regex(/^[\p{L}\p{N}\s.,\-'&/()+]+$/u, 'El nombre contiene caracteres no permitidos'),
+    .regex(/^[\p{L}\p{N}\s.,\-'&/()+]+$/u, 'El nombre contiene caracteres no permitidos')
+    .refine(
+      (val) => /\p{L}/u.test(val),
+      'El nombre del proveedor debe contener al menos una letra',
+    ),
   nit: nitSchema,
   contactName: z
     .string().trim()

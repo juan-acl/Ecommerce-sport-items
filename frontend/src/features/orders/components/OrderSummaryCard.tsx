@@ -15,6 +15,19 @@ export function OrderSummaryCard({ order }: Readonly<OrderSummaryCardProps>) {
           <dt className="text-on-surface-variant">Subtotal</dt>
           <dd className="text-on-surface">{formatCurrency(order.subtotal)}</dd>
         </div>
+        {order.discountCode && (
+          <div className="flex justify-between text-body-md">
+            <dt className="text-on-surface-variant">
+              Código de descuento:{' '}
+              <span className="font-mono text-[11px] font-semibold text-secondary">
+                {order.discountCode}
+              </span>
+            </dt>
+            <dd className="text-secondary font-semibold">
+              -{formatCurrency(order.discountAmount ?? 0)}
+            </dd>
+          </div>
+        )}
         <div className="flex justify-between text-body-md">
           <dt className="text-on-surface-variant">Envío</dt>
           <dd className="text-secondary font-semibold">Gratis</dd>

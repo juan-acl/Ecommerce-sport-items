@@ -43,7 +43,8 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
   const isEditing = !!user;
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
-  const { data: roles = [], isLoading: rolesLoading, refetch: refetchRoles } = useGetRolesQuery();
+  const { data: rolesData, isLoading: rolesLoading, refetch: refetchRoles } = useGetRolesQuery();
+  const roles = rolesData ?? [];
 
   const {
     register,
@@ -57,15 +58,29 @@ export function UserFormModal({ isOpen, onClose, user }: Readonly<UserFormModalP
 
   const passwordValue = (watch('password' as keyof FormData) as string) ?? '';
 
+  // Fetch fresh roles and reset the form when the modal opens or the target user changes.
+  // `reset` and `refetchRoles` are stable refs — safe to omit from deps.
   useEffect(() => {
     if (!isOpen) return;
     refetchRoles();
     if (user) {
       reset({ name: user.name, email: user.email, role: user.role, password: '' });
     } else {
-      reset({ name: '', email: '', password: '', role: roles[0]?.name ?? 'client' });
+      reset({ name: '', email: '', password: '', role: '' });
     }
-  }, [isOpen, user, reset, roles, refetchRoles]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user]);
+
+  // Once roles arrive, fill in the default role for a new-user form.
+  // rolesData is a stable RTK Query reference — only changes when data actually updates.
+  useEffect(() => {
+    if (!isOpen || !!user || !rolesData?.length) return;
+    reset((prev) => ({
+      ...(prev as FormData),
+      role: (prev as Partial<FormData>).role || rolesData[0].name,
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rolesData]);
 
   const onSubmit = async (data: FormData) => {
     try {

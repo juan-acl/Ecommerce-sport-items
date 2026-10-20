@@ -13,6 +13,9 @@ import {
   ShoppingCart,
   Boxes,
   Bell,
+  Percent,
+  BarChart2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@shared/utils/cn";
 import { ROUTES } from "@shared/constants/routes";
@@ -119,6 +122,32 @@ const NAV_GROUPS: NavGroup[] = [
         path: ROUTES.ROLES,
         icon: Shield,
         module: "roles",
+        action: "view",
+      },
+    ],
+  },
+  {
+    label: "Analytics",
+    items: [
+      {
+        label: "Descuentos",
+        path: ROUTES.DISCOUNTS,
+        icon: Percent,
+        module: "discounts",
+        action: "view",
+      },
+      {
+        label: "Reportes",
+        path: ROUTES.REPORTS,
+        icon: BarChart2,
+        module: "reports",
+        action: "view",
+      },
+      {
+        label: "Auditoría",
+        path: ROUTES.AUDIT,
+        icon: ShieldCheck,
+        module: "audit",
         action: "view",
       },
     ],
@@ -237,7 +266,7 @@ export function Sidebar({
         </button>
         {!collapsed && (
           <p className="px-3 pt-1 text-[10px] tabular-nums text-outline select-none">
-            v2.0.0 · Sprint 2
+            v3.0.0 · Sprint 3
           </p>
         )}
       </div>

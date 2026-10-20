@@ -16,6 +16,16 @@ export interface CreatePurchaseRequest {
   notes?: string;
 }
 
+export interface PartialReceiveItemRequest {
+  productId: string;
+  receivedQuantity: number;
+}
+
+export interface PartialReceivePurchaseRequest {
+  id: string;
+  items: PartialReceiveItemRequest[];
+}
+
 type BackendPurchasesResponse = {
   items: Purchase[];
   count: number;
@@ -81,6 +91,16 @@ export const purchasesApi = createApi({
       transformResponse: (response: ApiSuccessResponse<Purchase>) => response.data,
       invalidatesTags: ['Purchases'],
     }),
+
+    partialReceivePurchase: builder.mutation<Purchase, PartialReceivePurchaseRequest>({
+      query: ({ id, items }) => ({
+        url: `/admin/purchases/${id}/partial-receive`,
+        method: 'PUT',
+        body: { items },
+      }),
+      transformResponse: (response: ApiSuccessResponse<Purchase>) => response.data,
+      invalidatesTags: ['Purchases'],
+    }),
   }),
 });
 
@@ -90,4 +110,5 @@ export const {
   useCreatePurchaseMutation,
   useReceivePurchaseMutation,
   useCancelPurchaseMutation,
+  usePartialReceivePurchaseMutation,
 } = purchasesApi;

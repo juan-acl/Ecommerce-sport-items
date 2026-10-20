@@ -34,6 +34,10 @@ const productSchema = z.object({
     .regex(
       /^[\p{L}\p{N}\s.,\-'/()+]+$/u,
       "Solo puede contener letras, números, espacios y signos básicos",
+    )
+    .refine(
+      (val) => /\p{L}/u.test(val),
+      "El nombre debe contener al menos una letra (ej: Zapatos Running, Talla 42)",
     ),
   category: z.enum(CATEGORY_VALUES, {
     errorMap: () => ({ message: "Selecciona una categoría válida" }),
@@ -57,9 +61,19 @@ const productSchema = z.object({
     .trim()
     .min(10, "La descripción debe tener al menos 10 caracteres")
     .max(1000, "La descripción no puede exceder 1000 caracteres")
-    .regex(/^[^<>{}@]+$/, "La descripción contiene caracteres no permitidos (@, <, >, etc.)"),
+    .regex(/^[^<>{}@]+$/, "La descripción contiene caracteres no permitidos (@, <, >, etc.)")
+    .refine(
+      (val) => /\p{L}/u.test(val),
+      "La descripción debe contener texto descriptivo, no solo números",
+    ),
   imageUrl: z.string().url("URL de imagen inválida").or(z.literal("")),
-});
+}).refine(
+  (data) => data.minStock <= data.stock,
+  {
+    message: "El stock mínimo no puede ser mayor al stock actual",
+    path: ["minStock"],
+  },
+);
 
 type ProductFormData = z.infer<typeof productSchema>;
 

@@ -1,0 +1,11 @@
+handler: src/handlers/admin-audit.handler
+description: Admin - Registros de auditoría
+events:
+  - http:
+      path: /v1/admin/audit
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/admin/audit/{proxy+}
+      method: ANY
+      cors: true

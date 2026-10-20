@@ -30,6 +30,10 @@ const supplierSchema = z.object({
     .regex(
       /^[\p{L}\p{N}\s.,\-'&/()+]+$/u,
       "Solo puede contener letras, números, espacios y signos básicos (.,'-&)",
+    )
+    .refine(
+      (val) => /\p{L}/u.test(val),
+      'El nombre del proveedor debe contener al menos una letra',
     ),
   nit: nitSchema,
   contactName: nameValidator,

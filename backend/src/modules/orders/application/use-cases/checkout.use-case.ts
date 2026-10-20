@@ -13,6 +13,16 @@ import { InventoryMovementRepository } from '@modules/inventory/domain/repositor
 import { InventoryMovement } from '@modules/inventory/domain/entities/inventory-movement.entity';
 import { CheckoutDto } from '../dtos/checkout.dto';
 
+interface MinimalDiscountRepo {
+  findByCode(code: string): Promise<{
+    id: string;
+    code: string;
+    isValid(total: number, categories?: string[]): boolean;
+    calculateDiscount(total: number): number;
+  } | null>;
+  incrementUsedCount(id: string): Promise<void>;
+}
+
 export interface CheckoutInput {
   userId: string;
   userEmail: string;
@@ -28,6 +38,7 @@ export class CheckoutUseCase {
     private readonly emailSender: EmailSenderPort,
     private readonly logger: LoggerPort,
     private readonly movementRepo: InventoryMovementRepository,
+    private readonly discountRepo: MinimalDiscountRepo | null = null,
   ) {}
 
   async execute(input: CheckoutInput) {
@@ -40,9 +51,11 @@ export class CheckoutUseCase {
     }
 
     const productIds = cart.getItems().map((i) => i.productId);
+    const cartCategories: string[] = [];
     for (const id of productIds) {
       const product = await this.productRepo.findById(id);
       if (!product) throw new ProductNotFoundException(id);
+      cartCategories.push(product.category);
     }
 
     const orderItems = cart.getItems().map(
@@ -56,21 +69,57 @@ export class CheckoutUseCase {
         }),
     );
 
+    const subtotal = orderItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+
+    let discountCode: string | undefined;
+    let discountAmount: number | undefined;
+    let appliedDiscount: { id: string; code: string; isValid(total: number, categories?: string[]): boolean; calculateDiscount(total: number): number } | null = null;
+
+    if (dto.discountCode && this.discountRepo) {
+      try {
+        const discount = await this.discountRepo.findByCode(dto.discountCode);
+        if (discount && discount.isValid(subtotal, cartCategories)) {
+          discountAmount = discount.calculateDiscount(subtotal);
+          discountCode = discount.code;
+          appliedDiscount = discount;
+          this.logger.info('Descuento aplicado', { code: discountCode, discountAmount });
+        } else {
+          this.logger.warn('Código de descuento inválido o inaplicable, continuando sin descuento', {
+            code: dto.discountCode,
+          });
+        }
+      } catch (err) {
+        this.logger.warn('Error al validar código de descuento, continuando sin descuento', {
+          code: dto.discountCode,
+          error: (err as Error).message,
+        });
+      }
+    }
+
+    const total = Math.max(0, subtotal - (discountAmount ?? 0));
+
     this.logger.info('Creando orden a partir del carrito', {
       userId,
       itemCount: orderItems.length,
-      total: orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),
+      subtotal,
+      discountAmount,
+      total,
       orderItems,
     });
 
-    const order = Order.createPaid({
+    const orderBaseProps = {
       id: uuid(),
       userId,
       userEmail,
       items: orderItems,
       shippingAddress: dto.shippingAddress ?? DEFAULT_SHIPPING_ADDRESS,
       createdAt: new Date().toISOString(),
-    });
+      discountCode,
+      discountAmount,
+      paymentMethod: dto.paymentMethod,
+    };
+
+    const order = Order.createPaid(orderBaseProps);
 
     await this.orderRepo.executeCheckout({
       order,
@@ -101,6 +150,17 @@ export class CheckoutUseCase {
       }
     } catch (err) {
       this.logger.error('Error registrando movimientos de venta', { orderId: order.id, error: (err as Error).message });
+    }
+
+    if (appliedDiscount && this.discountRepo) {
+      try {
+        await this.discountRepo.incrementUsedCount(appliedDiscount.id);
+      } catch (err) {
+        this.logger.error('Error incrementando contador de uso del descuento', {
+          discountId: appliedDiscount.id,
+          error: (err as Error).message,
+        });
+      }
     }
 
     this.logger.info('Enviando email de confirmación', {

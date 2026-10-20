@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@shared/utils/cn';
 
-type BadgeVariant = 'primary' | 'secondary' | 'outline' | 'success' | 'error';
+type BadgeVariant = 'primary' | 'secondary' | 'outline' | 'success' | 'error' | 'warning';
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -15,6 +15,7 @@ const variants: Record<BadgeVariant, string> = {
   outline: 'border border-outline-variant text-on-surface',
   success: 'bg-secondary-container text-on-secondary-container',
   error: 'bg-error-container text-on-error-container',
+  warning: 'bg-amber-100 text-amber-800',
 };
 
 export function Badge({ variant = 'primary', children, className }: Readonly<BadgeProps>) {

@@ -17,7 +17,7 @@ export interface OrderRepository {
 
   findById(orderId: string): Promise<Order | null>;
 
-  listAll(params: PaginationParams): Promise<PaginatedResult<Order>>;
+  listAll(params: PaginationParams & { status?: string }): Promise<PaginatedResult<Order>>;
 
   updateStatus(orderId: string, status: OrderStatus): Promise<void>;
 }

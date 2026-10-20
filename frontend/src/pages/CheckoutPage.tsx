@@ -8,10 +8,11 @@ import { ShippingForm } from '@features/orders/components/ShippingForm';
 import { PaymentMethod } from '@features/orders/components/PaymentMethod';
 import { ReviewOrder } from '@features/orders/components/ReviewOrder';
 import { CheckoutSummary } from '@features/orders/components/CheckoutSummary';
+import { DiscountCodeInput, type AppliedDiscount } from '@features/orders/components/DiscountCodeInput';
 import { OrderConfirmation } from '@features/orders/components/OrderConfirmation';
 import { ROUTES } from '@shared/constants/routes';
 import type { ShippingAddressFormData } from '@features/orders/api/schemas';
-import type { Order } from '@features/orders/types';
+import type { Order, PaymentMethodInfo } from '@features/orders/types';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -20,7 +21,9 @@ export function CheckoutPage() {
 
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressFormData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodInfo | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
 
   // Si llegan al checkout con carrito vacío, redirigir
   if (cart.items.length === 0 && !completedOrder) {
@@ -38,7 +41,8 @@ export function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handlePaymentContinue = () => {
+  const handlePaymentContinue = (data: PaymentMethodInfo) => {
+    setPaymentMethod(data);
     setCurrentStep('review');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -47,7 +51,11 @@ export function CheckoutPage() {
     if (!shippingAddress) return;
 
     try {
-      const order = await checkout({ shippingAddress }).unwrap();
+      const order = await checkout({
+        shippingAddress,
+        ...(appliedDiscount ? { discountCode: appliedDiscount.code } : {}),
+        ...(paymentMethod ? { paymentMethod } : {}),
+      }).unwrap();
       setCompletedOrder(order);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -81,34 +89,51 @@ export function CheckoutPage() {
       <CheckoutSteps currentStep={currentStep} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
-        <section>
+        <section className="space-y-6">
           {currentStep === 'shipping' && (
-            <ShippingForm
-              defaultValues={shippingAddress ?? undefined}
-              onSubmit={handleShippingSubmit}
-              onBack={() => navigate(ROUTES.CART)}
-            />
+            <>
+              <ShippingForm
+                defaultValues={shippingAddress ?? undefined}
+                onSubmit={handleShippingSubmit}
+                onBack={() => navigate(ROUTES.CART)}
+              />
+              <DiscountCodeInput
+                orderTotal={cart.total}
+                appliedDiscount={appliedDiscount}
+                onDiscountApplied={setAppliedDiscount}
+              />
+            </>
           )}
 
           {currentStep === 'payment' && (
-            <PaymentMethod
-              onContinue={handlePaymentContinue}
-              onBack={() => setCurrentStep('shipping')}
-            />
+            <>
+              <PaymentMethod
+                onContinue={handlePaymentContinue}
+                onBack={() => setCurrentStep('shipping')}
+              />
+
+              <DiscountCodeInput
+                orderTotal={cart.total}
+                appliedDiscount={appliedDiscount}
+                onDiscountApplied={setAppliedDiscount}
+              />
+            </>
           )}
 
           {currentStep === 'review' && shippingAddress && (
             <ReviewOrder
               cart={cart}
               shippingAddress={shippingAddress}
+              paymentMethod={paymentMethod}
               onPlaceOrder={handlePlaceOrder}
               onBack={() => setCurrentStep('payment')}
               isProcessing={isProcessing}
+              appliedDiscount={appliedDiscount}
             />
           )}
         </section>
 
-        <CheckoutSummary cart={cart} />
+        <CheckoutSummary cart={cart} appliedDiscount={appliedDiscount} />
       </div>
     </div>
   );

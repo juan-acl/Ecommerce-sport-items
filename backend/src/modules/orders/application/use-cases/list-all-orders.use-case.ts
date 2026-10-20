@@ -6,7 +6,7 @@ export class ListAllOrdersUseCase {
   constructor(private readonly orderRepo: OrderRepository) {}
 
   async execute(
-    params: PaginationParams,
+    params: PaginationParams & { status?: string },
   ): Promise<{ orders: ReturnType<Order['toJSON']>[]; nextCursor?: string; count: number }> {
     const result = await this.orderRepo.listAll(params);
     return {

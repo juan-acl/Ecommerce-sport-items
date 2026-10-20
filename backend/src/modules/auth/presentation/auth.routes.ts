@@ -12,6 +12,7 @@ export function buildAuthRouter(controller: AuthController): Router {
   v1.post('/auth/register', validate(registerSchema), controller.register);
   v1.post('/auth/login', validate(loginSchema), controller.login);
   v1.post('/auth/logout', authMiddleware, controller.logout);
+  v1.get('/auth/me', authMiddleware, controller.me);
 
   router.use('/v1', v1);
   return router;

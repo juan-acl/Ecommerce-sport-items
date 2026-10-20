@@ -2,24 +2,37 @@ import { useState } from 'react';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import type { Cart } from '@features/cart/types';
-import type { ShippingAddress } from '../types';
+import type { ShippingAddress, PaymentMethodInfo } from '../types';
+import type { AppliedDiscount } from './DiscountCodeInput';
+
+const CARD_LABELS: Record<PaymentMethodInfo['cardType'], string> = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  amex: 'American Express',
+  other: 'Tarjeta',
+};
 
 interface ReviewOrderProps {
   cart: Cart;
   shippingAddress: ShippingAddress;
+  paymentMethod?: PaymentMethodInfo | null;
   onPlaceOrder: () => void;
   onBack: () => void;
   isProcessing: boolean;
+  appliedDiscount?: AppliedDiscount | null;
 }
 
 export function ReviewOrder({
   cart,
   shippingAddress,
+  paymentMethod,
   onPlaceOrder,
   onBack,
   isProcessing,
+  appliedDiscount,
 }: ReviewOrderProps) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const finalTotal = appliedDiscount ? appliedDiscount.finalTotal : cart.total;
 
   return (
     <div className="space-y-6">
@@ -44,6 +57,26 @@ export function ReviewOrder({
             </div>
           </div>
         </section>
+
+        {/* Método de pago */}
+        {paymentMethod && (
+          <section className="mb-6 pb-6 border-b border-outline-variant">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">credit_card</span>
+              <div className="flex-1">
+                <h3 className="text-body-lg font-semibold text-on-surface mb-0.5">
+                  Método de pago
+                </h3>
+                <p className="text-body-md text-on-surface-variant">
+                  {CARD_LABELS[paymentMethod.cardType]} •••• {paymentMethod.last4}
+                  <span className="ml-3 text-label-md">
+                    Vence {paymentMethod.expiryMonth}/{paymentMethod.expiryYear}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Productos */}
         <section className="mb-6">
@@ -72,6 +105,35 @@ export function ReviewOrder({
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Resumen de precios */}
+        <section className="pt-4 border-t border-outline-variant">
+          <dl className="space-y-2">
+            <div className="flex justify-between text-body-md">
+              <dt className="text-on-surface-variant">Subtotal</dt>
+              <dd className="text-on-surface">{formatCurrency(cart.total)}</dd>
+            </div>
+            {appliedDiscount && (
+              <div className="flex justify-between text-body-md">
+                <dt className="text-on-surface-variant">
+                  Descuento{' '}
+                  <span className="font-mono text-[11px] font-semibold text-secondary">
+                    ({appliedDiscount.code})
+                  </span>
+                </dt>
+                <dd className="text-secondary font-semibold">
+                  -{formatCurrency(appliedDiscount.discountAmount)}
+                </dd>
+              </div>
+            )}
+            <div className="flex justify-between items-baseline pt-2 border-t border-outline-variant">
+              <dt className="text-body-lg font-semibold text-on-surface">Total</dt>
+              <dd className="text-headline-sm text-primary font-bold">
+                {formatCurrency(finalTotal)}
+              </dd>
+            </div>
+          </dl>
         </section>
       </div>
 
@@ -113,7 +175,7 @@ export function ReviewOrder({
           {!isProcessing && (
             <>
               <span className="material-symbols-outlined">lock</span>
-              Confirmar y pagar {formatCurrency(cart.total)}
+              Confirmar y pagar {formatCurrency(finalTotal)}
             </>
           )}
         </Button>

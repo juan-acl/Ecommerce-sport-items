@@ -12,6 +12,7 @@ import { JwtTokenService } from '@modules/auth/infrastructure/jwt-token.service'
 import { RegisterUseCase } from '@modules/auth/application/use-cases/register.use-case';
 import { LoginUseCase } from '@modules/auth/application/use-cases/login.use-case';
 import { LogoutUseCase } from '@modules/auth/application/use-cases/logout.use-case';
+import { GetMeUseCase } from '@modules/auth/application/use-cases/get-me.use-case';
 import { AuthController } from '@modules/auth/presentation/auth.controller';
 import { DynamoSessionRepository } from '@modules/auth/infrastructure/persistence/dynamo-session.repository';
 
@@ -46,6 +47,7 @@ import { s3Client, BUCKET_NAME } from '../s3/s3.client';
 
 // Admin Users
 import { ListUsersUseCase } from '@modules/users/application/use-cases/list-users.use-case';
+import { GetUserByIdUseCase } from '@modules/users/application/use-cases/get-user-by-id.use-case';
 import { CreateUserAdminUseCase } from '@modules/users/application/use-cases/create-user-admin.use-case';
 import { UpdateUserAdminUseCase } from '@modules/users/application/use-cases/update-user-admin.use-case';
 import { DeactivateUserUseCase } from '@modules/users/application/use-cases/deactivate-user.use-case';
@@ -54,7 +56,11 @@ import { AdminUsersController } from '@modules/users/presentation/admin-users.co
 // Admin Orders
 import { ListAllOrdersUseCase } from '@modules/orders/application/use-cases/list-all-orders.use-case';
 import { UpdateOrderStatusUseCase } from '@modules/orders/application/use-cases/update-order-status.use-case';
+import { ApproveOrderUseCase } from '@modules/orders/application/use-cases/approve-order.use-case';
 import { AdminOrdersController } from '@modules/orders/presentation/admin-orders.controller';
+
+// Discounts
+import { DynamoDiscountRepository } from '@modules/discounts/infrastructure/persistence/dynamo-discount.repository';
 
 // Suppliers
 import { DynamoSupplierRepository } from '@modules/suppliers/infrastructure/persistence/dynamo-supplier.repository';
@@ -77,6 +83,7 @@ import { ListPurchasesUseCase } from '@modules/purchases/application/use-cases/l
 import { GetPurchaseUseCase } from '@modules/purchases/application/use-cases/get-purchase.use-case';
 import { CreatePurchaseUseCase } from '@modules/purchases/application/use-cases/create-purchase.use-case';
 import { ReceivePurchaseUseCase } from '@modules/purchases/application/use-cases/receive-purchase.use-case';
+import { PartialReceivePurchaseUseCase } from '@modules/purchases/application/use-cases/partial-receive-purchase.use-case';
 import { CancelPurchaseUseCase } from '@modules/purchases/application/use-cases/cancel-purchase.use-case';
 import { PurchasesController } from '@modules/purchases/presentation/purchases.controller';
 
@@ -87,6 +94,11 @@ import { GetRoleUseCase } from '@modules/roles/application/use-cases/get-role.us
 import { CreateRoleUseCase } from '@modules/roles/application/use-cases/create-role.use-case';
 import { UpdateRoleUseCase } from '@modules/roles/application/use-cases/update-role.use-case';
 import { RolesController } from '@modules/roles/presentation/roles.controller';
+
+// Audit
+import { DynamoAuditLogRepository } from '@modules/audit/infrastructure/persistence/dynamo-audit-log.repository';
+import { CreateAuditLogUseCase } from '@modules/audit/application/use-cases/create-audit-log.use-case';
+import { ListAuditLogsUseCase } from '@modules/audit/application/use-cases/list-audit-logs.use-case';
 
 // 7 days — sessions persist until explicit logout or TTL expiry in DynamoDB
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -108,6 +120,7 @@ export interface AppContainer {
   registerUseCase: RegisterUseCase;
   loginUseCase: LoginUseCase;
   logoutUseCase: LogoutUseCase;
+  getMeUseCase: GetMeUseCase;
   authController: AuthController;
 
   // Products
@@ -142,6 +155,7 @@ export interface AppContainer {
 
   // Admin Users
   listUsersUseCase: ListUsersUseCase;
+  getUserByIdUseCase: GetUserByIdUseCase;
   createUserAdminUseCase: CreateUserAdminUseCase;
   updateUserAdminUseCase: UpdateUserAdminUseCase;
   deactivateUserUseCase: DeactivateUserUseCase;
@@ -150,7 +164,11 @@ export interface AppContainer {
   // Admin Orders
   listAllOrdersUseCase: ListAllOrdersUseCase;
   updateOrderStatusUseCase: UpdateOrderStatusUseCase;
+  approveOrderUseCase: ApproveOrderUseCase;
   adminOrdersController: AdminOrdersController;
+
+  // Discounts
+  discountRepository: DynamoDiscountRepository;
 
   // Suppliers
   supplierRepository: DynamoSupplierRepository;
@@ -173,6 +191,7 @@ export interface AppContainer {
   getPurchaseUseCase: GetPurchaseUseCase;
   createPurchaseUseCase: CreatePurchaseUseCase;
   receivePurchaseUseCase: ReceivePurchaseUseCase;
+  partialReceivePurchaseUseCase: PartialReceivePurchaseUseCase;
   cancelPurchaseUseCase: CancelPurchaseUseCase;
   purchasesController: PurchasesController;
 
@@ -183,6 +202,11 @@ export interface AppContainer {
   createRoleUseCase: CreateRoleUseCase;
   updateRoleUseCase: UpdateRoleUseCase;
   rolesController: RolesController;
+
+  // Audit
+  auditLogRepository: DynamoAuditLogRepository;
+  createAuditLogUseCase: CreateAuditLogUseCase;
+  listAuditLogsUseCase: ListAuditLogsUseCase;
 }
 
 let container: AwilixContainer<AppContainer> | null = null;
@@ -238,9 +262,12 @@ export function buildContainer(): AwilixContainer<AppContainer> {
     logoutUseCase: asFunction(
       ({ sessionRepository }) => new LogoutUseCase(sessionRepository),
     ).singleton(),
+    getMeUseCase: asFunction(
+      ({ userRepository, roleRepository }) => new GetMeUseCase(userRepository, roleRepository),
+    ).singleton(),
     authController: asFunction(
-      ({ registerUseCase, loginUseCase, logoutUseCase }) =>
-        new AuthController(registerUseCase, loginUseCase, logoutUseCase),
+      ({ registerUseCase, loginUseCase, logoutUseCase, getMeUseCase }) =>
+        new AuthController(registerUseCase, loginUseCase, logoutUseCase, getMeUseCase),
     ).singleton(),
 
     // Products
@@ -296,8 +323,13 @@ export function buildContainer(): AwilixContainer<AppContainer> {
       ({ dynamoClient, tableName }) => new DynamoOrderRepository(dynamoClient, tableName),
     ).singleton(),
 
+    // Discounts (needed by checkout)
+    discountRepository: asFunction(
+      ({ dynamoClient, tableName }) => new DynamoDiscountRepository(dynamoClient, tableName),
+    ).singleton(),
+
     checkoutUseCase: asFunction(
-      ({ orderRepository, cartRepository, productRepository, emailSender, appLogger, movementRepository }) =>
+      ({ orderRepository, cartRepository, productRepository, emailSender, appLogger, movementRepository, discountRepository }) =>
         new CheckoutUseCase(
           orderRepository,
           cartRepository,
@@ -305,6 +337,7 @@ export function buildContainer(): AwilixContainer<AppContainer> {
           emailSender,
           appLogger,
           movementRepository,
+          discountRepository,
         ),
     ).singleton(),
 
@@ -342,6 +375,7 @@ export function buildContainer(): AwilixContainer<AppContainer> {
         updateProductUseCase,
         deleteProductUseCase,
         generateProductUploadUrlUseCase,
+        createAuditLogUseCase,
       }) =>
         new AdminProductsController(
           listProductsUseCase,
@@ -350,12 +384,16 @@ export function buildContainer(): AwilixContainer<AppContainer> {
           updateProductUseCase,
           deleteProductUseCase,
           generateProductUploadUrlUseCase,
+          createAuditLogUseCase,
         ),
     ).singleton(),
 
     // Admin Users
     listUsersUseCase: asFunction(
       ({ userRepository }) => new ListUsersUseCase(userRepository),
+    ).singleton(),
+    getUserByIdUseCase: asFunction(
+      ({ userRepository }) => new GetUserByIdUseCase(userRepository),
     ).singleton(),
     createUserAdminUseCase: asFunction(
       ({ userRepository, passwordHasher }) =>
@@ -371,15 +409,19 @@ export function buildContainer(): AwilixContainer<AppContainer> {
     adminUsersController: asFunction(
       ({
         listUsersUseCase,
+        getUserByIdUseCase,
         createUserAdminUseCase,
         updateUserAdminUseCase,
         deactivateUserUseCase,
+        createAuditLogUseCase,
       }) =>
         new AdminUsersController(
           listUsersUseCase,
+          getUserByIdUseCase,
           createUserAdminUseCase,
           updateUserAdminUseCase,
           deactivateUserUseCase,
+          createAuditLogUseCase,
         ),
     ).singleton(),
 
@@ -388,12 +430,16 @@ export function buildContainer(): AwilixContainer<AppContainer> {
       ({ orderRepository }) => new ListAllOrdersUseCase(orderRepository),
     ).singleton(),
     updateOrderStatusUseCase: asFunction(
+      ({ orderRepository, productRepository, movementRepository, emailSender, userRepository }) =>
+        new UpdateOrderStatusUseCase(orderRepository, productRepository, movementRepository, emailSender, userRepository),
+    ).singleton(),
+    approveOrderUseCase: asFunction(
       ({ orderRepository, productRepository, movementRepository }) =>
-        new UpdateOrderStatusUseCase(orderRepository, productRepository, movementRepository),
+        new ApproveOrderUseCase(orderRepository, productRepository, movementRepository),
     ).singleton(),
     adminOrdersController: asFunction(
-      ({ listAllOrdersUseCase, updateOrderStatusUseCase }) =>
-        new AdminOrdersController(listAllOrdersUseCase, updateOrderStatusUseCase),
+      ({ listAllOrdersUseCase, updateOrderStatusUseCase, approveOrderUseCase, getOrderUseCase, createAuditLogUseCase }) =>
+        new AdminOrdersController(listAllOrdersUseCase, updateOrderStatusUseCase, approveOrderUseCase, getOrderUseCase, createAuditLogUseCase),
     ).singleton(),
 
     // Suppliers
@@ -463,14 +509,19 @@ export function buildContainer(): AwilixContainer<AppContainer> {
       ({ purchaseRepository, productRepository, movementRepository }) =>
         new CancelPurchaseUseCase(purchaseRepository, productRepository, movementRepository),
     ).singleton(),
+    partialReceivePurchaseUseCase: asFunction(
+      ({ purchaseRepository, productRepository, movementRepository }) =>
+        new PartialReceivePurchaseUseCase(purchaseRepository, productRepository, movementRepository),
+    ).singleton(),
     purchasesController: asFunction(
-      ({ listPurchasesUseCase, getPurchaseUseCase, createPurchaseUseCase, receivePurchaseUseCase, cancelPurchaseUseCase }) =>
+      ({ listPurchasesUseCase, getPurchaseUseCase, createPurchaseUseCase, receivePurchaseUseCase, cancelPurchaseUseCase, partialReceivePurchaseUseCase }) =>
         new PurchasesController(
           listPurchasesUseCase,
           getPurchaseUseCase,
           createPurchaseUseCase,
           receivePurchaseUseCase,
           cancelPurchaseUseCase,
+          partialReceivePurchaseUseCase,
         ),
     ).singleton(),
 
@@ -493,6 +544,17 @@ export function buildContainer(): AwilixContainer<AppContainer> {
     rolesController: asFunction(
       ({ listRolesUseCase, getRoleUseCase, createRoleUseCase, updateRoleUseCase }) =>
         new RolesController(listRolesUseCase, getRoleUseCase, createRoleUseCase, updateRoleUseCase),
+    ).singleton(),
+
+    // Audit
+    auditLogRepository: asFunction(
+      ({ dynamoClient, tableName }) => new DynamoAuditLogRepository(dynamoClient, tableName),
+    ).singleton(),
+    createAuditLogUseCase: asFunction(
+      ({ auditLogRepository }) => new CreateAuditLogUseCase(auditLogRepository),
+    ).singleton(),
+    listAuditLogsUseCase: asFunction(
+      ({ auditLogRepository }) => new ListAuditLogsUseCase(auditLogRepository),
     ).singleton(),
   });
 

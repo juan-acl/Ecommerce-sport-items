@@ -8,6 +8,7 @@ import { SessionRepository } from '@modules/auth/domain/repositories/session.rep
 import { Session } from '@modules/auth/domain/entities/session.entity';
 import { RoleRepository } from '@modules/roles/domain/repositories/role.repository';
 import { ModulePermission } from '@modules/roles/domain/entities/role.entity';
+import { isFullAccess } from '@shared/domain/constants/system-modules';
 import { LoginDto } from '../dtos/login.dto';
 
 export interface LoginMeta {
@@ -62,7 +63,8 @@ export class LoginUseCase {
     const token = this.tokenService.sign({ sub: sessionId });
 
     const role = await this.roleRepo.findByName(user.role);
-    const permissions: ModulePermission[] = role?.permissions ?? [];
+    const raw: ModulePermission[] = role?.permissions ?? [];
+    const permissions = isFullAccess(raw) ? [] : raw;
 
     return { user: user.toJSON(), token, permissions };
   }

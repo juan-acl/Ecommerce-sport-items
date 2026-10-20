@@ -21,3 +21,7 @@ functions:
   adminSuppliers: ${file(serverless/functions/admin-suppliers.yml)}
   adminPurchases: ${file(serverless/functions/admin-purchases.yml)}
   adminInventory: ${file(serverless/functions/admin-inventory.yml)}
+  discounts: ${file(serverless/functions/discounts.yml)}
+  adminDiscounts: ${file(serverless/functions/admin-discounts.yml)}
+  adminReports: ${file(serverless/functions/admin-reports.yml)}
+  adminAudit: ${file(serverless/functions/admin-audit.yml)}

@@ -1,4 +1,4 @@
-import { Order, OrderProps } from '@modules/orders/domain/entities/order.entity';
+import { Order, OrderProps, PaymentMethodInfo } from '@modules/orders/domain/entities/order.entity';
 import { OrderItem } from '@modules/orders/domain/entities/order-item.entity';
 import { OrderStatus } from '@modules/orders/domain/value-objects/order-status.vo';
 import { ShippingAddress } from '@modules/orders/domain/value-objects/shipping-address.vo';
@@ -17,9 +17,12 @@ export class OrderMapper {
       userEmail: order.userEmail,
       items: order.items.map((i) => i.toJSON()),
       subtotal: order.subtotal,
+      discountCode: order.discountCode,
+      discountAmount: order.discountAmount,
       total: order.total,
       status: order.status,
       shippingAddress: order.shippingAddress,
+      paymentMethod: order.paymentMethod,
       createdAt: order.createdAt,
     };
   }
@@ -52,6 +55,9 @@ export class OrderMapper {
       status: item.status as OrderStatus,
       shippingAddress: item.shippingAddress as ShippingAddress,
       createdAt: item.createdAt as string,
+      discountCode: item.discountCode as string | undefined,
+      discountAmount: item.discountAmount as number | undefined,
+      paymentMethod: item.paymentMethod as PaymentMethodInfo | undefined,
     };
 
     return new Order(props);

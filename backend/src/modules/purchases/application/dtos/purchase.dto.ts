@@ -36,3 +36,20 @@ export const CreatePurchaseSchema = z.object({
 });
 
 export type CreatePurchaseDto = z.infer<typeof CreatePurchaseSchema>;
+
+export const PartialReceiveItemSchema = z.object({
+  productId: z.string().min(1, 'El ID del producto es requerido'),
+  receivedQuantity: z
+    .number()
+    .int('La cantidad debe ser un número entero')
+    .min(0, 'La cantidad no puede ser negativa')
+    .max(9999, 'La cantidad no puede exceder 9,999'),
+});
+
+export const PartialReceivePurchaseSchema = z.object({
+  items: z
+    .array(PartialReceiveItemSchema)
+    .min(1, 'Debe indicar al menos un producto'),
+});
+
+export type PartialReceivePurchaseDto = z.infer<typeof PartialReceivePurchaseSchema>;

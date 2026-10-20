@@ -1,11 +1,14 @@
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import type { Cart } from '@features/cart/types';
+import type { AppliedDiscount } from './DiscountCodeInput';
 
 interface CheckoutSummaryProps {
   cart: Cart;
+  appliedDiscount?: AppliedDiscount | null;
 }
 
-export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
+export function CheckoutSummary({ cart, appliedDiscount }: CheckoutSummaryProps) {
+  const finalTotal = appliedDiscount ? appliedDiscount.finalTotal : cart.total;
   return (
     <aside className="bg-surface-container-low rounded-xl p-6 shadow-card sticky top-24 self-start">
       <h2 className="text-headline-sm text-on-surface mb-6">Resumen del pedido</h2>
@@ -45,6 +48,19 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
           <dt className="text-on-surface-variant">Subtotal</dt>
           <dd className="text-on-surface">{formatCurrency(cart.total)}</dd>
         </div>
+        {appliedDiscount && (
+          <div className="flex justify-between text-body-md">
+            <dt className="text-on-surface-variant">
+              Descuento{' '}
+              <span className="font-mono text-[11px] font-semibold text-secondary">
+                ({appliedDiscount.code})
+              </span>
+            </dt>
+            <dd className="text-secondary font-semibold">
+              -{formatCurrency(appliedDiscount.discountAmount)}
+            </dd>
+          </div>
+        )}
         <div className="flex justify-between text-body-md">
           <dt className="text-on-surface-variant">Envío</dt>
           <dd className="text-secondary font-semibold">A calcular</dd>
@@ -54,7 +70,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
       <div className="border-t border-outline-variant pt-4">
         <div className="flex justify-between items-baseline">
           <span className="text-headline-sm text-on-surface">Total</span>
-          <span className="text-headline-md text-primary">{formatCurrency(cart.total)}</span>
+          <span className="text-headline-md text-primary">{formatCurrency(finalTotal)}</span>
         </div>
       </div>
 

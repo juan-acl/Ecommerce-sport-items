@@ -3,6 +3,7 @@ import { ListPurchasesUseCase } from '@modules/purchases/application/use-cases/l
 import { GetPurchaseUseCase } from '@modules/purchases/application/use-cases/get-purchase.use-case';
 import { CreatePurchaseUseCase } from '@modules/purchases/application/use-cases/create-purchase.use-case';
 import { ReceivePurchaseUseCase } from '@modules/purchases/application/use-cases/receive-purchase.use-case';
+import { PartialReceivePurchaseUseCase } from '@modules/purchases/application/use-cases/partial-receive-purchase.use-case';
 import { CancelPurchaseUseCase } from '@modules/purchases/application/use-cases/cancel-purchase.use-case';
 import { ApiResponder } from '@shared/infrastructure/http/response.builder';
 
@@ -13,6 +14,7 @@ export class PurchasesController {
     private readonly createPurchaseUseCase: CreatePurchaseUseCase,
     private readonly receivePurchaseUseCase: ReceivePurchaseUseCase,
     private readonly cancelPurchaseUseCase: CancelPurchaseUseCase,
+    private readonly partialReceivePurchaseUseCase: PartialReceivePurchaseUseCase,
   ) {}
 
   list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -51,6 +53,16 @@ export class PurchasesController {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const purchase = await this.receivePurchaseUseCase.execute(id ?? '');
+      ApiResponder.ok(req, res, purchase);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  partialReceive = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const purchase = await this.partialReceivePurchaseUseCase.execute(id ?? '', req.body.items);
       ApiResponder.ok(req, res, purchase);
     } catch (err) {
       next(err);

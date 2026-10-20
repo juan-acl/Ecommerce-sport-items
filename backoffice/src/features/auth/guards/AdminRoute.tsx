@@ -1,12 +1,14 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ShieldOff } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@app/hooks';
 import {
   logout,
+  updatePermissions,
   selectIsAuthenticated,
   selectHasBackofficeAccess,
 } from '@features/auth/store/authSlice';
+import { useGetMeQuery } from '@features/auth/api/authApi';
 import { ROUTES } from '@shared/constants/routes';
 import { Button } from '@shared/components/ui/Button';
 
@@ -19,6 +21,17 @@ export function AdminRoute({ children }: Readonly<AdminRouteProps>) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const hasAccess = useAppSelector(selectHasBackofficeAccess);
   const navigate = useNavigate();
+
+  const { data: meData } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  });
+
+  useEffect(() => {
+    if (meData) {
+      dispatch(updatePermissions(meData.permissions));
+    }
+  }, [meData, dispatch]);
 
   const handleBackToLogin = () => {
     dispatch(logout());

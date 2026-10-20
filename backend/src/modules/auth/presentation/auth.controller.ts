@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { RegisterUseCase } from '@modules/auth/application/use-cases/register.use-case';
 import { LoginUseCase } from '@modules/auth/application/use-cases/login.use-case';
 import { LogoutUseCase } from '@modules/auth/application/use-cases/logout.use-case';
+import { GetMeUseCase } from '@modules/auth/application/use-cases/get-me.use-case';
 import { RegisterDto } from '@modules/auth/application/dtos/register.dto';
 import { LoginDto } from '@modules/auth/application/dtos/login.dto';
 import { ApiResponder } from '@shared/infrastructure/http/response.builder';
@@ -12,6 +13,7 @@ export class AuthController {
     private readonly registerUseCase: RegisterUseCase,
     private readonly loginUseCase: LoginUseCase,
     private readonly logoutUseCase: LogoutUseCase,
+    private readonly getMeUseCase: GetMeUseCase,
   ) {}
 
   register = async (
@@ -48,6 +50,15 @@ export class AuthController {
         await this.logoutUseCase.execute(req.sessionId);
       }
       ApiResponder.noContent(res);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  me = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.getMeUseCase.execute(req.user!.id);
+      ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);
     }

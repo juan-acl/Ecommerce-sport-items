@@ -1,0 +1,11 @@
+handler: src/handlers/discounts.handler
+description: Validar códigos de descuento (usuario)
+events:
+  - http:
+      path: /v1/discounts/validate
+      method: ANY
+      cors: true
+  - http:
+      path: /v1/discounts/{proxy+}
+      method: ANY
+      cors: true

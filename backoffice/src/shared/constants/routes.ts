@@ -10,5 +10,8 @@ export const ROUTES = {
   PURCHASES: '/purchases',
   INVENTORY: '/inventory',
   ALERTS: '/alerts',
+  DISCOUNTS: '/discounts',
+  REPORTS: '/reports',
+  AUDIT: '/audit',
   NOT_FOUND: '*',
 } as const;

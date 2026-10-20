@@ -33,9 +33,11 @@ export interface Order {
   subtotal: number;
   total: number;
   totalQuantity: number;
-  status: 'pending' | 'paid' | 'shipped' | 'cancelled';
+  status: 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   shippingAddress: ShippingAddress;
   createdAt: string;
+  discountCode?: string;
+  discountAmount?: number;
 }
 
 export interface ShippingAddress {

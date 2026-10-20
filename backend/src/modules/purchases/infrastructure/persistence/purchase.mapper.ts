@@ -1,4 +1,4 @@
-import { Purchase, PurchaseProps, PurchaseItem, PurchaseStatus } from '@modules/purchases/domain/entities/purchase.entity';
+import { Purchase, PurchaseProps, PurchaseItem, PurchaseStatus, ReceivedItem } from '@modules/purchases/domain/entities/purchase.entity';
 
 export class PurchaseMapper {
   static toDomain(item: Record<string, unknown>): Purchase {
@@ -14,6 +14,7 @@ export class PurchaseMapper {
       notes: item.notes as string | undefined,
       createdAt: item.createdAt as string,
       receivedAt: item.receivedAt as string | undefined,
+      receivedItems: item.receivedItems as ReceivedItem[] | undefined,
     };
     return new Purchase(props);
   }

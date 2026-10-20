@@ -7,16 +7,17 @@ interface OrderStatusBadgeProps {
 
 const STATUS_CONFIG: Record<
   OrderStatus,
-  { label: string; variant: 'primary' | 'success' | 'error' | 'outline'; icon: string }
+  { label: string; variant: 'primary' | 'success' | 'error' | 'outline' | 'warning'; icon: string }
 > = {
-  pending: { label: 'Pendiente', variant: 'outline', icon: 'schedule' },
-  paid: { label: 'Pagado', variant: 'success', icon: 'check_circle' },
-  shipped: { label: 'En tránsito', variant: 'success', icon: 'local_shipping' },
-  cancelled: { label: 'Cancelado', variant: 'error', icon: 'cancel' },
+  paid:       { label: 'Confirmado',  variant: 'success', icon: 'check_circle' },
+  processing: { label: 'En proceso',  variant: 'warning', icon: 'inventory_2' },
+  shipped:    { label: 'En tránsito', variant: 'primary', icon: 'local_shipping' },
+  delivered:  { label: 'Entregado',   variant: 'success', icon: 'home' },
+  cancelled:  { label: 'Cancelado',   variant: 'error',   icon: 'cancel' },
 };
 
 export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
-  const config = STATUS_CONFIG[status];
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG['paid'];
 
   return (
     <Badge variant={config.variant}>

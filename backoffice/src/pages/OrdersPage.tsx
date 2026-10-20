@@ -2,15 +2,27 @@ import { ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { useGetOrdersQuery } from '@features/orders/api/ordersApi';
 import { OrdersTable } from '@features/orders/components/OrdersTable';
+import type { OrderStatus } from '@shared/types/common';
 
 const LIMIT = 20;
 
 export function OrdersPage() {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const { data, isLoading, isFetching } = useGetOrdersQuery({ limit: LIMIT, cursor });
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
+
+  const { data, isLoading, isFetching } = useGetOrdersQuery({
+    limit: LIMIT,
+    cursor,
+    status: statusFilter || undefined,
+  });
 
   const orders = data?.items ?? [];
   const hasMore = !!data?.nextCursor;
+
+  const handleStatusFilterChange = (status: OrderStatus | '') => {
+    setStatusFilter(status);
+    setCursor(undefined);
+  };
 
   return (
     <div className="space-y-6">
@@ -29,6 +41,8 @@ export function OrdersPage() {
       <OrdersTable
         orders={orders}
         isLoading={isLoading}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
         serverPagination={{
           hasMore,
           onLoadMore: () => setCursor(data?.nextCursor),

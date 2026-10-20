@@ -14,6 +14,9 @@ import { SuppliersPage } from "@pages/SuppliersPage";
 import { PurchasesPage } from "@pages/PurchasesPage";
 import { InventoryPage } from "@pages/InventoryPage";
 import { AlertsPage } from "@pages/AlertsPage";
+import { DiscountsPage } from "@pages/DiscountsPage";
+import { ReportsPage } from "@pages/ReportsPage";
+import { AuditPage } from "@pages/AuditPage";
 import { NotFoundPage } from "@pages/NotFoundPage";
 import { ROUTES } from "@shared/constants/routes";
 
@@ -111,6 +114,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute module="alerts">
             <AlertsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.DISCOUNTS,
+        element: (
+          <ProtectedRoute module="discounts">
+            <DiscountsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.REPORTS,
+        element: (
+          <ProtectedRoute module="reports">
+            <ReportsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.AUDIT,
+        element: (
+          <ProtectedRoute module="audit">
+            <AuditPage />
           </ProtectedRoute>
         ),
       },

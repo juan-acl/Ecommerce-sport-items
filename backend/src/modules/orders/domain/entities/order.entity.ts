@@ -2,6 +2,14 @@ import { OrderItem } from './order-item.entity';
 import { OrderStatus, ORDER_STATUS } from '../value-objects/order-status.vo';
 import { ShippingAddress } from '../value-objects/shipping-address.vo';
 
+export interface PaymentMethodInfo {
+  cardType: 'visa' | 'mastercard' | 'amex' | 'other';
+  last4: string;
+  cardholderName: string;
+  expiryMonth: string;
+  expiryYear: string;
+}
+
 export interface OrderProps {
   id: string;
   userId: string;
@@ -10,6 +18,9 @@ export interface OrderProps {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   createdAt: string;
+  discountCode?: string;
+  discountAmount?: number;
+  paymentMethod?: PaymentMethodInfo;
 }
 
 export class Order {
@@ -46,7 +57,19 @@ export class Order {
   }
 
   get total(): number {
-    return this.subtotal;
+    return Math.max(0, this.subtotal - (this.props.discountAmount ?? 0));
+  }
+
+  get discountCode(): string | undefined {
+    return this.props.discountCode;
+  }
+
+  get discountAmount(): number | undefined {
+    return this.props.discountAmount;
+  }
+
+  get paymentMethod(): PaymentMethodInfo | undefined {
+    return this.props.paymentMethod;
   }
 
   get totalQuantity(): number {
@@ -64,10 +87,13 @@ export class Order {
       userEmail: this.props.userEmail,
       items: this.props.items.map((i) => i.toJSON()),
       subtotal: this.subtotal,
+      discountCode: this.props.discountCode,
+      discountAmount: this.props.discountAmount,
       total: this.total,
       totalQuantity: this.totalQuantity,
       status: this.props.status,
       shippingAddress: this.props.shippingAddress,
+      paymentMethod: this.props.paymentMethod,
       createdAt: this.props.createdAt,
     };
   }

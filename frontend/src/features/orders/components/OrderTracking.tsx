@@ -51,10 +51,12 @@ function formatDateTime(iso: string): string {
 }
 
 export function OrderTracking({ status, createdAt }: OrderTrackingProps) {
-  // Para esta versión, todas las órdenes nuevas están "paid" → step 1 completo
-  // En producción real, este mapeo vendría del backend
   const completedStepIndex =
-    status === 'paid' ? 0 : status === 'shipped' ? 2 : status === 'cancelled' ? -1 : 0;
+    status === 'paid'       ? 0
+    : status === 'processing' ? 1
+    : status === 'shipped'    ? 2
+    : status === 'delivered'  ? 3
+    : -1; // cancelled
   const isInTransit = status === 'shipped';
 
   return (

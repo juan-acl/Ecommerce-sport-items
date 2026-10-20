@@ -1,4 +1,4 @@
-export type PurchaseStatus = 'pending' | 'received' | 'cancelled';
+export type PurchaseStatus = 'pending' | 'partial' | 'received' | 'cancelled';
 
 export interface PurchaseItem {
   productId: string;
@@ -6,6 +6,11 @@ export interface PurchaseItem {
   quantity: number;
   unitCost: number;
   subtotal: number;
+}
+
+export interface ReceivedItem {
+  productId: string;
+  receivedQuantity: number;
 }
 
 export interface PurchaseProps {
@@ -20,6 +25,7 @@ export interface PurchaseProps {
   notes?: string;
   createdAt: string;
   receivedAt?: string;
+  receivedItems?: ReceivedItem[];
 }
 
 export class Purchase {
@@ -36,13 +42,55 @@ export class Purchase {
   get notes(): string | undefined { return this.props.notes; }
   get createdAt(): string { return this.props.createdAt; }
   get receivedAt(): string | undefined { return this.props.receivedAt; }
+  get receivedItems(): ReceivedItem[] { return this.props.receivedItems ?? []; }
 
-  get canBeReceived(): boolean { return this.props.status === 'pending'; }
-  get canBeCancelled(): boolean { return this.props.status === 'pending' || this.props.status === 'received'; }
+  get canBeReceived(): boolean {
+    return this.props.status === 'pending' || this.props.status === 'partial';
+  }
+  get canBeCancelled(): boolean {
+    return this.props.status === 'pending' || this.props.status === 'partial';
+  }
   get wasReceived(): boolean { return this.props.status === 'received'; }
+
+  getReceivedQty(productId: string): number {
+    return this.receivedItems.find((r) => r.productId === productId)?.receivedQuantity ?? 0;
+  }
+
+  getRemainingQty(productId: string): number {
+    const item = this.items.find((i) => i.productId === productId);
+    if (!item) return 0;
+    return item.quantity - this.getReceivedQty(productId);
+  }
 
   receive(): Purchase {
     return new Purchase({ ...this.props, status: 'received', receivedAt: new Date().toISOString() });
+  }
+
+  partialReceive(newlyReceived: ReceivedItem[]): Purchase {
+    const merged: ReceivedItem[] = this.receivedItems.map((r) => ({ ...r }));
+
+    for (const nr of newlyReceived) {
+      const existing = merged.find((r) => r.productId === nr.productId);
+      if (existing) {
+        existing.receivedQuantity += nr.receivedQuantity;
+      } else {
+        merged.push({ ...nr });
+      }
+    }
+
+    const allReceived = this.props.items.every((item) => {
+      const received = merged.find((r) => r.productId === item.productId)?.receivedQuantity ?? 0;
+      return received >= item.quantity;
+    });
+
+    const newStatus: PurchaseStatus = allReceived ? 'received' : 'partial';
+
+    return new Purchase({
+      ...this.props,
+      status: newStatus,
+      receivedItems: merged,
+      receivedAt: allReceived ? new Date().toISOString() : this.props.receivedAt,
+    });
   }
 
   cancel(): Purchase {
@@ -50,6 +98,10 @@ export class Purchase {
   }
 
   toJSON(): PurchaseProps {
-    return { ...this.props, items: [...this.props.items] };
+    return {
+      ...this.props,
+      items: [...this.props.items],
+      receivedItems: this.props.receivedItems ? [...this.props.receivedItems] : undefined,
+    };
   }
 }

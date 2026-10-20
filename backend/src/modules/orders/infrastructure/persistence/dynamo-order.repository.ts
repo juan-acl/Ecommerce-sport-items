@@ -2,6 +2,7 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
   QueryCommand,
+  QueryCommandInput,
   TransactWriteCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
@@ -159,20 +160,27 @@ export class DynamoOrderRepository implements OrderRepository {
     return OrderMapper.toDomain(result.Item);
   }
 
-  async listAll(params: PaginationParams): Promise<PaginatedResult<Order>> {
-    const { limit, cursor } = params;
+  async listAll(params: PaginationParams & { status?: string }): Promise<PaginatedResult<Order>> {
+    const { limit, cursor, status } = params;
     const exclusiveStartKey = cursor ? this.decodeCursor(cursor) : undefined;
-    const result = await this.client.send(
-      new QueryCommand({
-        TableName: this.tableName,
-        IndexName: TABLE.GSI1,
-        KeyConditionExpression: 'GSI1PK = :pk',
-        ExpressionAttributeValues: { ':pk': 'ORDER' },
-        Limit: limit,
-        ScanIndexForward: false,
-        ExclusiveStartKey: exclusiveStartKey,
-      }),
-    );
+
+    const queryInput: QueryCommandInput = {
+      TableName: this.tableName,
+      IndexName: TABLE.GSI1,
+      KeyConditionExpression: 'GSI1PK = :pk',
+      ExpressionAttributeValues: { ':pk': 'ORDER' },
+      Limit: limit,
+      ScanIndexForward: false,
+      ExclusiveStartKey: exclusiveStartKey,
+    };
+
+    if (status) {
+      queryInput.FilterExpression = '#status = :status';
+      queryInput.ExpressionAttributeNames = { '#status': 'status' };
+      queryInput.ExpressionAttributeValues = { ':pk': 'ORDER', ':status': status };
+    }
+
+    const result = await this.client.send(new QueryCommand(queryInput));
     const orders = (result.Items ?? []).map((it) => OrderMapper.toDomain(it));
     const nextCursor = result.LastEvaluatedKey
       ? this.encodeCursor(result.LastEvaluatedKey)

@@ -14,7 +14,7 @@ export interface ShippingAddress {
   postalCode: string;
 }
 
-export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'cancelled';
+export type OrderStatus = 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
 export interface Order {
   id: string;
@@ -26,8 +26,21 @@ export interface Order {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   createdAt: string;
+  discountCode?: string;
+  discountAmount?: number;
+  paymentMethod?: PaymentMethodInfo;
+}
+
+export interface PaymentMethodInfo {
+  cardType: 'visa' | 'mastercard' | 'amex' | 'other';
+  last4: string;
+  cardholderName: string;
+  expiryMonth: string;
+  expiryYear: string;
 }
 
 export interface CheckoutPayload {
   shippingAddress?: ShippingAddress;
+  discountCode?: string;
+  paymentMethod?: PaymentMethodInfo;
 }

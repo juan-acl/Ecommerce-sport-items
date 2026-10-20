@@ -13,7 +13,7 @@ export interface RoleEntity {
   isSystem: boolean;
   createdAt: string;
 }
-export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'cancelled';
+export type OrderStatus = 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 export type ProductCategory =
   | 'running'
   | 'football'
@@ -65,6 +65,8 @@ export interface Order {
   status: OrderStatus;
   shippingAddress: ShippingAddress;
   createdAt: string;
+  discountCode?: string;
+  discountAmount?: number;
 }
 
 export interface OrderItem {
@@ -95,7 +97,7 @@ export interface Supplier {
   createdAt: string;
 }
 
-export type PurchaseStatus = 'pending' | 'received' | 'cancelled';
+export type PurchaseStatus = 'pending' | 'partial' | 'received' | 'cancelled';
 
 export interface PurchaseItem {
   productId: string;
@@ -103,6 +105,11 @@ export interface PurchaseItem {
   quantity: number;
   unitCost: number;
   subtotal: number;
+}
+
+export interface PurchaseReceivedItem {
+  productId: string;
+  receivedQuantity: number;
 }
 
 export interface Purchase {
@@ -117,9 +124,53 @@ export interface Purchase {
   notes?: string;
   createdAt: string;
   receivedAt?: string;
+  receivedItems?: PurchaseReceivedItem[];
 }
 
 export type MovementType = 'purchase' | 'sale' | 'adjustment' | 'return';
+
+export type DiscountType = 'percentage' | 'fixed';
+
+export interface Discount {
+  id: string;
+  code: string;
+  type: DiscountType;
+  value: number;
+  minPurchase: number;
+  maxUses: number;
+  usedCount: number;
+  isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+  createdBy: string;
+  applicableCategories?: string[];
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  userEmail: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface SalesReport {
+  totalOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
+  ordersByStatus: { paid: number; cancelled: number; pending: number; shipped: number; pendingApproval: number };
+  topProducts: Array<{ productId: string; productName: string; totalQuantity: number; totalRevenue: number }>;
+}
+
+export interface InventoryReport {
+  totalProducts: number;
+  totalStockValue: number;
+  lowStockProducts: Array<{ id: string; name: string; stock: number; minStock: number }>;
+  recentMovements: Array<{ id: string; productName: string; type: string; quantity: number; createdAt: string }>;
+}
 
 export interface InventoryMovement {
   id: string;

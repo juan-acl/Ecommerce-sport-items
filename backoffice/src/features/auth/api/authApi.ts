@@ -20,6 +20,11 @@ export interface AuthResponse {
   permissions: ModulePermission[];
 }
 
+export interface MeResponse {
+  user: User;
+  permissions: ModulePermission[];
+}
+
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: baseQueryWithAuth,
@@ -53,7 +58,12 @@ export const authApi = createApi({
         method: 'POST',
       }),
     }),
+
+    getMe: builder.query<MeResponse, void>({
+      query: () => '/auth/me',
+      transformResponse: (response: ApiSuccessResponse<MeResponse>) => response.data,
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useLogoutMutation } = authApi;
+export const { useLoginMutation, useRegisterMutation, useLogoutMutation, useGetMeQuery } = authApi;

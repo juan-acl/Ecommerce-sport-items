@@ -47,7 +47,6 @@ export class DynamoRoleRepository implements RoleRepository {
           ':pk': 'ENTITY#ROLE',
           ':name': name,
         },
-        Limit: 1,
       }),
     );
 
