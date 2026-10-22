@@ -23,17 +23,6 @@ export const CreateProductSchema = z.object({
     .number()
     .positive('El precio debe ser mayor a 0')
     .max(999999.99, 'El precio no puede exceder 999,999.99'),
-  stock: z
-    .number()
-    .int('El stock debe ser un número entero')
-    .min(0, 'El stock no puede ser negativo')
-    .max(99999, 'El stock no puede exceder 99,999'),
-  minStock: z
-    .number()
-    .int('El stock mínimo debe ser un número entero')
-    .min(0, 'El stock mínimo no puede ser negativo')
-    .max(99999, 'El stock mínimo no puede exceder 99,999')
-    .default(0),
   description: z
     .string().trim()
     .min(10, 'La descripción debe tener al menos 10 caracteres')
@@ -44,9 +33,6 @@ export const CreateProductSchema = z.object({
       'La descripción debe contener texto descriptivo, no solo números',
     ),
   imageUrl: z.string().url('URL de imagen inválida').or(z.literal('')),
-}).refine(
-  (data) => data.minStock <= data.stock,
-  { message: 'El stock mínimo no puede ser mayor al stock actual', path: ['minStock'] },
-);
+});
 
 export type CreateProductDto = z.infer<typeof CreateProductSchema>;

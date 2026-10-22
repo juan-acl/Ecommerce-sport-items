@@ -9,6 +9,10 @@ export const shippingAddressSchema = z.object({
     .regex(
       /^[\p{L}\p{N}\s.,\-#/()°]+$/u,
       'Solo puede contener letras, números, espacios y signos de dirección (# / . ,)',
+    )
+    .refine(
+      (val) => /\p{L}/u.test(val),
+      'La dirección debe incluir letras y números (ej: "5a Calle 12-34 Zona 1"), no solo números',
     ),
   city: z
     .string()

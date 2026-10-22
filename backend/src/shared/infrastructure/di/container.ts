@@ -480,7 +480,8 @@ export function buildContainer(): AwilixContainer<AppContainer> {
       ({ movementRepository }) => new ListMovementsUseCase(movementRepository),
     ).singleton(),
     getLowStockUseCase: asFunction(
-      ({ productRepository }) => new GetLowStockUseCase(productRepository),
+      ({ productRepository, purchaseRepository, movementRepository }) =>
+        new GetLowStockUseCase(productRepository, purchaseRepository, movementRepository),
     ).singleton(),
     inventoryController: asFunction(
       ({ listMovementsUseCase, getLowStockUseCase }) =>

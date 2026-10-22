@@ -25,7 +25,7 @@ const CATEGORY_VALUES = [
   "other",
 ] as const;
 
-const productSchema = z.object({
+const sharedFields = {
   name: z
     .string()
     .trim()
@@ -43,19 +43,9 @@ const productSchema = z.object({
     errorMap: () => ({ message: "Selecciona una categoría válida" }),
   }),
   price: z
-    .number('El precio debe ser un número')
+    .number({ invalid_type_error: "El precio debe ser un número" })
     .positive("El precio debe ser mayor a 0")
     .max(999999.99, "El precio no puede exceder Q999,999.99"),
-  stock: z
-    .number('El stock debe ser un número')
-    .int('El stock debe ser un número entero')
-    .min(0, "El stock no puede ser negativo")
-    .max(99999, "El stock no puede exceder 99,999"),
-  minStock: z
-    .number('El stock mínimo debe ser un número')
-    .int('El stock mínimo debe ser un número entero')
-    .min(0, "El stock mínimo no puede ser negativo")
-    .max(99999, "El stock mínimo no puede exceder 99,999"),
   description: z
     .string()
     .trim()
@@ -67,16 +57,24 @@ const productSchema = z.object({
       "La descripción debe contener texto descriptivo, no solo números",
     ),
   imageUrl: z.string().url("URL de imagen inválida").or(z.literal("")),
-}).refine(
-  (data) => data.minStock <= data.stock,
-  {
-    message: "El stock mínimo no puede ser mayor al stock actual",
-    path: ["minStock"],
-  },
-);
+};
 
-type ProductFormData = z.infer<typeof productSchema>;
+// Al crear: solo datos del producto, el stock empieza en 0 y lo maneja el sistema
+const createSchema = z.object(sharedFields);
 
+// Al editar: se puede definir el stock mínimo (umbral de alerta)
+const editSchema = z.object({
+  ...sharedFields,
+  minStock: z
+    .number({ invalid_type_error: "El stock mínimo debe ser un número" })
+    .int("El stock mínimo debe ser un número entero")
+    .min(0, "El stock mínimo no puede ser negativo")
+    .max(99999, "El stock mínimo no puede exceder 99,999"),
+});
+
+type CreateFormData = z.infer<typeof createSchema>;
+type EditFormData = z.infer<typeof editSchema>;
+type ProductFormData = EditFormData;
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -96,9 +94,7 @@ export function ProductFormModal({
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [getUploadUrl] = useGetUploadUrlMutation();
 
-  // File kept in memory — only uploaded to S3 on form submit
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  // URL shown in the preview zone (objectURL while pending, or existing product URL)
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -112,7 +108,7 @@ export function ProductFormModal({
     setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(isEditing ? editSchema : createSchema),
   });
 
   const revokeObjectUrl = () => {
@@ -134,7 +130,6 @@ export function ProductFormModal({
         name: product.name,
         category: product.category,
         price: product.price,
-        stock: product.stock,
         minStock: product.minStock,
         description: product.description,
         imageUrl: product.imageUrl,
@@ -143,10 +138,8 @@ export function ProductFormModal({
     } else {
       reset({
         name: "",
-        category: "",
+        category: "" as typeof CATEGORY_VALUES[number],
         price: 0,
-        stock: 0,
-        minStock: 0,
         description: "",
         imageUrl: "",
       });
@@ -216,15 +209,18 @@ export function ProductFormModal({
 
     try {
       if (isEditing && product) {
+        const { minStock, ...rest } = data as EditFormData;
         await updateProduct({
           id: product.id,
-          ...data,
+          ...rest,
+          minStock,
           imageUrl: finalImageUrl,
         }).unwrap();
         toast.success("Producto actualizado.");
       } else {
-        await createProduct({ ...data, imageUrl: finalImageUrl }).unwrap();
-        toast.success("Producto creado.");
+        const { minStock: _ms, ...createData } = data as Partial<EditFormData> & CreateFormData;
+        await createProduct({ ...createData, imageUrl: finalImageUrl }).unwrap();
+        toast.success("Producto creado. El stock se actualizará al recibir la primera compra.");
       }
       onClose();
     } catch {
@@ -251,7 +247,7 @@ export function ProductFormModal({
       }
     >
       <form className="space-y-4" noValidate>
-        {/* Image zone */}
+        {/* Imagen */}
         <div className="space-y-unit-sm">
           <label className="block text-label-md text-on-surface-variant">
             Imagen del producto
@@ -354,40 +350,50 @@ export function ProductFormModal({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            {...register("price", { valueAsNumber: true })}
-            id="price"
-            type="number"
-            step="0.01"
-            min="0.01"
-            max="999999.99"
-            label="Precio (GTQ)"
-            placeholder="0.00"
-            error={errors.price?.message}
-          />
-          <Input
-            {...register("stock", { valueAsNumber: true })}
-            id="stock"
-            type="number"
-            min="0"
-            max="99999"
-            label="Stock"
-            placeholder="0"
-            error={errors.stock?.message}
-          />
-        </div>
-
         <Input
-          {...register("minStock", { valueAsNumber: true })}
-          id="minStock"
+          {...register("price", { valueAsNumber: true })}
+          id="price"
           type="number"
-          min="0"
-          max="99999"
-          label="Stock mínimo"
-          placeholder="0"
-          error={errors.minStock?.message}
+          step="0.01"
+          min="0.01"
+          max="999999.99"
+          label="Precio (GTQ)"
+          placeholder="0.00"
+          error={errors.price?.message}
         />
+
+        {/* Stock mínimo: solo visible al editar */}
+        {isEditing && (
+          <div className="space-y-1">
+            <Input
+              {...register("minStock", { valueAsNumber: true })}
+              id="minStock"
+              type="number"
+              min="0"
+              max="99999"
+              label="Stock mínimo (umbral de alerta)"
+              placeholder="Ej: 5"
+              error={(errors as { minStock?: { message?: string } }).minStock?.message}
+            />
+            <p className="text-[11px] text-on-surface-variant px-1">
+              El sistema generará una alerta cuando el stock baje de este número.
+              El stock se gestiona automáticamente mediante las compras a proveedores.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso en modo creación */}
+        {!isEditing && (
+          <div className="flex items-start gap-2 rounded-lg bg-surface-container-low border border-outline-variant px-3 py-2.5">
+            <span className="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5 shrink-0">
+              info
+            </span>
+            <p className="text-[12px] text-on-surface-variant leading-relaxed">
+              El stock inicia en <strong>0</strong> y solo sube al recibir compras a proveedores.
+              Podrás configurar el stock mínimo de alerta desde la edición del producto.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-unit-sm">
           <label

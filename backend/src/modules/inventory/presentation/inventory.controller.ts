@@ -24,8 +24,8 @@ export class InventoryController {
 
   getLowStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const products = await this.getLowStockUseCase.execute();
-      ApiResponder.ok(req, res, { products });
+      const alerts = await this.getLowStockUseCase.execute();
+      ApiResponder.ok(req, res, { products: alerts });
     } catch (err) {
       next(err);
     }

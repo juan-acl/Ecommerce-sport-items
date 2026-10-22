@@ -25,12 +25,6 @@ export const UpdateProductSchema = z.object({
     .positive('El precio debe ser mayor a 0')
     .max(999999.99, 'El precio no puede exceder 999,999.99')
     .optional(),
-  stock: z
-    .number()
-    .int('El stock debe ser un número entero')
-    .min(0, 'El stock no puede ser negativo')
-    .max(99999, 'El stock no puede exceder 99,999')
-    .optional(),
   minStock: z
     .number()
     .int('El stock mínimo debe ser un número entero')
@@ -48,14 +42,6 @@ export const UpdateProductSchema = z.object({
     )
     .optional(),
   imageUrl: z.string().url('URL de imagen inválida').or(z.literal('')).optional(),
-}).refine(
-  (data) => {
-    if (data.minStock !== undefined && data.stock !== undefined) {
-      return data.minStock <= data.stock;
-    }
-    return true;
-  },
-  { message: 'El stock mínimo no puede ser mayor al stock actual', path: ['minStock'] },
-);
+});
 
 export type UpdateProductDto = z.infer<typeof UpdateProductSchema>;

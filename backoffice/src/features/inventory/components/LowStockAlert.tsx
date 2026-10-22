@@ -1,18 +1,18 @@
-import { X } from "lucide-react";
-import { useState } from "react";
-import type { Product } from "@shared/types/common";
+import { X, PackageSearch } from 'lucide-react';
+import { useState } from 'react';
+import type { StockAlertItem } from '@features/inventory/api/inventoryApi';
 
 interface Props {
-  products: Product[];
+  items: StockAlertItem[];
 }
 
-export function LowStockAlert({ products }: Readonly<Props>) {
+export function LowStockAlert({ items }: Readonly<Props>) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (products.length === 0 || dismissed) return null;
+  if (items.length === 0 || dismissed) return null;
 
-  const visible = products.slice(0, 8);
-  const remaining = products.length - 8;
+  const visible = items.slice(0, 8);
+  const remaining = items.length - 8;
 
   return (
     <div className="bg-white border border-outline-variant rounded-xl shadow-soft">
@@ -22,12 +22,12 @@ export function LowStockAlert({ products }: Readonly<Props>) {
             Alertas de inventario
           </p>
           <p className="text-label-md text-on-surface-variant mt-0.5">
-            Productos con stock crítico o agotado
+            Stock crítico · excluye productos cubiertos por compras pendientes
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">
-            {products.length}
+            {items.length}
           </span>
           <button
             type="button"
@@ -42,36 +42,49 @@ export function LowStockAlert({ products }: Readonly<Props>) {
 
       <div className="p-5">
         <div className="space-y-3">
-          {visible.map((p) => {
-            const isOut = p.stock === 0;
-            const pct = isOut
+          {visible.map((item) => {
+            const isOut = item.status === 'out';
+            const isNew = item.status === 'new';
+            const pct = isOut || isNew
               ? 0
-              : p.minStock > 0
-                ? Math.round((p.stock / p.minStock) * 100)
+              : item.minStock > 0
+                ? Math.round((item.stock / item.minStock) * 100)
                 : 100;
+
+            const dotColor = isOut ? 'bg-red-500' : isNew ? 'bg-blue-500' : 'bg-amber-400';
+            const barColor = isOut ? 'bg-red-400' : isNew ? 'bg-blue-400' : 'bg-amber-400';
+            const textColor = isOut ? 'text-red-600' : isNew ? 'text-blue-600' : 'text-amber-600';
+
+            const label = isOut
+              ? 'Agotado'
+              : isNew
+                ? 'Nuevo'
+                : `${item.stock} / ${item.minStock}`;
+
             return (
-              <div key={p.id}>
+              <div key={item.id}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${isOut ? "bg-red-500" : "bg-amber-400"}`}
-                    />
-                    <span
-                      className="text-body-md text-on-surface truncate"
-                      title={p.name}
-                    >
-                      {p.name}
+                    <span className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${dotColor}`} />
+                    <span className="text-body-md text-on-surface truncate" title={item.name}>
+                      {item.name}
                     </span>
                   </div>
-                  <span
-                    className={`text-label-md font-semibold tabular-nums flex-shrink-0 ml-2 ${isOut ? "text-red-600" : "text-amber-600"}`}
-                  >
-                    {isOut ? "Agotado" : `${p.stock} / ${p.minStock}`}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                    {item.incomingQty > 0 && (
+                      <span className="flex items-center gap-1 text-[11px] text-blue-600 font-medium">
+                        <PackageSearch size={11} />
+                        +{item.incomingQty}
+                      </span>
+                    )}
+                    <span className={`text-label-md font-semibold tabular-nums ${textColor}`}>
+                      {label}
+                    </span>
+                  </div>
                 </div>
                 <div className="h-1 bg-surface-container-high rounded-full overflow-hidden ml-3.5">
                   <div
-                    className={`h-full rounded-full ${isOut ? "bg-red-400" : "bg-amber-400"}`}
+                    className={`h-full rounded-full ${barColor}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -82,8 +95,7 @@ export function LowStockAlert({ products }: Readonly<Props>) {
 
         {remaining > 0 && (
           <p className="text-body-md text-on-surface-variant text-center mt-4">
-            + {remaining} producto{remaining !== 1 ? "s" : ""} más con stock
-            bajo
+            + {remaining} producto{remaining !== 1 ? 's' : ''} más con stock bajo
           </p>
         )}
       </div>

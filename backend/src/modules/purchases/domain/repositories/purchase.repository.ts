@@ -12,4 +12,5 @@ export interface PurchaseRepository {
   findById(id: string): Promise<Purchase | null>;
   save(purchase: Purchase): Promise<void>;
   update(purchase: Purchase): Promise<void>;
+  listActive(): Promise<Purchase[]>;
 }

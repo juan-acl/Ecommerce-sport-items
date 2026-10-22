@@ -51,6 +51,20 @@ export class DynamoMovementRepository implements InventoryMovementRepository {
     return { items: movements, count: movements.length, nextCursor };
   }
 
+  async hasMovementsForProduct(productId: string): Promise<boolean> {
+    const result = await this.client.send(
+      new QueryCommand({
+        TableName: this.tableName,
+        IndexName: TABLE.GSI2,
+        KeyConditionExpression: 'GSI2PK = :pk',
+        ExpressionAttributeValues: { ':pk': `PRODUCT#${productId}` },
+        Limit: 1,
+        ProjectionExpression: 'PK',
+      }),
+    );
+    return (result.Count ?? 0) > 0;
+  }
+
   async save(movement: InventoryMovement): Promise<void> {
     await this.client.send(
       new PutCommand({

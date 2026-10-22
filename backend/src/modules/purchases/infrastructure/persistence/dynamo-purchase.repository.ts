@@ -82,6 +82,34 @@ export class DynamoPurchaseRepository implements PurchaseRepository {
     );
   }
 
+  async listActive(): Promise<Purchase[]> {
+    const all: Purchase[] = [];
+    let lastKey: Record<string, unknown> | undefined = undefined;
+
+    do {
+      const result = await this.client.send(
+        new QueryCommand({
+          TableName: this.tableName,
+          IndexName: TABLE.GSI1,
+          KeyConditionExpression: 'GSI1PK = :pk',
+          FilterExpression: '#st IN (:pending, :partial)',
+          ExpressionAttributeNames: { '#st': 'status' },
+          ExpressionAttributeValues: {
+            ':pk': 'PURCHASE',
+            ':pending': 'pending',
+            ':partial': 'partial',
+          },
+          Limit: 500,
+          ExclusiveStartKey: lastKey,
+        }),
+      );
+      all.push(...(result.Items ?? []).map((item) => PurchaseMapper.toDomain(item)));
+      lastKey = result.LastEvaluatedKey as Record<string, unknown> | undefined;
+    } while (lastKey);
+
+    return all;
+  }
+
   private encodeCursor(key: Record<string, unknown>): string {
     return Buffer.from(JSON.stringify(key)).toString('base64url');
   }

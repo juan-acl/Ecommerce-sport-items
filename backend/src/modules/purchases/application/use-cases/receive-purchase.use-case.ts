@@ -22,6 +22,9 @@ export class ReceivePurchaseUseCase {
     if (purchase.status === 'received') {
       throw new ConflictException('La compra ya fue recibida');
     }
+    if (purchase.status === 'partial') {
+      throw new ConflictException('La compra tiene recepción parcial. Usa "Recepción parcial" para registrar el resto.');
+    }
     if (purchase.status === 'cancelled') {
       throw new ConflictException('No se puede recibir una compra cancelada');
     }
@@ -30,12 +33,16 @@ export class ReceivePurchaseUseCase {
     await this.purchaseRepo.update(received);
 
     for (const item of purchase.items) {
+      // Only add units that haven't been received yet (partial receives already updated stock)
+      const remaining = purchase.getRemainingQty(item.productId);
+      if (remaining <= 0) continue;
+
       const product = await this.productRepo.findById(item.productId);
       if (!product) continue;
 
       const updatedProduct = new Product({
         ...product.toJSON(),
-        stock: product.stock + item.quantity,
+        stock: product.stock + remaining,
       });
       await this.productRepo.update(updatedProduct);
 
@@ -44,7 +51,7 @@ export class ReceivePurchaseUseCase {
         productId: item.productId,
         productName: item.productName,
         type: 'purchase',
-        quantity: item.quantity,
+        quantity: remaining,
         referenceId: purchase.id,
         note: `Recepción de compra ${purchase.id}`,
         createdAt: new Date().toISOString(),

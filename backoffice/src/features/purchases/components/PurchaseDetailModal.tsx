@@ -67,8 +67,10 @@ export function PurchaseDetailModal({ isOpen, onClose, purchase }: Readonly<Prop
   };
 
   const isLoading = isReceiving || isCancelling;
-  const canAct = purchase.status === 'pending' || purchase.status === 'partial';
   const isPending = purchase.status === 'pending';
+  const isPartial = purchase.status === 'partial';
+  const canAct = isPending || isPartial;
+  const canCancel = isPending;
 
   const getAlreadyReceived = (productId: string): number =>
     purchase.receivedItems?.find((r) => r.productId === productId)?.receivedQuantity ?? 0;
@@ -86,17 +88,21 @@ export function PurchaseDetailModal({ isOpen, onClose, purchase }: Readonly<Prop
             </Button>
             {canAct && (
               <>
-                {isPending && (
+                {canCancel && (
                   <Button variant="danger" onClick={handleCancel} isLoading={isCancelling} disabled={isReceiving}>
                     Cancelar compra
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setShowPartialModal(true)} disabled={isLoading}>
-                  Recepción parcial
-                </Button>
-                <Button onClick={handleReceive} isLoading={isReceiving} disabled={isCancelling}>
-                  Recibir todo
-                </Button>
+                {(isPending || isPartial) && (
+                  <Button variant="outline" onClick={() => setShowPartialModal(true)} disabled={isLoading}>
+                    Recepción parcial
+                  </Button>
+                )}
+                {isPending && (
+                  <Button onClick={handleReceive} isLoading={isReceiving} disabled={isCancelling}>
+                    Recibir todo
+                  </Button>
+                )}
               </>
             )}
           </>

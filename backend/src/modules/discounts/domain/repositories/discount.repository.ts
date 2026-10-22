@@ -8,4 +8,6 @@ export interface DiscountRepository {
   listAll(params: PaginationParams): Promise<PaginatedResult<Discount>>;
   incrementUsedCount(id: string): Promise<void>;
   setActive(id: string, isActive: boolean): Promise<void>;
+  hasUserUsedDiscount(discountId: string, userId: string): Promise<boolean>;
+  recordUserUsage(discountId: string, userId: string): Promise<void>;
 }

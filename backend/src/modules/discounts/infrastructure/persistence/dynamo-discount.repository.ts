@@ -102,6 +102,36 @@ export class DynamoDiscountRepository implements DiscountRepository {
     );
   }
 
+  async hasUserUsedDiscount(discountId: string, userId: string): Promise<boolean> {
+    const result = await this.client.send(
+      new GetCommand({
+        TableName: this.tableName,
+        Key: { PK: `DISCOUNT#${discountId}`, SK: `USER_USAGE#${userId}` },
+        ProjectionExpression: 'PK',
+      }),
+    );
+    return !!result.Item;
+  }
+
+  async recordUserUsage(discountId: string, userId: string): Promise<void> {
+    try {
+      await this.client.send(
+        new PutCommand({
+          TableName: this.tableName,
+          Item: {
+            PK: `DISCOUNT#${discountId}`,
+            SK: `USER_USAGE#${userId}`,
+            usedAt: new Date().toISOString(),
+          },
+          ConditionExpression: 'attribute_not_exists(PK)',
+        }),
+      );
+    } catch (err) {
+      if ((err as { name?: string }).name === 'ConditionalCheckFailedException') return;
+      throw err;
+    }
+  }
+
   private encodeCursor(key: Record<string, unknown>): string {
     return Buffer.from(JSON.stringify(key)).toString('base64url');
   }

@@ -203,19 +203,34 @@ export function PaymentMethod({ onContinue, onBack }: PaymentMethodProps) {
   }, []);
 
   const handleNumberChange = (raw: string) => {
+    const hasLetters = /[a-zA-Z]/.test(raw);
     const type = detectCardType(raw);
-    set('number', formatNumber(raw, type));
+    setForm((prev) => ({ ...prev, number: formatNumber(raw, type) }));
+    setErrors((prev) => ({
+      ...prev,
+      number: hasLetters ? 'El número de tarjeta solo acepta dígitos' : undefined,
+    }));
   };
 
   const handleExpiryChange = (raw: string) => {
+    const hasLetters = /[a-zA-Z]/.test(raw);
     const digits = raw.replace(/\D/g, '').slice(0, 4);
     const formatted = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-    set('expiry', formatted);
+    setForm((prev) => ({ ...prev, expiry: formatted }));
+    setErrors((prev) => ({
+      ...prev,
+      expiry: hasLetters ? 'La fecha solo acepta números en formato MM/AA' : undefined,
+    }));
   };
 
   const handleCvvChange = (raw: string) => {
+    const hasLetters = /[a-zA-Z]/.test(raw);
     const max = cardType === 'amex' ? 4 : 3;
-    set('cvv', raw.replace(/\D/g, '').slice(0, max));
+    setForm((prev) => ({ ...prev, cvv: raw.replace(/\D/g, '').slice(0, max) }));
+    setErrors((prev) => ({
+      ...prev,
+      cvv: hasLetters ? 'El CVV solo acepta dígitos' : undefined,
+    }));
   };
 
   const validate = (): boolean => {

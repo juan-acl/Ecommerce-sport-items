@@ -1,7 +1,20 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithAuth } from '@shared/api/baseQuery';
 import type { ApiSuccessResponse, PaginatedData } from '@shared/types/api';
-import type { InventoryMovement, Product } from '@shared/types/common';
+import type { InventoryMovement } from '@shared/types/common';
+
+export type StockStatus = 'new' | 'low' | 'out';
+
+export interface StockAlertItem {
+  id: string;
+  name: string;
+  category: string;
+  imageUrl?: string;
+  stock: number;
+  minStock: number;
+  incomingQty: number;
+  status: StockStatus;
+}
 
 type BackendMovementsResponse = {
   items: InventoryMovement[];
@@ -10,7 +23,7 @@ type BackendMovementsResponse = {
 };
 
 type BackendLowStockResponse = {
-  products: Product[];
+  products: StockAlertItem[];
 };
 
 export const inventoryApi = createApi({
@@ -49,7 +62,7 @@ export const inventoryApi = createApi({
       providesTags: ['Movements'],
     }),
 
-    getLowStock: builder.query<Product[], void>({
+    getLowStock: builder.query<StockAlertItem[], void>({
       query: () => ({ url: '/admin/inventory/low-stock' }),
       transformResponse: (response: ApiSuccessResponse<BackendLowStockResponse>) =>
         response.data.products,

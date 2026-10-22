@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, CheckCircle2, ImageOff, ArrowRight } from 'lucide-react';
+import { Bell, CheckCircle2, ImageOff, ArrowRight, PackageSearch } from 'lucide-react';
 import { useGetLowStockQuery } from '@features/inventory/api/inventoryApi';
+import type { StockAlertItem, StockStatus } from '@features/inventory/api/inventoryApi';
 import { Spinner } from '@shared/components/ui/Spinner';
 import { ROUTES } from '@shared/constants/routes';
 import { cn } from '@shared/utils/cn';
-import type { Product } from '@shared/types/common';
 
 const CATEGORY_LABELS: Record<string, string> = {
   running: 'Running',
@@ -18,48 +18,70 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Otros',
 };
 
-type Filter = 'Todos' | 'Agotados' | 'Bajo mínimo';
+type Filter = 'Todos' | 'Agotados' | 'Bajo mínimo' | 'Nuevos';
 
-/* ---------- Presentación ---------- */
-
-/** % de cobertura del stock mínimo (0–100). */
-function coverage(p: Product) {
-  if (p.stock === 0) return 0;
-  if (p.minStock <= 0) return 100;
-  return Math.min(Math.round((p.stock / p.minStock) * 100), 100);
+function stockCoverage(item: StockAlertItem) {
+  if (item.stock === 0) return 0;
+  if (item.minStock <= 0) return 100;
+  return Math.min(Math.round((item.stock / item.minStock) * 100), 100);
 }
 
-function StatusBadge({ out }: { out: boolean }) {
+function StatusBadge({ status }: { status: StockStatus }) {
+  const map: Record<StockStatus, { label: string; className: string; dot: string }> = {
+    out: {
+      label: 'Agotado',
+      className: 'bg-error-container text-on-error-container ring-error/20',
+      dot: 'bg-error',
+    },
+    low: {
+      label: 'Bajo mínimo',
+      className: 'bg-amber-50 text-amber-800 ring-amber-600/20',
+      dot: 'bg-amber-500',
+    },
+    new: {
+      label: 'Nuevo',
+      className: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+      dot: 'bg-blue-500',
+    },
+  };
+  const { label, className, dot } = map[status];
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ring-1 ring-inset whitespace-nowrap',
-        out
-          ? 'bg-error-container text-on-error-container ring-error/20'
-          : 'bg-amber-50 text-amber-800 ring-amber-600/20',
+        className,
       )}
     >
-      <span className={cn('h-1.5 w-1.5 rounded-full', out ? 'bg-error' : 'bg-amber-500')} />
-      {out ? 'Agotado' : 'Bajo mínimo'}
+      <span className={cn('h-1.5 w-1.5 rounded-full', dot)} />
+      {label}
     </span>
   );
 }
 
-function AlertRow({ p }: { p: Product }) {
+function AlertRow({ item }: { item: StockAlertItem }) {
   const [imgError, setImgError] = useState(false);
-  const out = p.stock === 0;
-  const pct = coverage(p);
-  const missing = Math.max(p.minStock - p.stock, 0);
+  const pct = stockCoverage(item);
+  const isNew = item.status === 'new';
+  const isOut = item.status === 'out';
+
+  const barColor = isNew
+    ? 'bg-blue-400'
+    : isOut
+      ? 'bg-error'
+      : 'bg-amber-500';
+
+  const dotColor = isNew ? 'bg-blue-500' : isOut ? 'bg-error' : 'bg-amber-500';
 
   return (
     <li className="grid grid-cols-12 items-center gap-3 px-5 py-3.5 hover:bg-surface-container-low transition-colors">
-      <div className="col-span-12 sm:col-span-5 flex items-center gap-3 min-w-0">
+      {/* Producto */}
+      <div className="col-span-12 sm:col-span-4 flex items-center gap-3 min-w-0">
         <div className="relative w-12 h-12 shrink-0">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-container-low border border-outline-variant flex items-center justify-center">
-            {p.imageUrl && !imgError ? (
+            {item.imageUrl && !imgError ? (
               <img
-                src={p.imageUrl}
-                alt={p.name}
+                src={item.imageUrl}
+                alt={item.name}
                 loading="lazy"
                 onError={() => setImgError(true)}
                 className="w-full h-full object-cover"
@@ -69,57 +91,72 @@ function AlertRow({ p }: { p: Product }) {
             )}
           </div>
           <span
-            className={cn(
-              'absolute -top-1 -right-1 h-3 w-3 rounded-full ring-2 ring-white',
-              out ? 'bg-error' : 'bg-amber-500',
-            )}
+            className={cn('absolute -top-1 -right-1 h-3 w-3 rounded-full ring-2 ring-white', dotColor)}
             aria-hidden
           />
         </div>
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-on-surface truncate" title={p.name}>
-            {p.name}
+          <p className="text-[13px] font-medium text-on-surface truncate" title={item.name}>
+            {item.name}
           </p>
           <p className="text-[11px] text-on-surface-variant">
-            {CATEGORY_LABELS[p.category] ?? p.category}
+            {CATEGORY_LABELS[item.category] ?? item.category}
           </p>
         </div>
       </div>
 
+      {/* Estado */}
       <div className="col-span-4 sm:col-span-2">
-        <StatusBadge out={out} />
+        <StatusBadge status={item.status} />
       </div>
 
+      {/* Cobertura */}
       <div className="col-span-8 sm:col-span-3">
         <div className="flex items-baseline justify-between text-[11px] mb-1.5">
           <span className="text-on-surface-variant">
-            <span className="font-semibold text-on-surface tabular-nums">{p.stock}</span> /{' '}
-            {p.minStock} mín.
+            <span className="font-semibold text-on-surface tabular-nums">{item.stock}</span>
+            {' / '}{item.minStock} mín.
           </span>
           <span className="tabular-nums text-on-surface-variant">{pct}%</span>
         </div>
         <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
           <div
-            className={cn('h-full rounded-full', out ? 'bg-error' : 'bg-amber-500')}
-            style={{ width: `${Math.max(pct, out ? 0 : 4)}%` }}
+            className={cn('h-full rounded-full', barColor)}
+            style={{ width: `${Math.max(pct, isOut || isNew ? 0 : 4)}%` }}
           />
         </div>
       </div>
 
-      <div className="hidden sm:block sm:col-span-2 text-right">
-        <p className="text-[13px] font-semibold tabular-nums text-on-surface">
-          {missing > 0 ? `+${missing}` : '—'}
-        </p>
-        <p className="text-[11px] text-on-surface-variant">por reponer</p>
+      {/* En camino */}
+      <div className="hidden sm:block sm:col-span-3 text-right">
+        {item.incomingQty > 0 ? (
+          <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-md px-2.5 py-1">
+            <PackageSearch size={12} className="text-blue-600 shrink-0" />
+            <span className="text-[12px] font-semibold tabular-nums text-blue-700">
+              +{item.incomingQty}
+            </span>
+            <span className="text-[11px] text-blue-600">en camino</span>
+          </div>
+        ) : isNew ? (
+          <p className="text-[11px] text-on-surface-variant italic">Pendiente 1.ª compra</p>
+        ) : (
+          <div>
+            <p className="text-[13px] font-semibold tabular-nums text-on-surface">
+              +{Math.max(item.minStock - item.stock, 0)}
+            </p>
+            <p className="text-[11px] text-on-surface-variant">por reponer</p>
+          </div>
+        )}
       </div>
     </li>
   );
 }
 
 const LEGEND = [
-  { color: 'bg-error', label: 'Agotado', desc: 'Sin unidades disponibles' },
-  { color: 'bg-amber-500', label: 'Bajo mínimo', desc: 'Stock igual o menor al mínimo' },
-  { color: 'bg-[#54dcbc]', label: 'En rango', desc: 'Stock suficiente (no aparece aquí)' },
+  { color: 'bg-error', label: 'Agotado', desc: 'Sin unidades y sin compras pendientes' },
+  { color: 'bg-amber-500', label: 'Bajo mínimo', desc: 'Stock menor al mínimo definido' },
+  { color: 'bg-blue-500', label: 'Nuevo', desc: 'Producto sin primera compra aún' },
+  { color: 'bg-[#54dcbc]', label: 'En rango / cubierto', desc: 'Stock + en camino ≥ mínimo (no aparece aquí)' },
 ];
 
 function Legend() {
@@ -130,7 +167,7 @@ function Legend() {
       </span>
       {LEGEND.map((l) => (
         <span key={l.label} className="inline-flex items-center gap-2 text-[12px]">
-          <span className={cn('h-2.5 w-2.5 rounded-full', l.color)} />
+          <span className={cn('h-2.5 w-2.5 rounded-full shrink-0', l.color)} />
           <span className="font-medium text-on-surface">{l.label}</span>
           <span className="text-on-surface-variant hidden md:inline">· {l.desc}</span>
         </span>
@@ -139,23 +176,38 @@ function Legend() {
   );
 }
 
-/* ---------- Página ---------- */
-
 export function AlertsPage() {
-  const { data: products = [], isLoading } = useGetLowStockQuery(undefined, { refetchOnMountOrArgChange: true });
+  const { data: items = [], isLoading } = useGetLowStockQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const [filter, setFilter] = useState<Filter>('Todos');
 
-  const outOfStock = products.filter((p) => p.stock === 0);
-  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= p.minStock);
+  const outOfStock  = items.filter((i) => i.status === 'out');
+  const lowStock    = items.filter((i) => i.status === 'low');
+  const newProducts = items.filter((i) => i.status === 'new');
 
-  const filtered: Product[] =
-    filter === 'Agotados'
-      ? outOfStock
-      : filter === 'Bajo mínimo'
-        ? lowStock
-        : [...outOfStock, ...lowStock];
+  const filtered: StockAlertItem[] =
+    filter === 'Agotados'    ? outOfStock :
+    filter === 'Bajo mínimo' ? lowStock :
+    filter === 'Nuevos'      ? newProducts :
+    [...outOfStock, ...lowStock, ...newProducts];
 
-  const filters: Filter[] = ['Todos', 'Agotados', 'Bajo mínimo'];
+  const filters: Filter[] = ['Todos', 'Agotados', 'Bajo mínimo', 'Nuevos'];
+
+  const counts: Record<Filter, number> = {
+    Todos:        items.length,
+    Agotados:     outOfStock.length,
+    'Bajo mínimo': lowStock.length,
+    Nuevos:       newProducts.length,
+  };
+
+  // Sort: out first (most critical), then low, then new; within group by coverage
+  const sortOrder: Record<StockStatus, number> = { out: 0, low: 1, new: 2 };
+  const ordered = [...filtered].sort((a, b) => {
+    const byStatus = sortOrder[a.status] - sortOrder[b.status];
+    if (byStatus !== 0) return byStatus;
+    return stockCoverage(a) - stockCoverage(b);
+  });
 
   if (isLoading) {
     return (
@@ -164,15 +216,6 @@ export function AlertsPage() {
       </div>
     );
   }
-
-  // Solo para mostrar: los más críticos primero (menor cobertura).
-  const ordered = [...filtered].sort((a, b) => coverage(a) - coverage(b));
-  const total = outOfStock.length + lowStock.length;
-  const counts: Record<Filter, number> = {
-    Todos: total,
-    Agotados: outOfStock.length,
-    'Bajo mínimo': lowStock.length,
-  };
 
   return (
     <div className="space-y-6">
@@ -184,10 +227,10 @@ export function AlertsPage() {
           </div>
           <div>
             <h1 className="text-[24px] font-bold tracking-[-0.02em] leading-tight text-on-surface">
-              Alertas
+              Alertas de inventario
             </h1>
             <p className="text-body-md text-on-surface-variant mt-0.5">
-              Productos con stock crítico o agotado
+              Stock crítico · incluye unidades en camino de compras pendientes
             </p>
           </div>
         </div>
@@ -200,13 +243,32 @@ export function AlertsPage() {
         </Link>
       </div>
 
-      {/* Lista de productos */}
+      {/* Resumen rápido */}
+      {items.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Agotados', count: outOfStock.length, color: 'text-error' },
+            { label: 'Bajo mínimo', count: lowStock.length, color: 'text-amber-600' },
+            { label: 'Nuevos', count: newProducts.length, color: 'text-blue-600' },
+          ].map(({ label, count, color }) => (
+            <div
+              key={label}
+              className="bg-white border border-outline-variant rounded-xl px-4 py-3 text-center shadow-soft"
+            >
+              <p className={cn('text-[22px] font-bold tabular-nums', color)}>{count}</p>
+              <p className="text-[12px] text-on-surface-variant mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tabla */}
       <section className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
         <div className="px-5 h-16 border-b border-outline-variant flex items-center justify-between gap-4">
           <p className="text-[14px] font-semibold tracking-tight text-on-surface">
             Productos afectados
           </p>
-          <div className="flex gap-1 p-1 bg-surface-container-low border border-outline-variant rounded-lg shrink-0">
+          <div className="flex gap-1 p-1 bg-surface-container-low border border-outline-variant rounded-lg shrink-0 flex-wrap">
             {filters.map((tab) => (
               <button
                 key={tab}
@@ -252,14 +314,14 @@ export function AlertsPage() {
         ) : (
           <>
             <div className="hidden sm:grid grid-cols-12 gap-3 px-5 h-9 items-center bg-surface-container-low border-b border-outline-variant text-[10px] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
-              <span className="col-span-5">Producto</span>
+              <span className="col-span-4">Producto</span>
               <span className="col-span-2">Estado</span>
               <span className="col-span-3">Cobertura del mínimo</span>
-              <span className="col-span-2 text-right">Faltante</span>
+              <span className="col-span-3 text-right">En camino / Por reponer</span>
             </div>
             <ul className="divide-y divide-outline-variant">
-              {ordered.map((p) => (
-                <AlertRow key={p.id} p={p} />
+              {ordered.map((item) => (
+                <AlertRow key={item.id} item={item} />
               ))}
             </ul>
           </>

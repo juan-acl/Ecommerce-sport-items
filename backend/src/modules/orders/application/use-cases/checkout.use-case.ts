@@ -21,6 +21,8 @@ interface MinimalDiscountRepo {
     calculateDiscount(total: number): number;
   } | null>;
   incrementUsedCount(id: string): Promise<void>;
+  hasUserUsedDiscount(discountId: string, userId: string): Promise<boolean>;
+  recordUserUsage(discountId: string, userId: string): Promise<void>;
 }
 
 export interface CheckoutInput {
@@ -79,6 +81,17 @@ export class CheckoutUseCase {
       try {
         const discount = await this.discountRepo.findByCode(dto.discountCode);
         if (discount && discount.isValid(subtotal, cartCategories)) {
+          const alreadyUsed = await this.discountRepo.hasUserUsedDiscount(discount.id, userId);
+          if (alreadyUsed) {
+            this.logger.warn('Usuario ya utilizó este código de descuento', {
+              code: dto.discountCode,
+              userId,
+            });
+            throw Object.assign(new Error('Este código de descuento ya fue utilizado por tu cuenta'), {
+              statusCode: 409,
+              code: 'DISCOUNT_ALREADY_USED',
+            });
+          }
           discountAmount = discount.calculateDiscount(subtotal);
           discountCode = discount.code;
           appliedDiscount = discount;
@@ -89,6 +102,8 @@ export class CheckoutUseCase {
           });
         }
       } catch (err) {
+        const e = err as { statusCode?: number; code?: string; message?: string };
+        if (e.statusCode === 409 && e.code === 'DISCOUNT_ALREADY_USED') throw err;
         this.logger.warn('Error al validar código de descuento, continuando sin descuento', {
           code: dto.discountCode,
           error: (err as Error).message,
@@ -154,9 +169,12 @@ export class CheckoutUseCase {
 
     if (appliedDiscount && this.discountRepo) {
       try {
-        await this.discountRepo.incrementUsedCount(appliedDiscount.id);
+        await Promise.all([
+          this.discountRepo.incrementUsedCount(appliedDiscount.id),
+          this.discountRepo.recordUserUsage(appliedDiscount.id, userId),
+        ]);
       } catch (err) {
-        this.logger.error('Error incrementando contador de uso del descuento', {
+        this.logger.error('Error registrando uso del descuento', {
           discountId: appliedDiscount.id,
           error: (err as Error).message,
         });

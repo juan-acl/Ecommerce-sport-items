@@ -48,7 +48,7 @@ export class Purchase {
     return this.props.status === 'pending' || this.props.status === 'partial';
   }
   get canBeCancelled(): boolean {
-    return this.props.status === 'pending' || this.props.status === 'partial';
+    return this.props.status === 'pending';
   }
   get wasReceived(): boolean { return this.props.status === 'received'; }
 

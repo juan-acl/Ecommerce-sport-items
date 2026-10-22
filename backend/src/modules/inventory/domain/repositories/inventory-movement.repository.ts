@@ -10,4 +10,5 @@ export interface ListMovementsParams {
 export interface InventoryMovementRepository {
   list(params: ListMovementsParams): Promise<PaginatedResult<InventoryMovement>>;
   save(movement: InventoryMovement): Promise<void>;
+  hasMovementsForProduct(productId: string): Promise<boolean>;
 }

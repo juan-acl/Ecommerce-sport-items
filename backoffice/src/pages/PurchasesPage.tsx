@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, ShoppingCart } from 'lucide-react';
 import { useGetPurchasesQuery } from '@features/purchases/api/purchasesApi';
 import { useGetSuppliersQuery } from '@features/suppliers/api/suppliersApi';
@@ -14,18 +14,21 @@ const LIMIT = 20;
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
+  partial: 'Parcialmente recibida',
   received: 'Recibida',
   cancelled: 'Cancelada',
 };
 
 const STATUS_CLASSES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200',
+  partial: 'bg-blue-50 text-blue-700 border border-blue-200',
   received: 'bg-[#ddfbf2] text-[#006b58] border border-[#006b58]/20',
   cancelled: 'bg-red-50 text-red-700 border border-red-200',
 };
 
 const STATUS_DOTS: Record<string, string> = {
   pending: 'bg-amber-400',
+  partial: 'bg-blue-500',
   received: 'bg-[#006b58]',
   cancelled: 'bg-red-500',
 };
@@ -41,6 +44,13 @@ export function PurchasesPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [detailPurchase, setDetailPurchase] = useState<Purchase | null>(null);
+
+  // Keep the open detail modal in sync with fresh data after any mutation
+  useEffect(() => {
+    if (!detailPurchase) return;
+    const fresh = purchases.find((p) => p.id === detailPurchase.id);
+    if (fresh) setDetailPurchase(fresh);
+  }, [purchases]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const columns: Column<Purchase>[] = [
     {

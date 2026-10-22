@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { PurchaseRepository } from '@modules/purchases/domain/repositories/purchase.repository';
 import { PurchaseNotFoundException } from '@modules/purchases/domain/exceptions/purchase-not-found.exception';
-import { ConflictException, ValidationException } from '@shared/domain/exceptions/domain.exception';
+import { ConflictException, ValidationException, NotFoundException } from '@shared/domain/exceptions/domain.exception';
 import { ProductRepository } from '@modules/products/domain/repositories/product.repository';
 import { Product } from '@modules/products/domain/entities/product.entity';
 import { InventoryMovementRepository } from '@modules/inventory/domain/repositories/inventory-movement.repository';
@@ -36,6 +36,10 @@ export class PartialReceivePurchaseUseCase {
     for (const dto of items) {
       if (dto.receivedQuantity <= 0) continue;
 
+      if (!Number.isInteger(dto.receivedQuantity)) {
+        throw new ValidationException('La cantidad a recibir debe ser un número entero');
+      }
+
       const purchaseItem = purchase.items.find((i) => i.productId === dto.productId);
       if (!purchaseItem) {
         throw new ValidationException(
@@ -44,14 +48,21 @@ export class PartialReceivePurchaseUseCase {
       }
 
       const remaining = purchase.getRemainingQty(dto.productId);
+      if (remaining <= 0) {
+        throw new ValidationException(
+          `El producto '${purchaseItem.productName}' ya fue recibido completamente`,
+        );
+      }
       if (dto.receivedQuantity > remaining) {
         throw new ValidationException(
-          `La cantidad recibida (${dto.receivedQuantity}) supera el pendiente (${remaining}) para '${purchaseItem.productName}'`,
+          `La cantidad a recibir (${dto.receivedQuantity}) supera el pendiente (${remaining}) para '${purchaseItem.productName}'`,
         );
       }
 
       const product = await this.productRepo.findById(dto.productId);
-      if (!product) continue;
+      if (!product) {
+        throw new NotFoundException(`Producto '${purchaseItem.productName}' no encontrado`);
+      }
 
       const updatedProduct = new Product({
         ...product.toJSON(),

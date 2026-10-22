@@ -15,7 +15,7 @@ export class UpdateProductUseCase {
       name: dto.name ?? existing.name,
       category: dto.category ?? existing.category,
       price: dto.price ?? existing.price,
-      stock: dto.stock ?? existing.stock,
+      stock: existing.stock,
       minStock: dto.minStock ?? existing.minStock,
       description: dto.description ?? existing.description,
       imageUrl: dto.imageUrl ?? existing.imageUrl,

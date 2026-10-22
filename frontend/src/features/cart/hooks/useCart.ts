@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@app/hooks';
 import { selectIsAuthenticated } from '@features/auth/store/authSlice';
+import { ROUTES } from '@shared/constants/routes';
 import {
   addLocalItem,
   removeLocalItem,
@@ -21,6 +23,7 @@ const EMPTY_CART: Cart = { items: [], itemCount: 0, totalQuantity: 0, total: 0 }
 
 export function useCart() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const localCart = useAppSelector(selectLocalCart);
 
@@ -40,6 +43,15 @@ export function useCart() {
 
   const addItem = useCallback(
     async (product: Product, quantity = 1) => {
+      const currentItems = isAuthenticated ? (serverCart?.items ?? []) : localCart.items;
+      const alreadyInCart = currentItems.some((i) => i.productId === product.id);
+
+      if (alreadyInCart) {
+        toast.info(`"${product.name}" ya está en tu carrito. Te llevamos a completar tu compra.`);
+        navigate(ROUTES.CART);
+        return;
+      }
+
       if (isAuthenticated) {
         try {
           await addToServerCart({ productId: product.id, quantity }).unwrap();
@@ -53,7 +65,6 @@ export function useCart() {
           }
         }
       } else {
-        // Validación local de stock
         const existing = localCart.items.find((i) => i.productId === product.id);
         const newQuantity = (existing?.quantity ?? 0) + quantity;
         if (newQuantity > product.stock) {
@@ -64,7 +75,7 @@ export function useCart() {
         toast.success(`${product.name} agregado al carrito`);
       }
     },
-    [isAuthenticated, addToServerCart, dispatch, localCart.items],
+    [isAuthenticated, addToServerCart, dispatch, localCart.items, serverCart, navigate],
   );
 
   const updateQuantity = useCallback(
