@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { CheckoutStep } from '../components/CheckoutSteps';
 import type { ShippingAddressFormData } from '../api/schemas';
 import type { AppliedDiscount } from '../components/DiscountCodeInput';
@@ -40,8 +40,13 @@ export function clearCheckoutSession(): void {
 
 export function useCheckoutSession() {
   const [state, setState] = useState<CheckoutSessionState>(readCheckoutSession);
+  const skipNextWrite = useRef(false);
 
   useEffect(() => {
+    if (skipNextWrite.current) {
+      skipNextWrite.current = false;
+      return;
+    }
     writeCheckoutSession(state);
   }, [state]);
 
@@ -60,6 +65,7 @@ export function useCheckoutSession() {
       setState((s) => ({ ...s, appliedDiscount })),
     clear: () => {
       clearCheckoutSession();
+      skipNextWrite.current = true;
       setState(DEFAULT_STATE);
     },
   };
