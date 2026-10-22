@@ -34,6 +34,7 @@ export function CheckoutPage() {
   } = useCheckoutSession();
 
   if (cart.items.length === 0 && !completedOrder) {
+    clearSession();
     return <Navigate to={ROUTES.CART} replace />;
   }
 
@@ -73,9 +74,11 @@ export function CheckoutPage() {
         toast.error(
           error.data?.error?.message ?? 'Algunos productos ya no tienen stock suficiente',
         );
+        clearSession();
         setTimeout(() => navigate(ROUTES.CART), 1500);
       } else if (code === 'EMPTY_CART') {
         toast.error('Tu carrito está vacío');
+        clearSession();
         navigate(ROUTES.CART);
       } else {
         toast.error(error.data?.error?.message ?? 'No se pudo procesar tu orden');
