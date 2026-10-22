@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { nitValidator } from '@shared/utils/validationSchemas';
 
 export const itemSchema = z.object({
   productId: z.string().min(1, 'Selecciona un producto'),
@@ -14,17 +15,9 @@ export const itemSchema = z.object({
     .max(999999.99, 'El costo no puede exceder Q999,999.99'),
 });
 
-export const nitSchema = z
-  .string()
-  .trim()
-  .toUpperCase()
-  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Usa el formato 12345678-9 o CF')
-  .optional()
-  .or(z.literal(''));
-
 export const purchaseSchema = z.object({
   supplierId: z.string().min(1, 'Selecciona un proveedor'),
-  buyerNit: nitSchema,
+  buyerNit: nitValidator,
   items: z.array(itemSchema).min(1, 'Agrega al menos un producto'),
   notes: z
     .string()

@@ -11,15 +11,7 @@ import {
 import { Modal } from '@shared/components/ui/Modal';
 import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
-import { emailValidator, nameValidator } from '@shared/utils/validationSchemas';
-
-const nitSchema = z
-  .string()
-  .trim()
-  .toUpperCase()
-  .regex(/^(CF|\d{1,8}-[\dK])$/i, 'NIT inválido. Usa el formato 12345678-9 o CF')
-  .optional()
-  .or(z.literal(''));
+import { emailValidator, nameValidator, nitValidator } from '@shared/utils/validationSchemas';
 
 const supplierSchema = z.object({
   name: z
@@ -35,7 +27,7 @@ const supplierSchema = z.object({
       (val) => /\p{L}/u.test(val),
       'El nombre del proveedor debe contener al menos una letra',
     ),
-  nit: nitSchema,
+  nit: nitValidator,
   contactName: nameValidator,
   email: emailValidator,
   phone: z

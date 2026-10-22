@@ -28,3 +28,11 @@ export const strongPasswordValidator = z
   .regex(/[a-z]/, 'Debe contener al menos una letra minúscula')
   .regex(/[0-9]/, 'Debe contener al menos un número')
   .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial (!@#$%...)');
+
+export const nitValidator = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^(CF|\d{1,8}-[\dK])$/, 'NIT inválido. Usa el formato 12345678-9 o CF')
+  .optional()
+  .or(z.literal(''));

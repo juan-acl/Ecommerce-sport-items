@@ -12,12 +12,12 @@ export const discountSchema = z
   .object({
     code: discountCodeSchema,
     type: z.enum(['percentage', 'fixed']),
-    value: z.number({ invalid_type_error: 'Ingresa un valor válido' }).positive('El valor debe ser mayor a 0'),
+    value: z.number('Ingresa un valor válido').positive('El valor debe ser mayor a 0'),
     minPurchase: z
-      .number({ invalid_type_error: 'Ingresa un valor válido' })
+      .number('Ingresa un valor válido')
       .min(0, 'Debe ser 0 o mayor'),
     maxUses: z
-      .number({ invalid_type_error: 'Ingresa un número válido' })
+      .number('Ingresa un número válido')
       .int('Debe ser un número entero')
       .min(0, 'Debe ser 0 o mayor'),
     expiresAt: z.string().optional(),
