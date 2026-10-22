@@ -17,7 +17,7 @@ import type { Order, PaymentMethodInfo } from '@features/orders/types';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const { cart } = useCart();
+  const { cart, isLoading } = useCart();
   const [checkout, { isLoading: isProcessing }] = useCheckoutMutation();
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
@@ -33,7 +33,9 @@ export function CheckoutPage() {
     clear: clearSession,
   } = useCheckoutSession();
 
-  if (cart.items.length === 0 && !completedOrder) {
+  // Wait for the server cart to load before deciding whether to redirect;
+  // authenticated users' cart starts empty until the API responds.
+  if (!isLoading && cart.items.length === 0 && !completedOrder) {
     clearCheckoutSession();
     return <Navigate to={ROUTES.CART} replace />;
   }
