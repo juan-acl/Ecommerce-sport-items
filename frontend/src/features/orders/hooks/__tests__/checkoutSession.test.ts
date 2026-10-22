@@ -35,6 +35,24 @@ describe('readCheckoutSession', () => {
     expect(readCheckoutSession().shippingAddress).toEqual(addr);
   });
 
+  it('restores paymentMethod safe fields from sessionStorage', () => {
+    const pm = { cardType: 'visa', last4: '4242', cardholderName: 'JUAN PEREZ', expiryMonth: '12', expiryYear: '27' };
+    sessionStorage.setItem(
+      'checkout_session',
+      JSON.stringify({ step: 'payment', shippingAddress: null, paymentMethod: pm, appliedDiscount: null }),
+    );
+    expect(readCheckoutSession().paymentMethod).toEqual(pm);
+  });
+
+  it('restores appliedDiscount from sessionStorage', () => {
+    const discount = { code: 'SAVE10', type: 'percentage', value: 10, discountAmount: 5, finalTotal: 45 };
+    sessionStorage.setItem(
+      'checkout_session',
+      JSON.stringify({ step: 'shipping', shippingAddress: null, paymentMethod: null, appliedDiscount: discount }),
+    );
+    expect(readCheckoutSession().appliedDiscount).toEqual(discount);
+  });
+
   it('returns default state when sessionStorage contains invalid JSON', () => {
     sessionStorage.setItem('checkout_session', '{broken json');
     const state = readCheckoutSession();
