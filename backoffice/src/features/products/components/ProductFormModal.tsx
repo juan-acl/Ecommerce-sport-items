@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
 import type { Product } from "@shared/types/common";
@@ -13,68 +12,15 @@ import {
 import { Modal } from "@shared/components/ui/Modal";
 import { Button } from "@shared/components/ui/Button";
 import { Input } from "@shared/components/ui/Input";
+import {
+  createProductSchema,
+  editProductSchema,
+  type CreateProductFormData,
+  type EditProductFormData,
+  CATEGORY_VALUES,
+} from '../schemas';
 
-const CATEGORY_VALUES = [
-  "running",
-  "football",
-  "basketball",
-  "tennis",
-  "swimming",
-  "cycling",
-  "fitness",
-  "other",
-] as const;
-
-const sharedFields = {
-  name: z
-    .string()
-    .trim()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(150, "El nombre no puede exceder 150 caracteres")
-    .regex(
-      /^[\p{L}\p{N}\s.,\-'/()+]+$/u,
-      "Solo puede contener letras, números, espacios y signos básicos",
-    )
-    .refine(
-      (val) => /\p{L}/u.test(val),
-      "El nombre debe contener al menos una letra (ej: Zapatos Running, Talla 42)",
-    ),
-  category: z.enum(CATEGORY_VALUES, {
-    errorMap: () => ({ message: "Selecciona una categoría válida" }),
-  }),
-  price: z
-    .number("El precio debe ser un número")
-    .positive("El precio debe ser mayor a 0")
-    .max(999999.99, "El precio no puede exceder Q999,999.99"),
-  description: z
-    .string()
-    .trim()
-    .min(10, "La descripción debe tener al menos 10 caracteres")
-    .max(1000, "La descripción no puede exceder 1000 caracteres")
-    .regex(/^[^<>{}@]+$/, "La descripción contiene caracteres no permitidos (@, <, >, etc.)")
-    .refine(
-      (val) => /\p{L}/u.test(val),
-      "La descripción debe contener texto descriptivo, no solo números",
-    ),
-  imageUrl: z.string().url("URL de imagen inválida").or(z.literal("")),
-};
-
-// Al crear: solo datos del producto, el stock empieza en 0 y lo maneja el sistema
-const createSchema = z.object(sharedFields);
-
-// Al editar: se puede definir el stock mínimo (umbral de alerta)
-const editSchema = z.object({
-  ...sharedFields,
-  minStock: z
-    .number("El stock mínimo debe ser un número")
-    .int("El stock mínimo debe ser un número entero")
-    .min(0, "El stock mínimo no puede ser negativo")
-    .max(99999, "El stock mínimo no puede exceder 99,999"),
-});
-
-type CreateFormData = z.infer<typeof createSchema>;
-type EditFormData = z.infer<typeof editSchema>;
-type ProductFormData = EditFormData;
+type ProductFormData = EditProductFormData;
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -108,7 +54,7 @@ export function ProductFormModal({
     setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(isEditing ? editSchema : createSchema),
+    resolver: zodResolver(isEditing ? editProductSchema : createProductSchema),
   });
 
   const revokeObjectUrl = () => {
@@ -209,7 +155,7 @@ export function ProductFormModal({
 
     try {
       if (isEditing && product) {
-        const { minStock, ...rest } = data as EditFormData;
+        const { minStock, ...rest } = data as EditProductFormData;
         await updateProduct({
           id: product.id,
           ...rest,
@@ -218,7 +164,7 @@ export function ProductFormModal({
         }).unwrap();
         toast.success("Producto actualizado.");
       } else {
-        const { minStock: _ms, ...createData } = data as Partial<EditFormData> & CreateFormData;
+        const { minStock: _ms, ...createData } = data as Partial<EditProductFormData> & CreateProductFormData;
         await createProduct({ ...createData, imageUrl: finalImageUrl }).unwrap();
         toast.success("Producto creado. El stock se actualizará al recibir la primera compra.");
       }
