@@ -7,6 +7,7 @@ export type { PaymentMethodInfo };
 interface PaymentMethodProps {
   onContinue: (data: PaymentMethodInfo) => void;
   onBack: () => void;
+  initialValues?: Pick<PaymentMethodInfo, 'cardholderName' | 'expiryMonth' | 'expiryYear'>;
 }
 
 type CardType = 'visa' | 'mastercard' | 'amex' | 'other';
@@ -189,8 +190,15 @@ function CardVisual({
   );
 }
 
-export function PaymentMethod({ onContinue, onBack }: PaymentMethodProps) {
-  const [form, setForm] = useState<FormState>({ number: '', name: '', expiry: '', cvv: '' });
+export function PaymentMethod({ onContinue, onBack, initialValues }: PaymentMethodProps) {
+  const [form, setForm] = useState<FormState>({
+    number: '',
+    name: initialValues?.cardholderName ?? '',
+    expiry: initialValues
+      ? `${initialValues.expiryMonth}/${initialValues.expiryYear}`
+      : '',
+    cvv: '',
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [cvvFocused, setCvvFocused] = useState(false);
 

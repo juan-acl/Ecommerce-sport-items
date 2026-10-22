@@ -3,14 +3,15 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCart } from '@features/cart/hooks/useCart';
 import { useCheckoutMutation } from '@features/orders/api/ordersApi';
-import { CheckoutSteps, type CheckoutStep } from '@features/orders/components/CheckoutSteps';
+import { CheckoutSteps } from '@features/orders/components/CheckoutSteps';
 import { ShippingForm } from '@features/orders/components/ShippingForm';
 import { PaymentMethod } from '@features/orders/components/PaymentMethod';
 import { ReviewOrder } from '@features/orders/components/ReviewOrder';
 import { CheckoutSummary } from '@features/orders/components/CheckoutSummary';
-import { DiscountCodeInput, type AppliedDiscount } from '@features/orders/components/DiscountCodeInput';
+import { DiscountCodeInput } from '@features/orders/components/DiscountCodeInput';
 import { OrderConfirmation } from '@features/orders/components/OrderConfirmation';
 import { ROUTES } from '@shared/constants/routes';
+import { useCheckoutSession } from '@features/orders/hooks/useCheckoutSession';
 import type { ShippingAddressFormData } from '@features/orders/api/schemas';
 import type { Order, PaymentMethodInfo } from '@features/orders/types';
 
@@ -18,32 +19,37 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { cart } = useCart();
   const [checkout, { isLoading: isProcessing }] = useCheckoutMutation();
-
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping');
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddressFormData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodInfo | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
-  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
 
-  // Si llegan al checkout con carrito vacío, redirigir
+  const {
+    step: currentStep,
+    shippingAddress,
+    paymentMethod,
+    appliedDiscount,
+    setStep,
+    setShippingAddress,
+    setPaymentMethod,
+    setAppliedDiscount,
+    clear: clearSession,
+  } = useCheckoutSession();
+
   if (cart.items.length === 0 && !completedOrder) {
     return <Navigate to={ROUTES.CART} replace />;
   }
 
-  // Si ya hay orden creada, mostrar pantalla de confirmación
   if (completedOrder) {
     return <OrderConfirmation order={completedOrder} />;
   }
 
   const handleShippingSubmit = (data: ShippingAddressFormData) => {
     setShippingAddress(data);
-    setCurrentStep('payment');
+    setStep('payment');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePaymentContinue = (data: PaymentMethodInfo) => {
     setPaymentMethod(data);
-    setCurrentStep('review');
+    setStep('review');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -56,6 +62,7 @@ export function CheckoutPage() {
         ...(appliedDiscount ? { discountCode: appliedDiscount.code } : {}),
         ...(paymentMethod ? { paymentMethod } : {}),
       }).unwrap();
+      clearSession();
       setCompletedOrder(order);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -66,7 +73,6 @@ export function CheckoutPage() {
         toast.error(
           error.data?.error?.message ?? 'Algunos productos ya no tienen stock suficiente',
         );
-        // Volvemos al carrito para que el usuario revise
         setTimeout(() => navigate(ROUTES.CART), 1500);
       } else if (code === 'EMPTY_CART') {
         toast.error('Tu carrito está vacío');
@@ -109,9 +115,9 @@ export function CheckoutPage() {
             <>
               <PaymentMethod
                 onContinue={handlePaymentContinue}
-                onBack={() => setCurrentStep('shipping')}
+                onBack={() => setStep('shipping')}
+                initialValues={paymentMethod ?? undefined}
               />
-
               <DiscountCodeInput
                 orderTotal={cart.total}
                 appliedDiscount={appliedDiscount}
@@ -126,7 +132,7 @@ export function CheckoutPage() {
               shippingAddress={shippingAddress}
               paymentMethod={paymentMethod}
               onPlaceOrder={handlePlaceOrder}
-              onBack={() => setCurrentStep('payment')}
+              onBack={() => setStep('payment')}
               isProcessing={isProcessing}
               appliedDiscount={appliedDiscount}
             />
