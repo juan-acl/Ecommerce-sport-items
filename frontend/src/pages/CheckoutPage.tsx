@@ -11,7 +11,7 @@ import { CheckoutSummary } from '@features/orders/components/CheckoutSummary';
 import { DiscountCodeInput } from '@features/orders/components/DiscountCodeInput';
 import { OrderConfirmation } from '@features/orders/components/OrderConfirmation';
 import { ROUTES } from '@shared/constants/routes';
-import { useCheckoutSession } from '@features/orders/hooks/useCheckoutSession';
+import { useCheckoutSession, clearCheckoutSession } from '@features/orders/hooks/useCheckoutSession';
 import type { ShippingAddressFormData } from '@features/orders/api/schemas';
 import type { Order, PaymentMethodInfo } from '@features/orders/types';
 
@@ -34,7 +34,7 @@ export function CheckoutPage() {
   } = useCheckoutSession();
 
   if (cart.items.length === 0 && !completedOrder) {
-    clearSession();
+    clearCheckoutSession();
     return <Navigate to={ROUTES.CART} replace />;
   }
 
