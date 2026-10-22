@@ -45,7 +45,7 @@ describe('readCheckoutSession', () => {
   });
 
   it('restores appliedDiscount from sessionStorage', () => {
-    const discount = { code: 'SAVE10', type: 'percentage', value: 10, discountAmount: 5, finalTotal: 45 };
+    const discount = { discountId: 'disc-1', code: 'SAVE10', discountAmount: 5, finalTotal: 45 };
     sessionStorage.setItem(
       'checkout_session',
       JSON.stringify({ step: 'shipping', shippingAddress: null, paymentMethod: null, appliedDiscount: discount }),
