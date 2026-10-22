@@ -43,7 +43,7 @@ const sharedFields = {
     errorMap: () => ({ message: "Selecciona una categoría válida" }),
   }),
   price: z
-    .number({ invalid_type_error: "El precio debe ser un número" })
+    .number("El precio debe ser un número")
     .positive("El precio debe ser mayor a 0")
     .max(999999.99, "El precio no puede exceder Q999,999.99"),
   description: z
@@ -66,7 +66,7 @@ const createSchema = z.object(sharedFields);
 const editSchema = z.object({
   ...sharedFields,
   minStock: z
-    .number({ invalid_type_error: "El stock mínimo debe ser un número" })
+    .number("El stock mínimo debe ser un número")
     .int("El stock mínimo debe ser un número entero")
     .min(0, "El stock mínimo no puede ser negativo")
     .max(99999, "El stock mínimo no puede exceder 99,999"),
