@@ -77,8 +77,8 @@ export function DiscountCodeInput({
         finalTotal: result.finalTotal,
       });
     } catch (err) {
-      const error = err as { data?: { message?: string } };
-      setInputError(error.data?.message ?? 'Código de descuento inválido o expirado');
+      const error = err as { data?: { error?: { message?: string } } };
+      setInputError(error.data?.error?.message ?? 'Código de descuento inválido o expirado');
       onDiscountApplied(null);
     }
   };
