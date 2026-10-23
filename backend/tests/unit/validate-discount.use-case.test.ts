@@ -18,12 +18,20 @@ const activeDiscount = (overrides: Partial<DiscountProps> = {}): Discount =>
     ...overrides,
   });
 
-const makeRepo = (discount: Discount | null): DiscountRepository => ({
+const makeRepo = (
+  discount: Discount | null,
+  hasUsed = false,
+): DiscountRepository => ({
   findByCode: jest.fn().mockResolvedValue(discount),
   findById: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
   list: jest.fn(),
+  hasUserUsedDiscount: jest.fn().mockResolvedValue(hasUsed),
+  recordUserUsage: jest.fn().mockResolvedValue(undefined),
+  incrementUsedCount: jest.fn().mockResolvedValue(undefined),
+  listAll: jest.fn(),
+  setActive: jest.fn(),
 } as unknown as DiscountRepository);
 
 describe('ValidateDiscountUseCase — cartCategories', () => {
@@ -52,5 +60,35 @@ describe('ValidateDiscountUseCase — cartCategories', () => {
     await expect(
       useCase.execute({ code: 'RUNNING10', orderTotal: 100, cartCategories: ['swimming'] }),
     ).rejects.toThrow('Este descuento no aplica para los productos en tu carrito');
+  });
+});
+
+describe('ValidateDiscountUseCase — per-user usage', () => {
+  // TC-UC-04
+  it('TC-UC-04: rechaza descuento cuando el usuario ya lo utilizó', async () => {
+    const repo = makeRepo(activeDiscount(), true);
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'user-1' }),
+    ).rejects.toThrow('Ya utilizaste este código de descuento');
+  });
+
+  // TC-UC-05
+  it('TC-UC-05: acepta descuento cuando el usuario no lo ha utilizado', async () => {
+    const repo = makeRepo(activeDiscount(), false);
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'user-1' }),
+    ).resolves.toMatchObject({ code: 'RUNNING10' });
+  });
+
+  // TC-UC-06
+  it('TC-UC-06: omite verificación de uso si no se proporciona userId', async () => {
+    const repo = makeRepo(activeDiscount(), true);
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100 }),
+    ).resolves.toMatchObject({ code: 'RUNNING10' });
+    expect(repo.hasUserUsedDiscount).not.toHaveBeenCalled();
   });
 });

@@ -20,6 +20,13 @@ export class ValidateDiscountUseCase {
       throw new DiscountNotFoundException(dto.code);
     }
 
+    if (dto.userId) {
+      const alreadyUsed = await this.discountRepo.hasUserUsedDiscount(discount.id, dto.userId);
+      if (alreadyUsed) {
+        throw new DiscountInvalidException('Ya utilizaste este código de descuento');
+      }
+    }
+
     if (!discount.isValid(dto.orderTotal, dto.cartCategories)) {
       if (!discount.isActive) {
         throw new DiscountInvalidException('Este descuento no está activo');

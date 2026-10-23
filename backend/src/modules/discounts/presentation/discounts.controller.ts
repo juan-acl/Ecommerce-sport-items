@@ -62,9 +62,9 @@ export class DiscountsController {
     }
   };
 
-  validate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  validate = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const dto = ValidateDiscountSchema.parse(req.body);
+      const dto = ValidateDiscountSchema.parse({ ...req.body, userId: req.user?.id });
       const result = await this.validateDiscountUseCase.execute(dto);
       ApiResponder.ok(req, res, result);
     } catch (err) {
