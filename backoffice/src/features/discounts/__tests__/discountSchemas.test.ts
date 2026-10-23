@@ -66,4 +66,80 @@ describe('discountSchema – numeric fields', () => {
       expect(issue?.message).toBe('Ingresa un número válido');
     }
   });
+
+  it('rejects negative value', () => {
+    expect(discountSchema.safeParse({ ...base, value: -5 }).success).toBe(false);
+  });
+
+  it('rejects negative minPurchase', () => {
+    expect(discountSchema.safeParse({ ...base, minPurchase: -1 }).success).toBe(false);
+  });
+
+  it('rejects negative maxUses', () => {
+    expect(discountSchema.safeParse({ ...base, maxUses: -1 }).success).toBe(false);
+  });
+
+  it('rejects percentage value above 100', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'percentage', value: 101 }).success).toBe(false);
+  });
+
+  it('rejects percentage value of 0', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'percentage', value: 0 }).success).toBe(false);
+  });
+
+  it('rejects fixed value above 9999.99', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'fixed', value: 10000 }).success).toBe(false);
+  });
+
+  it('rejects minPurchase above 999999.99', () => {
+    expect(discountSchema.safeParse({ ...base, minPurchase: 1000000 }).success).toBe(false);
+  });
+
+  it('accepts valid percentage discount', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'percentage', value: 50 }).success).toBe(true);
+  });
+
+  it('accepts valid fixed discount', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'fixed', value: 25.5 }).success).toBe(true);
+  });
+});
+
+describe('discountSchema – expiresAt field', () => {
+  const base = {
+    code: 'TEST10',
+    type: 'percentage' as const,
+    value: 10,
+    minPurchase: 0,
+    maxUses: 0,
+  };
+
+  it('accepts empty string (no expiry)', () => {
+    expect(discountSchema.safeParse({ ...base, expiresAt: '' }).success).toBe(true);
+  });
+
+  it('accepts undefined (no expiry)', () => {
+    expect(discountSchema.safeParse({ ...base }).success).toBe(true);
+  });
+
+  it('rejects a past date', () => {
+    const result = discountSchema.safeParse({ ...base, expiresAt: '2020-01-01' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path.includes('expiresAt'));
+      expect(issue?.message).toBe('La fecha de expiración debe ser en el futuro');
+    }
+  });
+
+  it('rejects an invalid date string', () => {
+    const result = discountSchema.safeParse({ ...base, expiresAt: 'not-a-date' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path.includes('expiresAt'));
+      expect(issue?.message).toBeDefined();
+    }
+  });
+
+  it('accepts a future date', () => {
+    expect(discountSchema.safeParse({ ...base, expiresAt: '2099-12-31' }).success).toBe(true);
+  });
 });

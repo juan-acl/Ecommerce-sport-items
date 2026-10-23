@@ -15,7 +15,8 @@ export const discountSchema = z
     value: z.number('Ingresa un valor válido').positive('El valor debe ser mayor a 0'),
     minPurchase: z
       .number('Ingresa un valor válido')
-      .min(0, 'Debe ser 0 o mayor'),
+      .min(0, 'Debe ser 0 o mayor')
+      .max(999999.99, 'El valor no puede exceder Q999,999.99'),
     maxUses: z
       .number('Ingresa un número válido')
       .int('Debe ser un número entero')

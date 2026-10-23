@@ -148,6 +148,7 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
           max={watchedType === 'percentage' ? 100 : 9999.99}
           step={watchedType === 'percentage' ? 1 : 0.01}
           placeholder={watchedType === 'percentage' ? '10' : '50.00'}
+          onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
           error={errors.value?.message}
         />
 
@@ -157,9 +158,11 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
           label="Compra mínima (GTQ)"
           type="number"
           min={0}
+          max={999999.99}
           step={0.01}
           placeholder="0.00"
           hint="0 = sin mínimo"
+          onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
           error={errors.minPurchase?.message}
         />
 
@@ -172,6 +175,7 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
           step={1}
           placeholder="0"
           hint="0 = ilimitado"
+          onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
           error={errors.maxUses?.message}
         />
 
@@ -219,6 +223,7 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
           id="expiresAt"
           label="Fecha de expiración (opcional)"
           type="date"
+          min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
           error={errors.expiresAt?.message}
         />
       </form>
