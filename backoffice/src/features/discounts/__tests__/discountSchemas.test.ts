@@ -102,6 +102,14 @@ describe('discountSchema – numeric fields', () => {
   it('accepts valid fixed discount', () => {
     expect(discountSchema.safeParse({ ...base, type: 'fixed', value: 25.5 }).success).toBe(true);
   });
+
+  it('rejects fixed value below minimum (0.001)', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'fixed', value: 0.001 }).success).toBe(false);
+  });
+
+  it('accepts fixed value at minimum boundary (0.01)', () => {
+    expect(discountSchema.safeParse({ ...base, type: 'fixed', value: 0.01 }).success).toBe(true);
+  });
 });
 
 describe('discountSchema – expiresAt field', () => {
