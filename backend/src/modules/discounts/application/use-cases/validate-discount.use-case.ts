@@ -20,7 +20,7 @@ export class ValidateDiscountUseCase {
       throw new DiscountNotFoundException(dto.code);
     }
 
-    if (!discount.isValid(dto.orderTotal)) {
+    if (!discount.isValid(dto.orderTotal, dto.cartCategories)) {
       if (!discount.isActive) {
         throw new DiscountInvalidException('Este descuento no está activo');
       }

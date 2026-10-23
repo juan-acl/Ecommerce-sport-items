@@ -112,6 +112,7 @@ export function CheckoutPage() {
                 orderTotal={cart.total}
                 appliedDiscount={appliedDiscount}
                 onDiscountApplied={setAppliedDiscount}
+                cartItems={cart.items}
               />
             </>
           )}
@@ -127,6 +128,7 @@ export function CheckoutPage() {
                 orderTotal={cart.total}
                 appliedDiscount={appliedDiscount}
                 onDiscountApplied={setAppliedDiscount}
+                cartItems={cart.items}
               />
             </>
           )}

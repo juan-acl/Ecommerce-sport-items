@@ -95,3 +95,34 @@ describe('Discount entity — calculateDiscount()', () => {
     expect(discount.calculateDiscount(500)).toBe(500);
   });
 });
+
+describe('Discount entity — applicableCategories', () => {
+  const scopedProps: DiscountProps = {
+    ...baseProps,
+    applicableCategories: ['running', 'football'],
+  };
+
+  // TC-13
+  it('TC-13: descuento con categoria aplicable válida para items del carrito', () => {
+    const discount = new Discount(scopedProps);
+    expect(discount.isValid(100, ['running'])).toBe(true);
+  });
+
+  // TC-14
+  it('TC-14: descuento sin categoría coincidente en el carrito no es válido', () => {
+    const discount = new Discount(scopedProps);
+    expect(discount.isValid(100, ['swimming', 'cycling'])).toBe(false);
+  });
+
+  // TC-15
+  it('TC-15: descuento con applicableCategories omite validación si cartCategories no se pasa', () => {
+    const discount = new Discount(scopedProps);
+    expect(discount.isValid(100)).toBe(true);
+  });
+
+  // TC-16
+  it('TC-16: descuento sin applicableCategories acepta cualquier carrito', () => {
+    const discount = new Discount(baseProps);
+    expect(discount.isValid(100, ['swimming', 'cycling'])).toBe(true);
+  });
+});

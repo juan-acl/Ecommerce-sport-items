@@ -5,6 +5,7 @@ import type { ApiSuccessResponse } from '@shared/types/api';
 export interface ValidateDiscountRequest {
   code: string;
   orderTotal: number;
+  cartCategories?: string[];
 }
 
 export interface ValidateDiscountResponse {

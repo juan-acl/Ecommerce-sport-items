@@ -6,6 +6,7 @@ export interface CartItem {
   imageUrl: string;
   addedAt: string;
   subtotal: number;
+  category?: string;
 }
 
 export interface Cart {

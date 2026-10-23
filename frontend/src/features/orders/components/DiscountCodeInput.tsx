@@ -4,6 +4,7 @@ import { Button } from '@shared/components/ui/Button';
 import { Input } from '@shared/components/ui/Input';
 import { useValidateDiscountMutation } from '@features/discounts/api/discountsApi';
 import { formatCurrency } from '@shared/utils/formatCurrency';
+import type { CartItem } from '@features/cart/types';
 
 export interface AppliedDiscount {
   discountId: string;
@@ -16,12 +17,14 @@ interface DiscountCodeInputProps {
   orderTotal: number;
   onDiscountApplied: (discount: AppliedDiscount | null) => void;
   appliedDiscount: AppliedDiscount | null;
+  cartItems?: CartItem[];
 }
 
 export function DiscountCodeInput({
   orderTotal,
   onDiscountApplied,
   appliedDiscount,
+  cartItems,
 }: DiscountCodeInputProps) {
   const [code, setCode] = useState(appliedDiscount?.code ?? '');
   const [inputError, setInputError] = useState<string | null>(null);
@@ -57,8 +60,16 @@ export function DiscountCodeInput({
     setInputError(null);
     setIsDirtyAfterApply(false);
 
+    const cartCategories = cartItems
+      ? [...new Set(cartItems.map((i) => i.category).filter((c): c is string => !!c))]
+      : undefined;
+
     try {
-      const result = await validateDiscount({ code: trimmed, orderTotal }).unwrap();
+      const result = await validateDiscount({
+        code: trimmed,
+        orderTotal,
+        ...(cartCategories && cartCategories.length > 0 ? { cartCategories } : {}),
+      }).unwrap();
       onDiscountApplied({
         discountId: result.discountId,
         code: result.code,

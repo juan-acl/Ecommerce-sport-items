@@ -12,6 +12,7 @@ export class CartMapper {
       quantity: cartItem.quantity,
       imageUrl: cartItem.imageUrl,
       addedAt: cartItem.addedAt,
+      ...(cartItem.category !== undefined && { category: cartItem.category }),
     };
   }
 
@@ -23,6 +24,7 @@ export class CartMapper {
       quantity: item.quantity as number,
       imageUrl: item.imageUrl as string,
       addedAt: item.addedAt as string,
+      ...(item.category !== undefined && { category: item.category as string }),
     };
     return new CartItem(props);
   }

@@ -5,6 +5,7 @@ export interface CartItemProps {
   quantity: number;
   imageUrl: string;
   addedAt: string;
+  category?: string;
 }
 
 export class CartItem {
@@ -32,6 +33,10 @@ export class CartItem {
     return this.props.addedAt;
   }
 
+  get category(): string | undefined {
+    return this.props.category;
+  }
+
   get subtotal(): number {
     return this.props.unitPrice * this.props.quantity;
   }
@@ -41,6 +46,6 @@ export class CartItem {
   }
 
   toJSON(): CartItemProps & { subtotal: number } {
-    return { ...this.props, subtotal: this.subtotal };
+    return { ...this.props, subtotal: this.subtotal, category: this.props.category };
   }
 }

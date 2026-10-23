@@ -28,6 +28,7 @@ export class AddToCartUseCase {
       quantity: newQuantity,
       imageUrl: product.imageUrl,
       addedAt: new Date().toISOString(),
+      category: product.category,
     });
 
     await this.cartRepo.upsertItem(userId, item);
