@@ -285,7 +285,7 @@ export function ReportsPage() {
                             </Badge>
                           </td>
                           <td className="px-5 py-3 text-right font-semibold tabular-nums text-on-surface">
-                            {(count as number).toLocaleString('es-GT')}
+                            {count.toLocaleString('es-GT')}
                           </td>
                         </tr>
                       ))}
