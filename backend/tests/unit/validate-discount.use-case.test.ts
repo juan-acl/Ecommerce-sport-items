@@ -51,6 +51,6 @@ describe('ValidateDiscountUseCase — cartCategories', () => {
     const useCase = new ValidateDiscountUseCase(repo);
     await expect(
       useCase.execute({ code: 'RUNNING10', orderTotal: 100, cartCategories: ['swimming'] }),
-    ).rejects.toThrow();
+    ).rejects.toThrow('Este descuento no aplica para los productos en tu carrito');
   });
 });

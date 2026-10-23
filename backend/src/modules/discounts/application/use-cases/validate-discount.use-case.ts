@@ -35,6 +35,14 @@ export class ValidateDiscountUseCase {
           `Este descuento requiere una compra mínima de Q${discount.minPurchase.toFixed(2)}`,
         );
       }
+      if (
+        discount.applicableCategories.length > 0 &&
+        dto.cartCategories &&
+        dto.cartCategories.length > 0 &&
+        !dto.cartCategories.some((c) => discount.applicableCategories.includes(c))
+      ) {
+        throw new DiscountInvalidException('Este descuento no aplica para los productos en tu carrito');
+      }
       throw new DiscountInvalidException('Este descuento no es válido');
     }
 
