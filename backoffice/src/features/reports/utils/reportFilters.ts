@@ -1,10 +1,12 @@
-export type MovementType = 'purchase' | 'sale' | 'return' | 'adjustment';
+import type { MovementType } from '@shared/types/common';
+
+export type { MovementType };
 export type MovementFilter = MovementType | 'all';
 
 interface Movement {
   id: string;
   productName: string;
-  type: MovementType;
+  type: string;
   quantity: number;
   createdAt: string;
 }
