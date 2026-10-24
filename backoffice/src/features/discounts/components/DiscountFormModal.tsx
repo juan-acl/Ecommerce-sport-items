@@ -50,6 +50,7 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
   });
 
   const watchedType = watch('type');
+  const watchedValue = watch('value');
 
   useEffect(() => {
     if (isOpen) {
@@ -73,7 +74,7 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
         const d = new Date(`${data.expiresAt}T23:59:59`);
         expiresAt = d.toISOString();
       }
-      await createDiscount({
+      const created = await createDiscount({
         code: data.code,
         type: data.type,
         value: data.value,
@@ -82,7 +83,11 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
         expiresAt,
         applicableCategories: data.applicableCategories?.length ? data.applicableCategories : undefined,
       }).unwrap();
-      toast.success('Descuento creado correctamente.');
+      if (created.needsApproval) {
+        toast.success('Descuento creado. Requiere aprobación de un supervisor antes de poder usarse.');
+      } else {
+        toast.success('Descuento creado correctamente.');
+      }
       onClose();
     } catch {
       toast.error('Error al crear el descuento.');
@@ -151,6 +156,16 @@ export function DiscountFormModal({ isOpen, onClose }: Readonly<Props>) {
           onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
           error={errors.value?.message}
         />
+
+        {watchedType === 'percentage' && watchedValue > 10 && (
+          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-[12px] text-amber-800">
+            <span className="mt-0.5 shrink-0">⚠️</span>
+            <span>
+              Los descuentos mayores al 10% requieren aprobación de un supervisor antes de poder usarse.
+              El descuento se creará como <strong>inactivo</strong>.
+            </span>
+          </div>
+        )}
 
         <Input
           {...register('minPurchase', { valueAsNumber: true })}
