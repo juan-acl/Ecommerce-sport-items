@@ -1,5 +1,5 @@
 import { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
-import { DiscountNotFoundException } from '@modules/discounts/domain/exceptions/discount.exceptions';
+import { DiscountNotFoundException, DiscountInvalidException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 import { DiscountProps } from '@modules/discounts/domain/entities/discount.entity';
 
 export class ToggleDiscountUseCase {
@@ -9,6 +9,10 @@ export class ToggleDiscountUseCase {
     const discount = await this.discountRepo.findById(id);
     if (!discount) {
       throw new DiscountNotFoundException(id);
+    }
+
+    if (discount.needsApproval && !discount.isActive && !discount.approvedBy) {
+      throw new DiscountInvalidException('Este descuento requiere aprobación antes de poder activarse');
     }
 
     const toggled = discount.withToggled();
