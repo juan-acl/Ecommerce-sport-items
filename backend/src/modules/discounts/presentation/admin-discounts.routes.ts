@@ -12,6 +12,7 @@ export function buildAdminDiscountsRouter(controller: DiscountsController): Rout
   v1.post('/admin/discounts', requirePermission('discounts', 'create'), controller.create);
   v1.get('/admin/discounts', requirePermission('discounts', 'view'), controller.list);
   v1.put('/admin/discounts/:id/toggle', requirePermission('discounts', 'edit'), controller.toggle);
+  v1.put('/admin/discounts/:id/approve', requirePermission('discounts', 'edit'), controller.approve);
 
   router.use('/v1', v1);
   return router;

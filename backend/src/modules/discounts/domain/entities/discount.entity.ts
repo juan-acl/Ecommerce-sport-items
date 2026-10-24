@@ -13,6 +13,9 @@ export interface DiscountProps {
   createdAt: string;
   createdBy: string;
   applicableCategories?: string[];
+  needsApproval?: boolean;
+  approvedBy?: string;
+  approvalReason?: string;
 }
 
 export class Discount {
@@ -30,6 +33,9 @@ export class Discount {
   get createdAt(): string { return this.props.createdAt; }
   get createdBy(): string { return this.props.createdBy; }
   get applicableCategories(): string[] { return this.props.applicableCategories ?? []; }
+  get needsApproval(): boolean { return this.props.needsApproval ?? false; }
+  get approvedBy(): string | undefined { return this.props.approvedBy; }
+  get approvalReason(): string | undefined { return this.props.approvalReason; }
 
   isValid(orderTotal: number, cartCategories?: string[]): boolean {
     if (!this.props.isActive) return false;
@@ -53,6 +59,10 @@ export class Discount {
 
   withToggled(): Discount {
     return new Discount({ ...this.props, isActive: !this.props.isActive });
+  }
+
+  withApproved(approvedBy: string, approvalReason: string): Discount {
+    return new Discount({ ...this.props, isActive: true, approvedBy, approvalReason });
   }
 
   toJSON(): DiscountProps {

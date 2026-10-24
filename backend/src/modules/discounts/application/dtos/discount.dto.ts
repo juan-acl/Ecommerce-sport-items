@@ -68,6 +68,13 @@ export const ValidateDiscountSchema = z.object({
 
 export type ValidateDiscountDto = z.infer<typeof ValidateDiscountSchema>;
 
+export const ApproveDiscountSchema = z.object({
+  approvedBy: z.string().min(1, 'El aprobador es requerido'),
+  approvalReason: z.string().min(5, 'La razón de aprobación debe tener al menos 5 caracteres').max(500),
+});
+
+export type ApproveDiscountDto = z.infer<typeof ApproveDiscountSchema>;
+
 export const ListDiscountsQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),

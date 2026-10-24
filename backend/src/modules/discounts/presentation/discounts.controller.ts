@@ -3,7 +3,8 @@ import { CreateDiscountUseCase } from '@modules/discounts/application/use-cases/
 import { ListDiscountsUseCase } from '@modules/discounts/application/use-cases/list-discounts.use-case';
 import { ValidateDiscountUseCase } from '@modules/discounts/application/use-cases/validate-discount.use-case';
 import { ToggleDiscountUseCase } from '@modules/discounts/application/use-cases/toggle-discount.use-case';
-import { CreateDiscountSchema, ValidateDiscountSchema } from '@modules/discounts/application/dtos/discount.dto';
+import { ApproveDiscountUseCase } from '@modules/discounts/application/use-cases/approve-discount.use-case';
+import { CreateDiscountSchema, ValidateDiscountSchema, ApproveDiscountSchema } from '@modules/discounts/application/dtos/discount.dto';
 import { CreateAuditLogUseCase } from '@modules/audit/application/use-cases/create-audit-log.use-case';
 import { ApiResponder } from '@shared/infrastructure/http/response.builder';
 import { AuthenticatedRequest } from '@shared/infrastructure/http/middlewares/auth.middleware';
@@ -15,6 +16,7 @@ export class DiscountsController {
     private readonly validateDiscountUseCase: ValidateDiscountUseCase,
     private readonly toggleDiscountUseCase: ToggleDiscountUseCase,
     private readonly auditUseCase?: CreateAuditLogUseCase,
+    private readonly approveDiscountUseCase?: ApproveDiscountUseCase,
   ) {}
 
   private audit(req: AuthenticatedRequest, action: string, entityId: string, details: Record<string, unknown>) {
@@ -66,6 +68,31 @@ export class DiscountsController {
     try {
       const dto = ValidateDiscountSchema.parse({ ...req.body, userId: req.user?.id });
       const result = await this.validateDiscountUseCase.execute(dto);
+      ApiResponder.ok(req, res, result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  approve = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!this.approveDiscountUseCase) {
+        res.status(501).json({ error: { message: 'Not implemented' } });
+        return;
+      }
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const dto = ApproveDiscountSchema.parse(req.body);
+      const approvedBy = req.user?.email ?? 'unknown';
+      const result = await this.approveDiscountUseCase.execute({
+        id: id ?? '',
+        approvedBy,
+        approvalReason: dto.approvalReason,
+      });
+      this.audit(req, 'DISCOUNT_APPROVED', id ?? '', {
+        code: result.code,
+        approvedBy,
+        approvalReason: dto.approvalReason,
+      });
       ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);

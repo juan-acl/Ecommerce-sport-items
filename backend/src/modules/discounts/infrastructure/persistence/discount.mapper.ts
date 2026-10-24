@@ -15,6 +15,9 @@ export class DiscountMapper {
       createdAt: item.createdAt as string,
       createdBy: item.createdBy as string,
       applicableCategories: (item.applicableCategories as string[] | undefined) ?? [],
+      needsApproval: (item.needsApproval as boolean | undefined) ?? false,
+      approvedBy: item.approvedBy as string | undefined,
+      approvalReason: item.approvalReason as string | undefined,
     };
     return new Discount(props);
   }

@@ -102,6 +102,22 @@ export class DynamoDiscountRepository implements DiscountRepository {
     );
   }
 
+  async approve(id: string, approvedBy: string, approvalReason: string): Promise<void> {
+    await this.client.send(
+      new UpdateCommand({
+        TableName: this.tableName,
+        Key: { PK: `DISCOUNT#${id}`, SK: 'METADATA' },
+        UpdateExpression: 'SET isActive = :active, approvedBy = :approvedBy, approvalReason = :reason',
+        ExpressionAttributeValues: {
+          ':active': true,
+          ':approvedBy': approvedBy,
+          ':reason': approvalReason,
+        },
+        ConditionExpression: 'attribute_exists(PK)',
+      }),
+    );
+  }
+
   async hasUserUsedDiscount(discountId: string, userId: string): Promise<boolean> {
     const result = await this.client.send(
       new GetCommand({

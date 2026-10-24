@@ -153,6 +153,9 @@ export interface Discount {
   createdAt: string;
   createdBy: string;
   applicableCategories?: string[];
+  needsApproval?: boolean;
+  approvedBy?: string;
+  approvalReason?: string;
 }
 
 export interface AuditLog {

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Percent, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Percent, Plus, ShieldCheck, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGetDiscountsQuery, useToggleDiscountMutation } from '@features/discounts/api/discountsApi';
 import { DiscountFormModal } from '@features/discounts/components/DiscountFormModal';
+import { ApproveDiscountModal } from '@features/discounts/components/ApproveDiscountModal';
+import { isPendingApproval } from '@features/discounts/utils/discountApprovalHelpers';
 import { DataTable, type Column } from '@shared/components/ui/DataTable';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
@@ -16,6 +18,7 @@ export function DiscountsPage() {
   const { data, isLoading, isFetching } = useGetDiscountsQuery({ limit: LIMIT, cursor });
   const [toggleDiscount, { isLoading: isToggling }] = useToggleDiscountMutation();
   const [formOpen, setFormOpen] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<Discount | null>(null);
 
   const discounts = data?.items ?? [];
   const hasMore = !!data?.nextCursor;
@@ -104,11 +107,16 @@ export function DiscountsPage() {
     {
       key: 'status',
       header: 'Estado',
-      render: (d) => (
-        <Badge variant={d.isActive ? 'success' : 'default'}>
-          {d.isActive ? 'Activo' : 'Inactivo'}
-        </Badge>
-      ),
+      render: (d) => {
+        if (isPendingApproval(d)) {
+          return <Badge variant="warning">Pendiente aprobación</Badge>;
+        }
+        return (
+          <Badge variant={d.isActive ? 'success' : 'default'}>
+            {d.isActive ? 'Activo' : 'Inactivo'}
+          </Badge>
+        );
+      },
     },
     {
       key: 'expiresAt',
@@ -122,27 +130,37 @@ export function DiscountsPage() {
     {
       key: 'action',
       header: 'Acción',
-      width: '120px',
-      render: (d) => (
-        <Button
-          size="sm"
-          variant={d.isActive ? 'outline' : 'secondary'}
-          onClick={() => handleToggle(d.id, d.isActive)}
-          disabled={isToggling}
-        >
-          {d.isActive ? (
-            <>
-              <ToggleLeft size={13} />
-              Desactivar
-            </>
-          ) : (
-            <>
-              <ToggleRight size={13} />
-              Activar
-            </>
-          )}
-        </Button>
-      ),
+      width: '140px',
+      render: (d) => {
+        if (isPendingApproval(d)) {
+          return (
+            <Button size="sm" variant="secondary" onClick={() => setPendingApproval(d)}>
+              <ShieldCheck size={13} />
+              Aprobar
+            </Button>
+          );
+        }
+        return (
+          <Button
+            size="sm"
+            variant={d.isActive ? 'outline' : 'secondary'}
+            onClick={() => handleToggle(d.id, d.isActive)}
+            disabled={isToggling}
+          >
+            {d.isActive ? (
+              <>
+                <ToggleLeft size={13} />
+                Desactivar
+              </>
+            ) : (
+              <>
+                <ToggleRight size={13} />
+                Activar
+              </>
+            )}
+          </Button>
+        );
+      },
     },
   ];
 
@@ -191,6 +209,7 @@ export function DiscountsPage() {
       />
 
       <DiscountFormModal isOpen={formOpen} onClose={() => setFormOpen(false)} />
+      <ApproveDiscountModal discount={pendingApproval} onClose={() => setPendingApproval(null)} />
     </div>
   );
 }

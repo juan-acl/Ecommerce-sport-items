@@ -65,6 +65,16 @@ export const discountsApi = createApi({
       transformResponse: (response: ApiSuccessResponse<Discount>) => response.data,
       invalidatesTags: ['Discount'],
     }),
+
+    approveDiscount: builder.mutation<Discount, { id: string; approvalReason: string }>({
+      query: ({ id, approvalReason }) => ({
+        url: `/admin/discounts/${id}/approve`,
+        method: 'PUT',
+        body: { approvalReason },
+      }),
+      transformResponse: (response: ApiSuccessResponse<Discount>) => response.data,
+      invalidatesTags: ['Discount'],
+    }),
   }),
 });
 
@@ -72,4 +82,5 @@ export const {
   useGetDiscountsQuery,
   useCreateDiscountMutation,
   useToggleDiscountMutation,
+  useApproveDiscountMutation,
 } = discountsApi;
