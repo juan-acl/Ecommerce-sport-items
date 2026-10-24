@@ -1,9 +1,11 @@
-import { ShoppingBag, CheckCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { useState } from 'react';
 import type { Order, OrderStatus } from '@shared/types/common';
 import { DataTable, type Column, type ServerPagination } from '@shared/components/ui/DataTable';
 import { Badge } from '@shared/components/ui/Badge';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { useUpdateOrderStatusMutation, useApproveOrderMutation } from '@features/orders/api/ordersApi';
+import { OrderDetailModal } from './OrderDetailModal';
 import { toast } from 'sonner';
 
 const STATUS_VARIANTS: Record<OrderStatus, 'warning' | 'success' | 'info' | 'error' | 'default'> = {
@@ -40,6 +42,7 @@ interface OrdersTableProps {
 }
 
 export function OrdersTable({ orders, isLoading, serverPagination, statusFilter, onStatusFilterChange }: Readonly<OrdersTableProps>) {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updateStatus] = useUpdateOrderStatusMutation();
   const [approveOrder] = useApproveOrderMutation();
 
@@ -131,11 +134,23 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
     {
       key: 'action',
       header: 'Acciones',
-      width: '200px',
+      width: '240px',
       render: (o) => {
+        const detailBtn = (
+          <button
+            onClick={() => setSelectedOrder(o)}
+            title="Ver detalles"
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-surface-container text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
+          >
+            <Eye size={13} />
+            Detalles
+          </button>
+        );
+
         if (o.status === 'paid') {
           return (
             <div className="flex items-center gap-1.5">
+              {detailBtn}
               <button
                 onClick={() => handleApprove(o.id, 'approve')}
                 title="Aprobar orden"
@@ -157,21 +172,24 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
         }
         const nextOptions = NEXT_STATUSES[o.status] ?? [];
         if (nextOptions.length === 0) {
-          return <span className="text-on-surface-variant text-label-sm">—</span>;
+          return <div className="flex items-center gap-1.5">{detailBtn}</div>;
         }
         return (
-          <select
-            value=""
-            onChange={(e) => {
-              if (e.target.value) handleStatusChange(o.id, e.target.value as OrderStatus);
-            }}
-            className="h-7 pl-2 pr-6 text-body-md bg-surface-container-lowest border border-outline-variant rounded-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-          >
-            <option value="" disabled>Mover a…</option>
-            {nextOptions.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5">
+            {detailBtn}
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value) handleStatusChange(o.id, e.target.value as OrderStatus);
+              }}
+              className="h-7 pl-2 pr-6 text-body-md bg-surface-container-lowest border border-outline-variant rounded-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              <option value="" disabled>Mover a…</option>
+              {nextOptions.map((s) => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+          </div>
         );
       },
     },
@@ -187,6 +205,8 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
   ];
 
   return (
+    <>
+    <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
     <div className="space-y-3">
       {onStatusFilterChange && (
         <div className="flex items-center gap-2">
@@ -227,5 +247,6 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
         serverPagination={serverPagination}
       />
     </div>
+    </>
   );
 }

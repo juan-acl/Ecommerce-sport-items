@@ -54,6 +54,14 @@ export interface Client {
   createdAt: string;
 }
 
+export interface PaymentMethodInfo {
+  cardType: 'visa' | 'mastercard' | 'amex' | 'other';
+  last4: string;
+  cardholderName: string;
+  expiryMonth: string;
+  expiryYear: string;
+}
+
 export interface Order {
   id: string;
   userId: string;
@@ -67,6 +75,7 @@ export interface Order {
   createdAt: string;
   discountCode?: string;
   discountAmount?: number;
+  paymentMethod?: PaymentMethodInfo;
 }
 
 export interface OrderItem {
