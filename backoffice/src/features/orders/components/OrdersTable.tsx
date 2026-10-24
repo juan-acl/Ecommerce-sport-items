@@ -6,23 +6,8 @@ import { Badge } from '@shared/components/ui/Badge';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { useUpdateOrderStatusMutation, useApproveOrderMutation } from '@features/orders/api/ordersApi';
 import { OrderDetailModal } from './OrderDetailModal';
+import { ORDER_ORDER_STATUS_VARIANTS, ORDER_ORDER_STATUS_LABELS } from '../utils/orderDetailHelpers';
 import { toast } from 'sonner';
-
-const STATUS_VARIANTS: Record<OrderStatus, 'warning' | 'success' | 'info' | 'error' | 'default'> = {
-  paid:       'success',
-  processing: 'warning',
-  shipped:    'info',
-  delivered:  'default',
-  cancelled:  'error',
-};
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  paid:       'Pagado',
-  processing: 'En proceso',
-  shipped:    'Enviado',
-  delivered:  'Entregado',
-  cancelled:  'Cancelado',
-};
 
 // Transiciones permitidas por el admin (espeja las del backend)
 const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
@@ -49,7 +34,7 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
   const handleStatusChange = async (orderId: string, status: OrderStatus) => {
     try {
       await updateStatus({ id: orderId, status }).unwrap();
-      toast.success(`Estado actualizado a "${STATUS_LABELS[status]}".`);
+      toast.success(`Estado actualizado a "${ORDER_STATUS_LABELS[status]}".`);
     } catch (err) {
       const msg = (err as { data?: { error?: { message?: string } } })?.data?.error?.message;
       toast.error(msg ?? 'Error al actualizar el estado.');
@@ -117,7 +102,7 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
       sortable: true,
       sortValue: (o) => o.status,
       render: (o) => (
-        <Badge variant={STATUS_VARIANTS[o.status] ?? 'default'}>{STATUS_LABELS[o.status] ?? o.status}</Badge>
+        <Badge variant={ORDER_STATUS_VARIANTS[o.status] ?? 'default'}>{ORDER_STATUS_LABELS[o.status] ?? o.status}</Badge>
       ),
     },
     {
@@ -186,7 +171,7 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
             >
               <option value="" disabled>Mover a…</option>
               {nextOptions.map((s) => (
-                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
               ))}
             </select>
           </div>
@@ -197,11 +182,11 @@ export function OrdersTable({ orders, isLoading, serverPagination, statusFilter,
 
   const ALL_STATUSES: Array<{ value: OrderStatus | ''; label: string }> = [
     { value: '', label: 'Todos los estados' },
-    { value: 'paid', label: STATUS_LABELS.paid },
-    { value: 'processing', label: STATUS_LABELS.processing },
-    { value: 'shipped', label: STATUS_LABELS.shipped },
-    { value: 'delivered', label: STATUS_LABELS.delivered },
-    { value: 'cancelled', label: STATUS_LABELS.cancelled },
+    { value: 'paid', label: ORDER_STATUS_LABELS.paid },
+    { value: 'processing', label: ORDER_STATUS_LABELS.processing },
+    { value: 'shipped', label: ORDER_STATUS_LABELS.shipped },
+    { value: 'delivered', label: ORDER_STATUS_LABELS.delivered },
+    { value: 'cancelled', label: ORDER_STATUS_LABELS.cancelled },
   ];
 
   return (

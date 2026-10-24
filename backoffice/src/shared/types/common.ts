@@ -57,7 +57,7 @@ export interface Client {
 export interface PaymentMethodInfo {
   cardType: 'visa' | 'mastercard' | 'amex' | 'other';
   last4: string;
-  cardholderName: string;
+  cardholderName?: string;
   expiryMonth: string;
   expiryYear: string;
 }

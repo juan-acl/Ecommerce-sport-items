@@ -1,4 +1,22 @@
-import type { Order } from '@shared/types/common';
+import type { Order, OrderStatus } from '@shared/types/common';
+
+export type BadgeVariant = 'warning' | 'success' | 'info' | 'error' | 'default';
+
+export const ORDER_STATUS_VARIANTS: Record<OrderStatus, BadgeVariant> = {
+  paid:       'success',
+  processing: 'warning',
+  shipped:    'info',
+  delivered:  'default',
+  cancelled:  'error',
+};
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  paid:       'Pagado',
+  processing: 'En proceso',
+  shipped:    'Enviado',
+  delivered:  'Entregado',
+  cancelled:  'Cancelado',
+};
 
 export interface OrderSummary {
   subtotal: number;

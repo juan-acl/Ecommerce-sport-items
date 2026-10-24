@@ -2,24 +2,8 @@ import { MapPin, CreditCard, Package } from 'lucide-react';
 import { Modal } from '@shared/components/ui/Modal';
 import { Badge } from '@shared/components/ui/Badge';
 import { formatCurrency } from '@shared/utils/formatCurrency';
-import { computeOrderSummary } from '../utils/orderDetailHelpers';
-import type { Order, OrderStatus } from '@shared/types/common';
-
-const STATUS_VARIANTS: Record<OrderStatus, 'warning' | 'success' | 'info' | 'error' | 'default'> = {
-  paid:       'success',
-  processing: 'warning',
-  shipped:    'info',
-  delivered:  'default',
-  cancelled:  'error',
-};
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  paid:       'Pagado',
-  processing: 'En proceso',
-  shipped:    'Enviado',
-  delivered:  'Entregado',
-  cancelled:  'Cancelado',
-};
+import { computeOrderSummary, ORDER_STATUS_VARIANTS, ORDER_STATUS_LABELS } from '../utils/orderDetailHelpers';
+import type { Order } from '@shared/types/common';
 
 interface OrderDetailModalProps {
   order: Order | null;
@@ -40,8 +24,8 @@ export function OrderDetailModal({ order, onClose }: Readonly<OrderDetailModalPr
     >
       {/* Header info */}
       <div className="flex items-center gap-3 pb-4 border-b border-outline-variant mb-4">
-        <Badge variant={STATUS_VARIANTS[order.status] ?? 'default'}>
-          {STATUS_LABELS[order.status] ?? order.status}
+        <Badge variant={ORDER_STATUS_VARIANTS[order.status] ?? 'default'}>
+          {ORDER_STATUS_LABELS[order.status] ?? order.status}
         </Badge>
         <span className="text-label-sm text-on-surface-variant">
           {new Date(order.createdAt).toLocaleString('es-GT')}
