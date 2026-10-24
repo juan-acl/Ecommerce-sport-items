@@ -6,7 +6,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { useUpdateOrderStatusMutation, useApproveOrderMutation } from '@features/orders/api/ordersApi';
 import { OrderDetailModal } from './OrderDetailModal';
-import { ORDER_ORDER_STATUS_VARIANTS, ORDER_ORDER_STATUS_LABELS } from '../utils/orderDetailHelpers';
+import { ORDER_STATUS_VARIANTS, ORDER_STATUS_LABELS } from '../utils/orderDetailHelpers';
 import { toast } from 'sonner';
 
 // Transiciones permitidas por el admin (espeja las del backend)
