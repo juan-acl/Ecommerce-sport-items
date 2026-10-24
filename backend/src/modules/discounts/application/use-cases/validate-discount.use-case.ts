@@ -1,3 +1,4 @@
+import { computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
 import { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
 import { DiscountNotFoundException, DiscountInvalidException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 import { ValidateDiscountDto } from '../dtos/discount.dto';
@@ -53,12 +54,11 @@ export class ValidateDiscountUseCase {
       throw new DiscountInvalidException('Este descuento no es válido');
     }
 
-    const effectiveSubtotal =
-      discount.applicableCategories.length > 0 && dto.cartItems && dto.cartItems.length > 0
-        ? dto.cartItems
-            .filter((item) => discount.applicableCategories.includes(item.category))
-            .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
-        : dto.orderTotal;
+    const effectiveSubtotal = computeEffectiveSubtotal(
+      discount.applicableCategories,
+      dto.cartItems ?? [],
+      dto.orderTotal,
+    );
     const discountAmount = discount.calculateDiscount(effectiveSubtotal);
     const finalTotal = parseFloat((dto.orderTotal - discountAmount).toFixed(2));
 

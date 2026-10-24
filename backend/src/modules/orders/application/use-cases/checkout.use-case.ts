@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import { computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
 import { Order } from '@modules/orders/domain/entities/order.entity';
 import { OrderItem } from '@modules/orders/domain/entities/order-item.entity';
 import { OrderRepository } from '@modules/orders/domain/repositories/order.repository';
@@ -13,14 +14,16 @@ import { InventoryMovementRepository } from '@modules/inventory/domain/repositor
 import { InventoryMovement } from '@modules/inventory/domain/entities/inventory-movement.entity';
 import { CheckoutDto } from '../dtos/checkout.dto';
 
+interface ApplicableDiscount {
+  id: string;
+  code: string;
+  applicableCategories: string[];
+  isValid(total: number, categories?: string[]): boolean;
+  calculateDiscount(total: number): number;
+}
+
 interface MinimalDiscountRepo {
-  findByCode(code: string): Promise<{
-    id: string;
-    code: string;
-    applicableCategories: string[];
-    isValid(total: number, categories?: string[]): boolean;
-    calculateDiscount(total: number): number;
-  } | null>;
+  findByCode(code: string): Promise<ApplicableDiscount | null>;
   incrementUsedCount(id: string): Promise<void>;
   hasUserUsedDiscount(discountId: string, userId: string): Promise<boolean>;
   recordUserUsage(discountId: string, userId: string): Promise<void>;
@@ -76,7 +79,7 @@ export class CheckoutUseCase {
 
     let discountCode: string | undefined;
     let discountAmount: number | undefined;
-    let appliedDiscount: { id: string; code: string; applicableCategories: string[]; isValid(total: number, categories?: string[]): boolean; calculateDiscount(total: number): number } | null = null;
+    let appliedDiscount: ApplicableDiscount | null = null;
 
     if (dto.discountCode && this.discountRepo) {
       try {
@@ -93,13 +96,16 @@ export class CheckoutUseCase {
               code: 'DISCOUNT_ALREADY_USED',
             });
           }
-          const effectiveSubtotal =
-            discount.applicableCategories.length > 0
-              ? orderItems.reduce((sum, item, idx) => {
-                  const cat = cartCategories[idx];
-                  return discount.applicableCategories.includes(cat) ? sum + item.unitPrice * item.quantity : sum;
-                }, 0)
-              : subtotal;
+          const zippedItems = orderItems.map((item, idx) => ({
+            category: cartCategories[idx],
+            unitPrice: item.unitPrice,
+            quantity: item.quantity,
+          }));
+          const effectiveSubtotal = computeEffectiveSubtotal(
+            discount.applicableCategories,
+            zippedItems,
+            subtotal,
+          );
           discountAmount = discount.calculateDiscount(effectiveSubtotal);
           discountCode = discount.code;
           appliedDiscount = discount;

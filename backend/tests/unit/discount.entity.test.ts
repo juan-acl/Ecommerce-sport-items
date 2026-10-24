@@ -1,4 +1,4 @@
-import { Discount, DiscountProps } from '@modules/discounts/domain/entities/discount.entity';
+import { Discount, DiscountProps, computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
 
 const baseProps: DiscountProps = {
   id: 'disc-1',
@@ -124,5 +124,37 @@ describe('Discount entity — applicableCategories', () => {
   it('TC-16: descuento sin applicableCategories acepta cualquier carrito', () => {
     const discount = new Discount(baseProps);
     expect(discount.isValid(100, ['swimming', 'cycling'])).toBe(true);
+  });
+});
+
+describe('computeEffectiveSubtotal()', () => {
+  const items = [
+    { category: 'running', unitPrice: 300, quantity: 1 },
+    { category: 'basketball', unitPrice: 100, quantity: 2 },
+  ];
+
+  // TC-20
+  it('TC-20: categorías vacías devuelven el fallback', () => {
+    expect(computeEffectiveSubtotal([], items, 500)).toBe(500);
+  });
+
+  // TC-21
+  it('TC-21: items vacíos devuelven el fallback', () => {
+    expect(computeEffectiveSubtotal(['running'], [], 500)).toBe(500);
+  });
+
+  // TC-22
+  it('TC-22: suma solo los items de las categorías aplicables', () => {
+    expect(computeEffectiveSubtotal(['running'], items, 500)).toBe(300);
+  });
+
+  // TC-23
+  it('TC-23: ningún item coincide con la categoría — devuelve 0', () => {
+    expect(computeEffectiveSubtotal(['cycling'], items, 500)).toBe(0);
+  });
+
+  // TC-24
+  it('TC-24: múltiples categorías suman los items de todas ellas', () => {
+    expect(computeEffectiveSubtotal(['running', 'basketball'], items, 500)).toBe(500);
   });
 });
