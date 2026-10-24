@@ -36,4 +36,8 @@ describe('isPendingApproval', () => {
   it('returns false when needsApproval is undefined', () => {
     expect(isPendingApproval(makeDiscount({ needsApproval: undefined, isActive: false }))).toBe(false);
   });
+
+  it('returns false when already approved and deactivated (approvedBy is set)', () => {
+    expect(isPendingApproval(makeDiscount({ needsApproval: true, isActive: false, approvedBy: 'supervisor@test.com' }))).toBe(false);
+  });
 });
