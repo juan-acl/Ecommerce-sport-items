@@ -63,6 +63,42 @@ describe('ValidateDiscountUseCase — cartCategories', () => {
   });
 });
 
+describe('ValidateDiscountUseCase — category subtotal', () => {
+  // TC-UC-07
+  it('TC-UC-07: discountAmount se calcula sobre el subtotal de la categoría aplicable, no el total del carrito', async () => {
+    const repo = makeRepo(activeDiscount({ applicableCategories: ['running'], value: 10, type: 'percentage' }));
+    const useCase = new ValidateDiscountUseCase(repo);
+    const result = await useCase.execute({
+      code: 'RUNNING10',
+      orderTotal: 400,
+      cartCategories: ['running', 'basketball'],
+      cartItems: [
+        { category: 'running', unitPrice: 300, quantity: 1 },
+        { category: 'basketball', unitPrice: 100, quantity: 1 },
+      ],
+    });
+    // 10% of $300 (running only) = $30, not $40 (10% of $400)
+    expect(result.discountAmount).toBe(30);
+    expect(result.finalTotal).toBe(370);
+  });
+
+  // TC-UC-08
+  it('TC-UC-08: descuento global sin applicableCategories aplica sobre el total completo', async () => {
+    const repo = makeRepo(activeDiscount({ value: 10, type: 'percentage' }));
+    const useCase = new ValidateDiscountUseCase(repo);
+    const result = await useCase.execute({
+      code: 'RUNNING10',
+      orderTotal: 400,
+      cartItems: [
+        { category: 'running', unitPrice: 300, quantity: 1 },
+        { category: 'basketball', unitPrice: 100, quantity: 1 },
+      ],
+    });
+    expect(result.discountAmount).toBe(40);
+    expect(result.finalTotal).toBe(360);
+  });
+});
+
 describe('ValidateDiscountUseCase — per-user usage', () => {
   // TC-UC-04
   it('TC-UC-04: rechaza descuento cuando el usuario ya lo utilizó', async () => {

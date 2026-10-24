@@ -54,6 +54,15 @@ export const ValidateDiscountSchema = z.object({
   code: z.string().min(1, 'El código es requerido'),
   orderTotal: z.number().positive('El total del pedido debe ser mayor a 0'),
   cartCategories: z.array(z.string()).optional(),
+  cartItems: z
+    .array(
+      z.object({
+        category: z.string(),
+        unitPrice: z.number().positive(),
+        quantity: z.number().int().positive(),
+      }),
+    )
+    .optional(),
   userId: z.string().optional(),
 });
 

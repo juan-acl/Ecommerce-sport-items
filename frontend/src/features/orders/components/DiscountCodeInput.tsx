@@ -64,11 +64,18 @@ export function DiscountCodeInput({
       ? [...new Set(cartItems.map((i) => i.category).filter((c): c is string => !!c))]
       : undefined;
 
+    const mappedCartItems = cartItems
+      ? cartItems
+          .filter((i) => i.category)
+          .map((i) => ({ category: i.category as string, unitPrice: i.unitPrice, quantity: i.quantity }))
+      : undefined;
+
     try {
       const result = await validateDiscount({
         code: trimmed,
         orderTotal,
         ...(cartCategories && cartCategories.length > 0 ? { cartCategories } : {}),
+        ...(mappedCartItems && mappedCartItems.length > 0 ? { cartItems: mappedCartItems } : {}),
       }).unwrap();
       onDiscountApplied({
         discountId: result.discountId,

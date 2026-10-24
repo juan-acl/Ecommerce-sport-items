@@ -6,6 +6,7 @@ export interface ValidateDiscountRequest {
   code: string;
   orderTotal: number;
   cartCategories?: string[];
+  cartItems?: { category: string; unitPrice: number; quantity: number }[];
 }
 
 export interface ValidateDiscountResponse {

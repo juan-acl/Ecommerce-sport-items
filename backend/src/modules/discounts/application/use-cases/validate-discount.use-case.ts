@@ -53,7 +53,13 @@ export class ValidateDiscountUseCase {
       throw new DiscountInvalidException('Este descuento no es válido');
     }
 
-    const discountAmount = discount.calculateDiscount(dto.orderTotal);
+    const effectiveSubtotal =
+      discount.applicableCategories.length > 0 && dto.cartItems && dto.cartItems.length > 0
+        ? dto.cartItems
+            .filter((item) => discount.applicableCategories.includes(item.category))
+            .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+        : dto.orderTotal;
+    const discountAmount = discount.calculateDiscount(effectiveSubtotal);
     const finalTotal = parseFloat((dto.orderTotal - discountAmount).toFixed(2));
 
     return {

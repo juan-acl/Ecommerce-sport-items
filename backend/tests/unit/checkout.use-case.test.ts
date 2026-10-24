@@ -93,10 +93,13 @@ describe('CheckoutUseCase', () => {
       findByCode: jest.fn().mockResolvedValue({
         id: 'disc-1',
         code: 'SAVE50',
+        applicableCategories: [],
         isValid: () => true,
         calculateDiscount: () => 50,
       }),
       incrementUsedCount: jest.fn().mockResolvedValue(undefined),
+      hasUserUsedDiscount: jest.fn().mockResolvedValue(false),
+      recordUserUsage: jest.fn().mockResolvedValue(undefined),
     };
 
     const useCase = buildUseCase(mockDiscountRepo);
@@ -142,10 +145,13 @@ describe('CheckoutUseCase', () => {
       findByCode: jest.fn().mockResolvedValue({
         id: 'disc-1',
         code: 'BIG150',
+        applicableCategories: [],
         isValid: () => true,
         calculateDiscount: () => 150,
       }),
       incrementUsedCount: jest.fn().mockResolvedValue(undefined),
+      hasUserUsedDiscount: jest.fn().mockResolvedValue(false),
+      recordUserUsage: jest.fn().mockResolvedValue(undefined),
     };
 
     const useCase = buildUseCase(mockDiscountRepo);
@@ -156,5 +162,40 @@ describe('CheckoutUseCase', () => {
 
     expect(result.total).toBe(450);
     expect(result.status).toBe(ORDER_STATUS.PAID);
+  });
+
+  // TC-19
+  it('TC-19: cupón con applicableCategories solo descuenta los artículos de esa categoría', async () => {
+    mockCart.getItems.mockReturnValue([
+      { productId: 'prod-1', productName: 'Zapatos Running', unitPrice: 300, quantity: 1, imageUrl: '' },
+      { productId: 'prod-2', productName: 'Short Basketball', unitPrice: 100, quantity: 1, imageUrl: '' },
+    ]);
+    mockProductRepo.findById.mockImplementation((id: string) => {
+      if (id === 'prod-1') return Promise.resolve({ id: 'prod-1', name: 'Zapatos Running', category: 'running', stock: 10 });
+      return Promise.resolve({ id: 'prod-2', name: 'Short Basketball', category: 'basketball', stock: 10 });
+    });
+
+    const mockDiscountRepo = {
+      findByCode: jest.fn().mockResolvedValue({
+        id: 'disc-1',
+        code: 'RUNNING10',
+        applicableCategories: ['running'],
+        isValid: () => true,
+        calculateDiscount: (amount: number) => parseFloat((amount * 0.1).toFixed(2)),
+      }),
+      incrementUsedCount: jest.fn().mockResolvedValue(undefined),
+      hasUserUsedDiscount: jest.fn().mockResolvedValue(false),
+      recordUserUsage: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const useCase = buildUseCase(mockDiscountRepo);
+    const result = await useCase.execute({
+      ...baseInput,
+      dto: { discountCode: 'RUNNING10', shippingAddress: undefined },
+    });
+
+    // Discount applies to running subtotal ($300) only, not total ($400)
+    expect(result.discountAmount).toBe(30);
+    expect(result.total).toBe(370);
   });
 });

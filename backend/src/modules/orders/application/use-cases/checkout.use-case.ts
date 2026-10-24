@@ -17,6 +17,7 @@ interface MinimalDiscountRepo {
   findByCode(code: string): Promise<{
     id: string;
     code: string;
+    applicableCategories: string[];
     isValid(total: number, categories?: string[]): boolean;
     calculateDiscount(total: number): number;
   } | null>;
@@ -75,7 +76,7 @@ export class CheckoutUseCase {
 
     let discountCode: string | undefined;
     let discountAmount: number | undefined;
-    let appliedDiscount: { id: string; code: string; isValid(total: number, categories?: string[]): boolean; calculateDiscount(total: number): number } | null = null;
+    let appliedDiscount: { id: string; code: string; applicableCategories: string[]; isValid(total: number, categories?: string[]): boolean; calculateDiscount(total: number): number } | null = null;
 
     if (dto.discountCode && this.discountRepo) {
       try {
@@ -92,7 +93,14 @@ export class CheckoutUseCase {
               code: 'DISCOUNT_ALREADY_USED',
             });
           }
-          discountAmount = discount.calculateDiscount(subtotal);
+          const effectiveSubtotal =
+            discount.applicableCategories.length > 0
+              ? orderItems.reduce((sum, item, idx) => {
+                  const cat = cartCategories[idx];
+                  return discount.applicableCategories.includes(cat) ? sum + item.unitPrice * item.quantity : sum;
+                }, 0)
+              : subtotal;
+          discountAmount = discount.calculateDiscount(effectiveSubtotal);
           discountCode = discount.code;
           appliedDiscount = discount;
           this.logger.info('Descuento aplicado', { code: discountCode, discountAmount });
