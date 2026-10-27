@@ -70,6 +70,10 @@ const MOVEMENT_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'defaul
 
 type ActiveTab = 'sales' | 'inventory';
 
+function isStockCritical(stock: number, minStock: number): boolean {
+  return stock === 0 || stock < minStock * 0.5;
+}
+
 interface StatCardProps {
   label: string;
   value: string;
@@ -192,10 +196,12 @@ export function ReportsPage() {
     exportToCsv(
       'stock-bajo.csv',
       ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'],
-      inventoryData.lowStockProducts.map((p) => {
-        const isCritical = p.stock === 0 || p.stock < p.minStock * 0.5;
-        return [p.name, String(p.stock), String(p.minStock), isCritical ? 'Crítico' : 'Advertencia'];
-      }),
+      inventoryData.lowStockProducts.map((p) => [
+        p.name,
+        String(p.stock),
+        String(p.minStock),
+        isStockCritical(p.stock, p.minStock) ? 'Crítico' : 'Advertencia',
+      ]),
     );
   };
 
@@ -469,7 +475,7 @@ export function ReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-outline-variant">
                       {filteredLowStock.map((p) => {
-                        const isCritical = p.stock === 0 || p.stock < p.minStock * 0.5;
+                        const critical = isStockCritical(p.stock, p.minStock);
                         return (
                           <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
                             <td className="px-5 py-3 font-medium text-on-surface">{p.name}</td>
@@ -480,8 +486,8 @@ export function ReportsPage() {
                               {p.minStock}
                             </td>
                             <td className="px-5 py-3">
-                              <Badge variant={isCritical ? 'error' : 'warning'}>
-                                {isCritical ? 'Crítico' : 'Advertencia'}
+                              <Badge variant={critical ? 'error' : 'warning'}>
+                                {critical ? 'Crítico' : 'Advertencia'}
                               </Badge>
                             </td>
                           </tr>
