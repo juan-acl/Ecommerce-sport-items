@@ -40,11 +40,9 @@ export class ApproveOrderUseCase {
 
     const newStatus: OrderStatus = action === 'approve' ? ORDER_STATUS.PROCESSING : ORDER_STATUS.CANCELLED;
 
-    if (action === 'approve') {
-      await this.orderRepo.updateStatus(orderId, ORDER_STATUS.PROCESSING);
-    } else {
-      await this.orderRepo.updateStatus(orderId, ORDER_STATUS.CANCELLED);
+    await this.orderRepo.updateStatus(orderId, newStatus);
 
+    if (action !== 'approve') {
       for (const item of order.items) {
         const product = await this.productRepo.findById(item.productId);
         if (!product) continue;

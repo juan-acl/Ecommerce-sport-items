@@ -1,19 +1,14 @@
 import { AuditLogRepository, AuditFilterParams } from '@modules/audit/domain/repositories/audit-log.repository';
-import { AuditLogProps } from '@modules/audit/domain/entities/audit-log.entity';
-import { PaginationParams } from '@shared/domain/value-objects/pagination.vo';
+import { AuditLogEntity, AuditLogProps } from '@modules/audit/domain/entities/audit-log.entity';
+import { PaginatedResult, PaginationParams } from '@shared/domain/value-objects/pagination.vo';
+
+type AuditPage = { items: AuditLogProps[]; nextCursor?: string; count: number };
 
 export class ListAuditLogsUseCase {
   constructor(private readonly auditLogRepo: AuditLogRepository) {}
 
-  async execute(
-    params: PaginationParams,
-  ): Promise<{ items: AuditLogProps[]; nextCursor?: string; count: number }> {
-    const result = await this.auditLogRepo.listAll(params);
-    return {
-      items: result.items.map((l) => l.toJSON()),
-      nextCursor: result.nextCursor,
-      count: result.count,
-    };
+  async execute(params: PaginationParams): Promise<AuditPage> {
+    return this.toPage(await this.auditLogRepo.listAll(params));
   }
 
   async executeByEntity(
@@ -24,11 +19,11 @@ export class ListAuditLogsUseCase {
     return { logs: items.map((l) => l.toJSON()) };
   }
 
-  async executeFiltered(
-    filters: AuditFilterParams,
-    params: PaginationParams,
-  ): Promise<{ items: AuditLogProps[]; nextCursor?: string; count: number }> {
-    const result = await this.auditLogRepo.listFiltered(filters, params);
+  async executeFiltered(filters: AuditFilterParams, params: PaginationParams): Promise<AuditPage> {
+    return this.toPage(await this.auditLogRepo.listFiltered(filters, params));
+  }
+
+  private toPage(result: PaginatedResult<AuditLogEntity>): AuditPage {
     return {
       items: result.items.map((l) => l.toJSON()),
       nextCursor: result.nextCursor,

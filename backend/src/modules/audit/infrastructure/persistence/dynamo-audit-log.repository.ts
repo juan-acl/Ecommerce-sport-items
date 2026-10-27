@@ -26,8 +26,6 @@ export class DynamoAuditLogRepository implements AuditLogRepository {
   }
 
   async listAll(params: PaginationParams): Promise<PaginatedResult<AuditLogEntity>> {
-    const exclusiveStartKey = params.cursor ? this.decodeCursor(params.cursor) : undefined;
-
     const result = await this.client.send(
       new QueryCommand({
         TableName: this.tableName,
@@ -36,16 +34,11 @@ export class DynamoAuditLogRepository implements AuditLogRepository {
         ExpressionAttributeValues: { ':pk': 'AUDIT' },
         Limit: params.limit,
         ScanIndexForward: false,
-        ExclusiveStartKey: exclusiveStartKey,
+        ExclusiveStartKey: params.cursor ? this.decodeCursor(params.cursor) : undefined,
       }),
     );
 
-    const logs = (result.Items ?? []).map((item) => AuditLogMapper.toDomain(item));
-    const nextCursor = result.LastEvaluatedKey
-      ? this.encodeCursor(result.LastEvaluatedKey)
-      : undefined;
-
-    return { items: logs, count: logs.length, nextCursor };
+    return this.buildPage(result.Items, result.LastEvaluatedKey);
   }
 
   async listByEntity(entityType: string, entityId: string): Promise<AuditLogEntity[]> {
@@ -68,8 +61,6 @@ export class DynamoAuditLogRepository implements AuditLogRepository {
     filters: AuditFilterParams,
     params: PaginationParams,
   ): Promise<PaginatedResult<AuditLogEntity>> {
-    const exclusiveStartKey = params.cursor ? this.decodeCursor(params.cursor) : undefined;
-
     const expressionNames: Record<string, string> = {};
     const expressionValues: Record<string, unknown> = { ':pk': 'AUDIT' };
     const filterParts: string[] = [];
@@ -116,16 +107,23 @@ export class DynamoAuditLogRepository implements AuditLogRepository {
         ExpressionAttributeValues: expressionValues,
         Limit: params.limit,
         ScanIndexForward: false,
-        ExclusiveStartKey: exclusiveStartKey,
+        ExclusiveStartKey: params.cursor ? this.decodeCursor(params.cursor) : undefined,
       }),
     );
 
-    const logs = (result.Items ?? []).map((item) => AuditLogMapper.toDomain(item));
-    const nextCursor = result.LastEvaluatedKey
-      ? this.encodeCursor(result.LastEvaluatedKey)
-      : undefined;
+    return this.buildPage(result.Items, result.LastEvaluatedKey);
+  }
 
-    return { items: logs, count: logs.length, nextCursor };
+  private buildPage(
+    items: Record<string, unknown>[] | undefined,
+    lastKey: Record<string, unknown> | undefined,
+  ): PaginatedResult<AuditLogEntity> {
+    const logs = (items ?? []).map((item) => AuditLogMapper.toDomain(item));
+    return {
+      items: logs,
+      count: logs.length,
+      nextCursor: lastKey ? this.encodeCursor(lastKey) : undefined,
+    };
   }
 
   private encodeCursor(key: Record<string, unknown>): string {

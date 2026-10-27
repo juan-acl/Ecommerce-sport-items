@@ -2,6 +2,8 @@ import { AuditLogEntity } from '../../../src/modules/audit/domain/entities/audit
 import { AuditLogRepository, AuditFilterParams } from '../../../src/modules/audit/domain/repositories/audit-log.repository';
 import { PaginatedResult, PaginationParams } from '../../../src/shared/domain/value-objects/pagination.vo';
 
+const byDateDesc = (a: AuditLogEntity, b: AuditLogEntity) => b.createdAt.localeCompare(a.createdAt);
+
 export class InMemoryAuditLogRepository implements AuditLogRepository {
   private logs: AuditLogEntity[] = [];
 
@@ -14,9 +16,7 @@ export class InMemoryAuditLogRepository implements AuditLogRepository {
   }
 
   async listAll(params: PaginationParams): Promise<PaginatedResult<AuditLogEntity>> {
-    const sorted = [...this.logs].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    const offset = 0;
-    const page = sorted.slice(offset, params.limit);
+    const page = [...this.logs].sort(byDateDesc).slice(0, params.limit);
     return { items: page, count: page.length, nextCursor: undefined };
   }
 
@@ -25,7 +25,7 @@ export class InMemoryAuditLogRepository implements AuditLogRepository {
   }
 
   async listFiltered(filters: AuditFilterParams, params: PaginationParams): Promise<PaginatedResult<AuditLogEntity>> {
-    let items = [...this.logs].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    let items = [...this.logs].sort(byDateDesc);
 
     if (filters.action) items = items.filter((l) => l.action === filters.action);
     if (filters.userId) items = items.filter((l) => l.userId === filters.userId);

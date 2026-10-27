@@ -33,19 +33,17 @@ export class AuditController {
 
   listByEntity = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const entityType = Array.isArray(req.params.entityType)
-        ? req.params.entityType[0]
-        : req.params.entityType;
-      const entityId = Array.isArray(req.params.entityId)
-        ? req.params.entityId[0]
-        : req.params.entityId;
       const result = await this.listAuditLogsUseCase.executeByEntity(
-        entityType ?? '',
-        entityId ?? '',
+        pickParam(req.params.entityType),
+        pickParam(req.params.entityId),
       );
       ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);
     }
   };
+}
+
+function pickParam(val: string | string[] | undefined): string {
+  return (Array.isArray(val) ? val[0] : val) ?? '';
 }
