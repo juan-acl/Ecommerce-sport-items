@@ -20,10 +20,7 @@ export class AuditController {
         toDate: req.query.toDate as string | undefined,
       };
 
-      const hasFilters = Object.values(filters).some((v) => v !== undefined);
-      const result = hasFilters
-        ? await this.listAuditLogsUseCase.executeFiltered(filters, { limit, cursor })
-        : await this.listAuditLogsUseCase.execute({ limit, cursor });
+      const result = await this.listAuditLogsUseCase.executeFiltered(filters, { limit, cursor });
 
       ApiResponder.ok(req, res, result);
     } catch (err) {

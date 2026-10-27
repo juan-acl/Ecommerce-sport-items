@@ -69,15 +69,15 @@ export class ApproveOrderUseCase {
     }
 
     if (this.emailSender && this.userRepo) {
-      this.userRepo.findById(order.userId).then((user) => {
-        if (!user) return;
-        return this.emailSender!.sendOrderStatusUpdate({
+      const user = await this.userRepo.findById(order.userId).catch(() => null);
+      if (user) {
+        await this.emailSender.sendOrderStatusUpdate({
           to: user.email,
           userName: user.name,
           orderId,
           newStatus,
-        });
-      }).catch(() => undefined);
+        }).catch(() => undefined);
+      }
     }
 
     const updated = await this.orderRepo.findById(orderId);

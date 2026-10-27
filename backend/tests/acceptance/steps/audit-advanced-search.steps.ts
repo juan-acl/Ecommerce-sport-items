@@ -48,6 +48,8 @@ export function registerAuditSteps(rt: AcceptanceRuntime): void {
   });
 
   rt.step(/the admin requests audit logs with filter action "([^"]+)" from "([^"]+)" to "([^"]+)"/, async (m, ctx) => {
+    assertIsoDatetime(m[2]);
+    assertIsoDatetime(m[3]);
     ctx.result = await (ctx.useCase as ListAuditLogsUseCase).executeFiltered(
       { action: m[1], fromDate: m[2], toDate: m[3] },
       { limit: 20 },
@@ -63,6 +65,8 @@ export function registerAuditSteps(rt: AcceptanceRuntime): void {
   });
 
   rt.step(/the admin requests audit logs from "([^"]+)" to "([^"]+)"/, async (m, ctx) => {
+    assertIsoDatetime(m[1]);
+    assertIsoDatetime(m[2]);
     ctx.result = await (ctx.useCase as ListAuditLogsUseCase).executeFiltered(
       { fromDate: m[1], toDate: m[2] },
       { limit: 20 },
@@ -150,4 +154,12 @@ export function registerAuditSteps(rt: AcceptanceRuntime): void {
       expect(result.nextCursor).toBeUndefined();
     }
   });
+}
+
+const ISO_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+function assertIsoDatetime(value: string): void {
+  if (!ISO_DATETIME_RE.test(value)) {
+    throw new Error(`Invalid ISO-8601 datetime: ${value}`);
+  }
 }

@@ -39,18 +39,6 @@ export class UpdateOrderStatusUseCase {
     const prevStatus = existing.status;
     await this.orderRepo.updateStatus(orderId, status as OrderStatus);
 
-    if (this.emailSender && this.userRepo) {
-      this.userRepo.findById(existing.userId).then((user) => {
-        if (!user) return;
-        return this.emailSender!.sendOrderStatusUpdate({
-          to: user.email,
-          userName: user.name,
-          orderId,
-          newStatus: status as OrderStatus,
-        });
-      }).catch(() => undefined);
-    }
-
     if (status === ORDER_STATUS.CANCELLED && prevStatus !== ORDER_STATUS.CANCELLED) {
       for (const item of existing.items) {
         const product = await this.productRepo.findById(item.productId);
@@ -74,6 +62,18 @@ export class UpdateOrderStatusUseCase {
           createdBy: 'system',
         });
         await this.movementRepo.save(movement);
+      }
+    }
+
+    if (this.emailSender && this.userRepo) {
+      const user = await this.userRepo.findById(existing.userId).catch(() => null);
+      if (user) {
+        await this.emailSender.sendOrderStatusUpdate({
+          to: user.email,
+          userName: user.name,
+          orderId,
+          newStatus: status as OrderStatus,
+        }).catch(() => undefined);
       }
     }
   }

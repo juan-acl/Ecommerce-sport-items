@@ -124,7 +124,6 @@ export function registerOrderEmailSteps(rt: AcceptanceRuntime): void {
       ctx.mockUserRepo as never,
     );
     await useCase.execute({ orderId: ORDER_ID, action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com' });
-    await new Promise(process.nextTick);
   });
 
   rt.step(/an admin "rejects" the order/, async (_m, ctx) => {
@@ -139,7 +138,6 @@ export function registerOrderEmailSteps(rt: AcceptanceRuntime): void {
       ctx.mockUserRepo as never,
     );
     await useCase.execute({ orderId: ORDER_ID, action: 'reject', adminId: 'admin-1', adminEmail: 'admin@test.com' });
-    await new Promise(process.nextTick);
   });
 
   rt.step(/an admin updates the order status to "([^"]+)"/, async (m, ctx) => {
@@ -157,7 +155,6 @@ export function registerOrderEmailSteps(rt: AcceptanceRuntime): void {
       ctx.mockUserRepo as never,
     );
     await useCase.execute(ORDER_ID, newStatus);
-    await new Promise(process.nextTick);
     ctx.updatedStatus = newStatus;
   });
 

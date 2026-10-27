@@ -1,3 +1,8 @@
+# mutation-stamp: sha256=cfa763125f06d7c40293ce7663b5ff329617e8281206e251e79212ee0dc81515
+# acceptance-mutation-manifest-begin
+# {"version":1,"tested_at":"2026-10-27T02:22:12.166282Z","feature_name":"Order Status Email Notification","feature_path":"features/order-status-email.feature","background_hash":"4f9f359f16e55b6cf28ca772f30eddb54c501103efaf7bffa63267226811a306","implementation_hash":"unknown","scenarios":[{"index":1,"name":"Customer receives email when order is approved or rejected","scenario_hash":"1b4c72b6444026cc9ec32104e8619dc89ccba67387f99d902bc01f95920aaa31","mutation_count":4,"result":{"Total":4,"Killed":4,"Survived":0,"Errors":0},"tested_at":"2026-10-27T02:22:12.166282Z"},{"index":2,"name":"Customer receives email on each admin status transition","scenario_hash":"dd5de71ba3e8e4b412bff3ef3e2fb8e99e9109e797a5863e33b827da18ee1350","mutation_count":10,"result":{"Total":10,"Killed":10,"Survived":0,"Errors":0},"tested_at":"2026-10-27T02:22:12.166282Z"}]}
+# acceptance-mutation-manifest-end
+
 Feature: Order Status Email Notification
 
   Background:

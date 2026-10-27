@@ -7,10 +7,6 @@ type AuditPage = { items: AuditLogProps[]; nextCursor?: string; count: number };
 export class ListAuditLogsUseCase {
   constructor(private readonly auditLogRepo: AuditLogRepository) {}
 
-  async execute(params: PaginationParams): Promise<AuditPage> {
-    return this.toPage(await this.auditLogRepo.listAll(params));
-  }
-
   async executeByEntity(
     entityType: string,
     entityId: string,
@@ -20,7 +16,11 @@ export class ListAuditLogsUseCase {
   }
 
   async executeFiltered(filters: AuditFilterParams, params: PaginationParams): Promise<AuditPage> {
-    return this.toPage(await this.auditLogRepo.listFiltered(filters, params));
+    const hasFilters = Object.values(filters).some((v) => v !== undefined);
+    const result = hasFilters
+      ? await this.auditLogRepo.listFiltered(filters, params)
+      : await this.auditLogRepo.listAll(params);
+    return this.toPage(result);
   }
 
   private toPage(result: PaginatedResult<AuditLogEntity>): AuditPage {

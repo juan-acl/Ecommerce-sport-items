@@ -123,7 +123,6 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
     const useCase = buildUseCase(true);
     await useCase.execute({ orderId: 'order-1', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com' });
 
-    await new Promise(process.nextTick);
     expect(mockUserRepo.findById).toHaveBeenCalledWith('user-1');
     expect(mockEmailSender.sendOrderStatusUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'cliente@example.com', newStatus: ORDER_STATUS.PROCESSING }),
@@ -139,7 +138,6 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
     const useCase = buildUseCase(true);
     await useCase.execute({ orderId: 'order-1', action: 'reject', adminId: 'admin-1', adminEmail: 'admin@test.com' });
 
-    await new Promise(process.nextTick);
     expect(mockEmailSender.sendOrderStatusUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ newStatus: ORDER_STATUS.CANCELLED }),
     );
