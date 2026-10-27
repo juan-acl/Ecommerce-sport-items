@@ -9,11 +9,14 @@ import {
   ShoppingCart,
   DollarSign,
   Hash,
+  Download,
 } from 'lucide-react';
 import { useGetSalesReportQuery, useGetInventoryReportQuery, type ReportPeriod } from '@features/reports/api/reportsApi';
 import { Badge } from '@shared/components/ui/Badge';
+import { Button } from '@shared/components/ui/Button';
 import { Spinner } from '@shared/components/ui/Spinner';
 import { formatCurrency } from '@shared/utils/formatCurrency';
+import { exportToCsv } from '@shared/utils/exportToCsv';
 import {
   filterMovementsByType,
   filterLowStockByName,
@@ -158,6 +161,58 @@ export function ReportsPage() {
     ? filterLowStockByName(inventoryData.lowStockProducts, lowStockSearch)
     : [];
 
+  const handleExportTopProducts = () => {
+    if (!salesData) return;
+    exportToCsv(
+      `top-productos-${period}.csv`,
+      ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'],
+      salesData.topProducts.map((p, i) => [
+        String(i + 1),
+        p.productName,
+        String(p.totalQuantity),
+        p.totalRevenue.toFixed(2),
+      ]),
+    );
+  };
+
+  const handleExportOrdersByStatus = () => {
+    if (!salesData) return;
+    exportToCsv(
+      `ordenes-por-estado-${period}.csv`,
+      ['Estado', 'Cantidad'],
+      Object.entries(salesData.ordersByStatus).map(([key, count]) => [
+        STATUS_LABELS[key] ?? key,
+        String(count),
+      ]),
+    );
+  };
+
+  const handleExportLowStock = () => {
+    if (!inventoryData) return;
+    exportToCsv(
+      'stock-bajo.csv',
+      ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'],
+      inventoryData.lowStockProducts.map((p) => {
+        const isCritical = p.stock === 0 || p.stock < p.minStock * 0.5;
+        return [p.name, String(p.stock), String(p.minStock), isCritical ? 'Crítico' : 'Advertencia'];
+      }),
+    );
+  };
+
+  const handleExportMovements = () => {
+    if (!inventoryData) return;
+    exportToCsv(
+      'movimientos-inventario.csv',
+      ['Producto', 'Tipo', 'Cantidad', 'Fecha'],
+      inventoryData.recentMovements.map((m) => [
+        m.productName,
+        MOVEMENT_LABELS[m.type] ?? m.type,
+        String(m.quantity),
+        new Date(m.createdAt).toLocaleDateString('es-GT'),
+      ]),
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -255,18 +310,24 @@ export function ReportsPage() {
               <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
                 <div className="px-5 h-14 flex items-center justify-between gap-4 border-b border-outline-variant">
                   <h3 className="text-[14px] font-semibold text-on-surface">Órdenes por estado</h3>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="h-8 pl-3 pr-7 bg-surface-container border border-outline-variant rounded-md text-[12px] text-on-surface focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary"
-                  >
-                    <option value="all">Todos los estados</option>
-                    {Object.keys(salesData.ordersByStatus).map((key) => (
-                      <option key={key} value={key}>
-                        {STATUS_LABELS[key] ?? key}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={handleExportOrdersByStatus}>
+                      <Download size={13} />
+                      Exportar
+                    </Button>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="h-8 pl-3 pr-7 bg-surface-container border border-outline-variant rounded-md text-[12px] text-on-surface focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary"
+                    >
+                      <option value="all">Todos los estados</option>
+                      {Object.keys(salesData.ordersByStatus).map((key) => (
+                        <option key={key} value={key}>
+                          {STATUS_LABELS[key] ?? key}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-body-md">
@@ -299,9 +360,18 @@ export function ReportsPage() {
 
               {/* Top products */}
               <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
-                <TableHeader count={salesData.topProducts.length}>
-                  <h3 className="text-[14px] font-semibold text-on-surface">Top productos</h3>
-                </TableHeader>
+                <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] font-semibold text-on-surface">Top productos</h3>
+                    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-surface-container text-[11px] font-semibold text-on-surface-variant tabular-nums">
+                      {salesData.topProducts.length}
+                    </span>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleExportTopProducts}>
+                    <Download size={13} />
+                    Exportar
+                  </Button>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-body-md">
                     <thead>
@@ -370,15 +440,21 @@ export function ReportsPage() {
                     <AlertTriangle size={14} className="text-amber-500" />
                     <h3 className="text-[14px] font-semibold text-on-surface">Stock bajo</h3>
                   </div>
-                  <div className="relative">
-                    <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-                    <input
-                      type="text"
-                      placeholder="Buscar producto…"
-                      value={lowStockSearch}
-                      onChange={(e) => setLowStockSearch(e.target.value)}
-                      className="h-8 pl-7 pr-3 bg-surface-container border border-outline-variant rounded-md text-[12px] text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary w-44"
-                    />
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={handleExportLowStock}>
+                      <Download size={13} />
+                      Exportar
+                    </Button>
+                    <div className="relative">
+                      <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Buscar producto…"
+                        value={lowStockSearch}
+                        onChange={(e) => setLowStockSearch(e.target.value)}
+                        className="h-8 pl-7 pr-3 bg-surface-container border border-outline-variant rounded-md text-[12px] text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-[3px] focus:ring-[#006b58]/10 focus:border-primary w-44"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -433,6 +509,11 @@ export function ReportsPage() {
                     <ArrowRightLeft size={14} className="text-[#006b58]" />
                     <h3 className="text-[14px] font-semibold text-on-surface">Movimientos recientes</h3>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={handleExportMovements}>
+                      <Download size={13} />
+                      Exportar
+                    </Button>
                   <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1">
                     {MOVEMENT_FILTER_OPTIONS.map((opt) => (
                       <button
@@ -448,6 +529,7 @@ export function ReportsPage() {
                         {opt.label}
                       </button>
                     ))}
+                  </div>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
