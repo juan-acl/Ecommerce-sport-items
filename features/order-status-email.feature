@@ -30,6 +30,8 @@ Feature: Order Status Email Notification
 
     Examples:
       | current_status | new_status  |
+      | paid           | processing  |
+      | paid           | cancelled   |
       | processing     | shipped     |
       | processing     | cancelled   |
       | shipped        | delivered   |

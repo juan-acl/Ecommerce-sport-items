@@ -70,6 +70,16 @@ Feature: Audit Advanced Search
       | product    |
 
   # Audit Advanced Search-7
+  Scenario Outline: Filter audit logs by userEmail
+    When the admin requests audit logs with filter userEmail "<userEmail>"
+    Then the response contains only logs with userEmail "<userEmail>"
+
+    Examples:
+      | userEmail             |
+      | admin@example.com     |
+      | operator@example.com  |
+
+  # Audit Advanced Search-8
   Scenario Outline: Pagination applies when filtering by action
     Given there are "<total>" audit logs with action "ORDER_STATUS_CHANGED"
     When the admin requests audit logs with filter action "ORDER_STATUS_CHANGED" and limit "<limit>"
