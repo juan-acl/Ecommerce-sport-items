@@ -68,3 +68,16 @@ Feature: Audit Advanced Search
       | entityType |
       | order      |
       | product    |
+
+  # Audit Advanced Search-7
+  Scenario Outline: Pagination applies when filtering by action
+    Given there are "<total>" audit logs with action "ORDER_STATUS_CHANGED"
+    When the admin requests audit logs with filter action "ORDER_STATUS_CHANGED" and limit "<limit>"
+    Then the response contains at most "<limit>" logs
+    And the response includes a cursor when more results exist
+
+    Examples:
+      | total | limit |
+      | 5     | 2     |
+      | 3     | 3     |
+      | 1     | 5     |
