@@ -1,4 +1,4 @@
-import { AuditLogRepository } from '@modules/audit/domain/repositories/audit-log.repository';
+import { AuditLogRepository, AuditFilterParams } from '@modules/audit/domain/repositories/audit-log.repository';
 import { AuditLogProps } from '@modules/audit/domain/entities/audit-log.entity';
 import { PaginationParams } from '@shared/domain/value-objects/pagination.vo';
 
@@ -22,5 +22,17 @@ export class ListAuditLogsUseCase {
   ): Promise<{ logs: AuditLogProps[] }> {
     const items = await this.auditLogRepo.listByEntity(entityType, entityId);
     return { logs: items.map((l) => l.toJSON()) };
+  }
+
+  async executeFiltered(
+    filters: AuditFilterParams,
+    params: PaginationParams,
+  ): Promise<{ items: AuditLogProps[]; nextCursor?: string; count: number }> {
+    const result = await this.auditLogRepo.listFiltered(filters, params);
+    return {
+      items: result.items.map((l) => l.toJSON()),
+      nextCursor: result.nextCursor,
+      count: result.count,
+    };
   }
 }

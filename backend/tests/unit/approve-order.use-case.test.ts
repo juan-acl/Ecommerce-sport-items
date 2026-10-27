@@ -8,6 +8,7 @@ const mockOrderItem = { productId: 'prod-1', productName: 'Zapatos', quantity: 2
 function makeMockOrder(status: OrderStatus = ORDER_STATUS.PAID) {
   return {
     id: 'order-1',
+    userId: 'user-1',
     status,
     items: [mockOrderItem],
     toJSON: () => ({ id: 'order-1', status }),
@@ -23,18 +24,26 @@ const mockProductRepo = {
   update: jest.fn().mockResolvedValue(undefined),
 };
 const mockMovementRepo = { save: jest.fn().mockResolvedValue(undefined) };
+const mockEmailSender = { sendOrderStatusUpdate: jest.fn().mockResolvedValue(undefined) };
+const mockUserRepo = {
+  findById: jest.fn().mockResolvedValue({ id: 'user-1', email: 'cliente@example.com', name: 'Juan Perez' }),
+};
 
-function buildUseCase() {
+function buildUseCase(withEmail = false) {
   return new ApproveOrderUseCase(
     mockOrderRepo as never,
     mockProductRepo as never,
     mockMovementRepo as never,
+    withEmail ? mockEmailSender as never : undefined,
+    withEmail ? mockUserRepo as never : undefined,
   );
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockOrderRepo.findById.mockResolvedValue(makeMockOrder());
+  mockEmailSender.sendOrderStatusUpdate.mockResolvedValue(undefined);
+  mockUserRepo.findById.mockResolvedValue({ id: 'user-1', email: 'cliente@example.com', name: 'Juan Perez' });
 });
 
 describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
@@ -44,7 +53,7 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PROCESSING));
 
-    const useCase = buildUseCase();
+    const useCase = buildUseCase(false);
     const result = await useCase.execute({
       orderId: 'order-1', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com',
     });
@@ -59,7 +68,7 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.CANCELLED));
 
-    const useCase = buildUseCase();
+    const useCase = buildUseCase(false);
     await useCase.execute({
       orderId: 'order-1', action: 'reject', adminId: 'admin-1', adminEmail: 'admin@test.com',
     });
@@ -75,7 +84,7 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
       .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.CANCELLED));
 
-    const useCase = buildUseCase();
+    const useCase = buildUseCase(false);
     await useCase.execute({
       orderId: 'order-1', action: 'reject', adminId: 'admin-1', adminEmail: 'admin@test.com',
     });
@@ -88,7 +97,7 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
   // TC-22
   it('TC-22: procesar orden en estado SHIPPED lanza ValidationException', async () => {
     mockOrderRepo.findById.mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.SHIPPED));
-    const useCase = buildUseCase();
+    const useCase = buildUseCase(false);
 
     await expect(useCase.execute({
       orderId: 'order-1', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com',
@@ -98,10 +107,56 @@ describe('ApproveOrderUseCase (procesamiento de ordenes pagadas)', () => {
   // TC-23
   it('TC-23: procesar orden inexistente lanza OrderNotFoundException', async () => {
     mockOrderRepo.findById.mockResolvedValueOnce(null);
-    const useCase = buildUseCase();
+    const useCase = buildUseCase(false);
 
     await expect(useCase.execute({
       orderId: 'non-existent', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com',
     })).rejects.toThrow();
+  });
+
+  // TC-24
+  it('TC-24: aprobar orden envía email de actualización con estado processing', async () => {
+    mockOrderRepo.findById
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PROCESSING));
+
+    const useCase = buildUseCase(true);
+    await useCase.execute({ orderId: 'order-1', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com' });
+
+    await new Promise(process.nextTick);
+    expect(mockUserRepo.findById).toHaveBeenCalledWith('user-1');
+    expect(mockEmailSender.sendOrderStatusUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ to: 'cliente@example.com', newStatus: ORDER_STATUS.PROCESSING }),
+    );
+  });
+
+  // TC-25
+  it('TC-25: rechazar orden envía email de actualización con estado cancelled', async () => {
+    mockOrderRepo.findById
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.CANCELLED));
+
+    const useCase = buildUseCase(true);
+    await useCase.execute({ orderId: 'order-1', action: 'reject', adminId: 'admin-1', adminEmail: 'admin@test.com' });
+
+    await new Promise(process.nextTick);
+    expect(mockEmailSender.sendOrderStatusUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ newStatus: ORDER_STATUS.CANCELLED }),
+    );
+  });
+
+  // TC-26
+  it('TC-26: fallo de email no falla la transición de estado', async () => {
+    mockOrderRepo.findById
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PAID))
+      .mockResolvedValueOnce(makeMockOrder(ORDER_STATUS.PROCESSING));
+    mockEmailSender.sendOrderStatusUpdate.mockRejectedValue(new Error('SMTP error'));
+
+    const useCase = buildUseCase(true);
+    await expect(
+      useCase.execute({ orderId: 'order-1', action: 'approve', adminId: 'admin-1', adminEmail: 'admin@test.com' }),
+    ).resolves.toBeDefined();
+
+    expect(mockOrderRepo.updateStatus).toHaveBeenCalledWith('order-1', ORDER_STATUS.PROCESSING);
   });
 });

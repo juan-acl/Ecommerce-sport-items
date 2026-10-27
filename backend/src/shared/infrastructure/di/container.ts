@@ -434,8 +434,8 @@ export function buildContainer(): AwilixContainer<AppContainer> {
         new UpdateOrderStatusUseCase(orderRepository, productRepository, movementRepository, emailSender, userRepository),
     ).singleton(),
     approveOrderUseCase: asFunction(
-      ({ orderRepository, productRepository, movementRepository }) =>
-        new ApproveOrderUseCase(orderRepository, productRepository, movementRepository),
+      ({ orderRepository, productRepository, movementRepository, emailSender, userRepository }) =>
+        new ApproveOrderUseCase(orderRepository, productRepository, movementRepository, emailSender, userRepository),
     ).singleton(),
     adminOrdersController: asFunction(
       ({ listAllOrdersUseCase, updateOrderStatusUseCase, approveOrderUseCase, getOrderUseCase, createAuditLogUseCase }) =>
