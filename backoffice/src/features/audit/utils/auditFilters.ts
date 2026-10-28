@@ -8,7 +8,7 @@ export interface AuditFilters {
   toDate?: string;
 }
 
-export function setFilter(filters: AuditFilters, key: keyof AuditFilters, value: string): AuditFilters {
+export function setFilter(filters: AuditFilters, key: keyof AuditFilters, value: string | undefined): AuditFilters {
   return { ...filters, [key]: value };
 }
 

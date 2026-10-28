@@ -117,7 +117,7 @@ export function AuditPage() {
 
   function applyFilter(key: keyof AuditFilters, value: string) {
     setCursor(undefined);
-    setFilters((prev) => setFilter(prev, key, value || undefined as unknown as string));
+    setFilters((prev) => setFilter(prev, key, value || undefined));
   }
 
   function applyDateRange(fromDate: string, toDate: string) {

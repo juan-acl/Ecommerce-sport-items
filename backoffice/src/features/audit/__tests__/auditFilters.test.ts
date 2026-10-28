@@ -32,6 +32,11 @@ describe('setFilter', () => {
     expect(result.action).toBe('ORDER_APPROVED');
     expect(result.entityType).toBe('order');
   });
+
+  it('clears a filter when value is undefined', () => {
+    const result = setFilter({ action: 'ORDER_APPROVED' }, 'action', undefined);
+    expect(result.action).toBeUndefined();
+  });
 });
 
 describe('buildAuditQueryParams', () => {
