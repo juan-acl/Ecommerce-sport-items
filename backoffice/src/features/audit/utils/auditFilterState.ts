@@ -27,18 +27,11 @@ export function setPendingDateRange(
   fromDate: string,
   toDate: string,
 ): AuditFilterState {
-  const pendingFilters = { ...state.pendingFilters };
-  if (fromDate) {
-    pendingFilters.fromDate = fromDate;
-  } else {
-    delete pendingFilters.fromDate;
-  }
-  if (toDate) {
-    pendingFilters.toDate = toDate;
-  } else {
-    delete pendingFilters.toDate;
-  }
-  return { ...state, pendingFilters };
+  return setPendingFilter(
+    setPendingFilter(state, 'fromDate', fromDate || undefined),
+    'toDate',
+    toDate || undefined,
+  );
 }
 
 export function submitSearch(state: AuditFilterState): AuditFilterState {
