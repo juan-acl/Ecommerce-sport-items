@@ -1,3 +1,7 @@
+# acceptance-mutation-manifest-begin
+# {"version":1,"tested_at":"2026-10-28T02:24:42.601832Z","feature_name":"Audit Search UI","feature_path":"features/audit-search-ui.feature","background_hash":"e8efa90d18df73e2bd05bc06f5bf763f61e1fa59b7d64322dcb19008d7c3fdd4","implementation_hash":"unknown","scenarios":[{"index":0,"name":"Filter panel shows a control for each searchable field","scenario_hash":"314840e4b887ec879927d766ce243cea995f39d638233418eaadb4c34c1a2a0f","mutation_count":5,"result":{"Total":5,"Killed":5,"Survived":0,"Errors":0},"tested_at":"2026-10-28T02:24:42.601832Z"}]}
+# acceptance-mutation-manifest-end
+
 Feature: Audit Search UI
 
   Background:

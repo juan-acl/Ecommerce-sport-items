@@ -8,10 +8,6 @@ export interface AuditFilters {
   toDate?: string;
 }
 
-export function setFilter(filters: AuditFilters, key: keyof AuditFilters, value: string | undefined): AuditFilters {
-  return { ...filters, [key]: value };
-}
-
 export function buildAuditQueryParams(
   filters: AuditFilters,
   pagination: { limit: number; cursor?: string },
@@ -25,8 +21,4 @@ export function buildAuditQueryParams(
 
 export function hasActiveFilters(filters: AuditFilters): boolean {
   return Object.values(filters).some((v) => v !== undefined && v !== '');
-}
-
-export function clearAllFilters(): AuditFilters {
-  return {};
 }

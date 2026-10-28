@@ -1,43 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  setFilter,
   buildAuditQueryParams,
   hasActiveFilters,
-  clearAllFilters,
 } from '../utils/auditFilters';
-
-describe('setFilter', () => {
-  it('sets action filter', () => {
-    expect(setFilter({}, 'action', 'ORDER_APPROVED').action).toBe('ORDER_APPROVED');
-  });
-
-  it('sets entityType filter', () => {
-    expect(setFilter({}, 'entityType', 'order').entityType).toBe('order');
-  });
-
-  it('sets userEmail filter', () => {
-    expect(setFilter({}, 'userEmail', 'admin@example.com').userEmail).toBe('admin@example.com');
-  });
-
-  it('sets fromDate filter', () => {
-    expect(setFilter({}, 'fromDate', '2026-10-01').fromDate).toBe('2026-10-01');
-  });
-
-  it('sets toDate filter', () => {
-    expect(setFilter({}, 'toDate', '2026-10-31').toDate).toBe('2026-10-31');
-  });
-
-  it('preserves existing filters when adding a new one', () => {
-    const result = setFilter({ action: 'ORDER_APPROVED' }, 'entityType', 'order');
-    expect(result.action).toBe('ORDER_APPROVED');
-    expect(result.entityType).toBe('order');
-  });
-
-  it('clears a filter when value is undefined', () => {
-    const result = setFilter({ action: 'ORDER_APPROVED' }, 'action', undefined);
-    expect(result.action).toBeUndefined();
-  });
-});
 
 describe('buildAuditQueryParams', () => {
   // Scenario: Selecting a single filter sends it to the API
@@ -120,13 +85,3 @@ describe('hasActiveFilters', () => {
   });
 });
 
-describe('clearAllFilters', () => {
-  it('returns an empty filters object', () => {
-    expect(clearAllFilters()).toEqual({});
-  });
-
-  it('clears all active filters so hasActiveFilters returns false', () => {
-    const cleared = clearAllFilters();
-    expect(hasActiveFilters(cleared)).toBe(false);
-  });
-});
