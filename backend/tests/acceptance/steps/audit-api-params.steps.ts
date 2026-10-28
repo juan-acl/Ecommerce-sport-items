@@ -12,17 +12,11 @@ export interface AuditQueryParams {
 }
 
 function buildAuditParams(params: AuditQueryParams): Record<string, string | number> {
-  const { limit = 20, cursor, userId, entityType, action, userEmail, fromDate, toDate } = params;
-  return {
-    limit,
-    ...(cursor ? { cursor } : {}),
-    ...(userId ? { userId } : {}),
-    ...(entityType ? { entityType } : {}),
-    ...(action ? { action } : {}),
-    ...(userEmail ? { userEmail } : {}),
-    ...(fromDate ? { fromDate } : {}),
-    ...(toDate ? { toDate } : {}),
-  };
+  const { limit = 20, ...rest } = params;
+  const defined = Object.fromEntries(
+    Object.entries(rest).filter(([, v]) => v !== undefined),
+  ) as Record<string, string>;
+  return { limit, ...defined };
 }
 
 export function registerAuditApiParamsSteps(rt: AcceptanceRuntime): void {
