@@ -95,6 +95,11 @@ describe('buildAuditQueryParams', () => {
     expect(params).not.toHaveProperty('fromDate');
     expect(params).not.toHaveProperty('toDate');
   });
+
+  it('always includes limit in params', () => {
+    expect(buildAuditQueryParams({}, { limit: 20 }).limit).toBe(20);
+    expect(buildAuditQueryParams({ action: 'X' }, { limit: 50 }).limit).toBe(50);
+  });
 });
 
 describe('hasActiveFilters', () => {
