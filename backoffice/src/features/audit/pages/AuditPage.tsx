@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ShieldCheck, ClipboardList, Eye } from 'lucide-react';
+import { ShieldCheck, ClipboardList, Eye, X } from 'lucide-react';
 import { useGetAuditLogsQuery } from '@features/audit/api/auditApi';
 import { AuditDetailModal } from '@features/audit/components/AuditDetailModal';
 import { DataTable, type Column } from '@shared/components/ui/DataTable';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import type { AuditLog } from '@shared/types/common';
+import { type AuditFilters, buildAuditQueryParams, hasActiveFilters, setFilter, clearAllFilters } from '../utils/auditFilters';
 
 const LIMIT = 20;
 
@@ -25,6 +26,8 @@ const ACTION_LABELS: Record<string, string> = {
   USER_UPDATED: 'Usuario actualizado',
   USER_DEACTIVATED: 'Usuario desactivado',
   ORDER_STATUS_CHANGED: 'Estado de orden cambiado',
+  ORDER_APPROVED: 'Orden aprobada',
+  ORDER_REJECTED: 'Orden rechazada',
   DISCOUNT_CREATED: 'Descuento creado',
   DISCOUNT_TOGGLED: 'Descuento activado/desactivado',
 };
@@ -102,12 +105,30 @@ function summarizeDetails(details: Record<string, unknown>): string {
 
 export function AuditPage() {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [filters, setFilters] = useState<AuditFilters>({});
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const { data, isLoading, isFetching } = useGetAuditLogsQuery({ limit: LIMIT, cursor });
+  const queryParams = buildAuditQueryParams(filters, { limit: LIMIT, cursor });
+  const { data, isLoading, isFetching } = useGetAuditLogsQuery(queryParams);
 
   const logs = data?.items ?? [];
   const hasMore = !!data?.nextCursor;
+  const activeFilters = hasActiveFilters(filters);
+
+  function applyFilter(key: keyof AuditFilters, value: string) {
+    setCursor(undefined);
+    setFilters((prev) => setFilter(prev, key, value || undefined as unknown as string));
+  }
+
+  function applyDateRange(fromDate: string, toDate: string) {
+    setCursor(undefined);
+    setFilters((prev) => ({ ...prev, fromDate: fromDate || undefined, toDate: toDate || undefined }));
+  }
+
+  function handleClearFilters() {
+    setCursor(undefined);
+    setFilters(clearAllFilters());
+  }
 
   const columns: Column<AuditLog>[] = [
     {
@@ -202,6 +223,88 @@ export function AuditPage() {
           <p className="text-body-md text-on-surface-variant mt-0.5">
             Registro de actividad del sistema
           </p>
+        </div>
+      </div>
+
+      <div className="bg-surface-container rounded-xl p-4 space-y-3">
+        <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-1 min-w-[160px]">
+            <label className="text-label-sm text-on-surface-variant">Acción</label>
+            <select
+              data-filter="action"
+              value={filters.action ?? ''}
+              onChange={(e) => applyFilter('action', e.target.value)}
+              className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Todas</option>
+              {Object.entries(ACTION_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[140px]">
+            <label className="text-label-sm text-on-surface-variant">Entidad</label>
+            <select
+              data-filter="entityType"
+              value={filters.entityType ?? ''}
+              onChange={(e) => applyFilter('entityType', e.target.value)}
+              className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Todas</option>
+              {Object.entries(ENTITY_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[220px]">
+            <label className="text-label-sm text-on-surface-variant">Email administrador</label>
+            <input
+              type="text"
+              data-filter="userEmail"
+              value={filters.userEmail ?? ''}
+              onChange={(e) => applyFilter('userEmail', e.target.value)}
+              placeholder="admin@example.com"
+              className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[150px]">
+            <label className="text-label-sm text-on-surface-variant">Desde</label>
+            <input
+              type="date"
+              data-filter="fromDate"
+              value={filters.fromDate ?? ''}
+              onChange={(e) => applyDateRange(e.target.value, filters.toDate ?? '')}
+              className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 min-w-[150px]">
+            <label className="text-label-sm text-on-surface-variant">Hasta</label>
+            <input
+              type="date"
+              data-filter="toDate"
+              value={filters.toDate ?? ''}
+              onChange={(e) => applyDateRange(filters.fromDate ?? '', e.target.value)}
+              className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {activeFilters && (
+            <div className="flex items-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleClearFilters}
+                title="Limpiar filtros"
+              >
+                <X size={13} />
+                Limpiar filtros
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -2,14 +2,9 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithAuth } from '@shared/api/baseQuery';
 import type { ApiSuccessResponse, PaginatedData } from '@shared/types/api';
 import type { AuditLog } from '@shared/types/common';
+import { buildAuditParams, type AuditQueryParams } from '../utils/auditApiParams';
 
-export interface AuditQueryParams {
-  limit?: number;
-  cursor?: string;
-  userId?: string;
-  entityType?: string;
-  action?: string;
-}
+export type { AuditQueryParams } from '../utils/auditApiParams';
 
 type BackendAuditResponse = {
   items: AuditLog[];
@@ -23,15 +18,9 @@ export const auditApi = createApi({
   tagTypes: ['AuditLog'],
   endpoints: (builder) => ({
     getAuditLogs: builder.query<PaginatedData<AuditLog>, AuditQueryParams>({
-      query: ({ limit = 20, cursor, userId, entityType, action } = {}) => ({
+      query: (args = {}) => ({
         url: '/admin/audit',
-        params: {
-          limit,
-          ...(cursor && { cursor }),
-          ...(userId && { userId }),
-          ...(entityType && { entityType }),
-          ...(action && { action }),
-        },
+        params: buildAuditParams(args),
       }),
       transformResponse: (response: ApiSuccessResponse<BackendAuditResponse>) => ({
         items: response.data.items,
