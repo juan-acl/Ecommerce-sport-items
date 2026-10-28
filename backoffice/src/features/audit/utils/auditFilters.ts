@@ -17,16 +17,10 @@ export function buildAuditQueryParams(
   pagination: { limit: number; cursor?: string },
 ): AuditQueryParams {
   const { limit, cursor } = pagination;
-  const { action, entityType, userEmail, fromDate, toDate } = filters;
-  return {
-    limit,
-    ...(cursor ? { cursor } : {}),
-    ...(action ? { action } : {}),
-    ...(entityType ? { entityType } : {}),
-    ...(userEmail ? { userEmail } : {}),
-    ...(fromDate ? { fromDate } : {}),
-    ...(toDate ? { toDate } : {}),
-  };
+  const defined = Object.fromEntries(
+    Object.entries(filters).filter(([, v]) => v !== undefined),
+  ) as Partial<AuditFilters>;
+  return { limit, ...(cursor ? { cursor } : {}), ...defined };
 }
 
 export function hasActiveFilters(filters: AuditFilters): boolean {
