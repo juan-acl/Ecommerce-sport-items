@@ -284,7 +284,7 @@ export function AuditPage() {
               type="date"
               data-filter="fromDate"
               value={pendingFilters.fromDate ?? ''}
-              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, e.target.value, pendingFilters.toDate ?? ''))}
+              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, e.target.value, prev.pendingFilters.toDate ?? ''))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -295,7 +295,7 @@ export function AuditPage() {
               type="date"
               data-filter="toDate"
               value={pendingFilters.toDate ?? ''}
-              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, pendingFilters.fromDate ?? '', e.target.value))}
+              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, prev.pendingFilters.fromDate ?? '', e.target.value))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
