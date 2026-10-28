@@ -1,12 +1,20 @@
 import { useState } from 'react';
-import { ShieldCheck, ClipboardList, Eye, X } from 'lucide-react';
+import { ShieldCheck, ClipboardList, Eye, X, Search } from 'lucide-react';
 import { useGetAuditLogsQuery } from '@features/audit/api/auditApi';
 import { AuditDetailModal } from '@features/audit/components/AuditDetailModal';
 import { DataTable, type Column } from '@shared/components/ui/DataTable';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import type { AuditLog } from '@shared/types/common';
-import { type AuditFilters, buildAuditQueryParams, hasActiveFilters, setFilter, clearAllFilters } from '../utils/auditFilters';
+import { buildAuditQueryParams, hasActiveFilters } from '../utils/auditFilters';
+import {
+  initialAuditFilterState,
+  setPendingFilter,
+  setPendingDateRange,
+  submitSearch,
+  clearAndSearch,
+  loadMore,
+} from '../utils/auditFilterState';
 
 const LIMIT = 20;
 
@@ -104,30 +112,30 @@ function summarizeDetails(details: Record<string, unknown>): string {
 }
 
 export function AuditPage() {
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [filters, setFilters] = useState<AuditFilters>({});
+  const [filterState, setFilterState] = useState(initialAuditFilterState);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const queryParams = buildAuditQueryParams(filters, { limit: LIMIT, cursor });
+  const { pendingFilters, activeFilters, cursor } = filterState;
+
+  const queryParams = buildAuditQueryParams(activeFilters, { limit: LIMIT, cursor });
   const { data, isLoading, isFetching } = useGetAuditLogsQuery(queryParams);
 
   const logs = data?.items ?? [];
   const hasMore = !!data?.nextCursor;
-  const activeFilters = hasActiveFilters(filters);
+  const showClearButton = hasActiveFilters(activeFilters) || hasActiveFilters(pendingFilters);
 
-  function applyFilter(key: keyof AuditFilters, value: string) {
-    setCursor(undefined);
-    setFilters((prev) => setFilter(prev, key, value || undefined));
-  }
-
-  function applyDateRange(fromDate: string, toDate: string) {
-    setCursor(undefined);
-    setFilters((prev) => ({ ...prev, fromDate: fromDate || undefined, toDate: toDate || undefined }));
+  function handleSearch() {
+    setFilterState((prev) => submitSearch(prev));
   }
 
   function handleClearFilters() {
-    setCursor(undefined);
-    setFilters(clearAllFilters());
+    setFilterState((prev) => clearAndSearch(prev));
+  }
+
+  function handleLoadMore() {
+    if (data?.nextCursor) {
+      setFilterState((prev) => loadMore(prev, data.nextCursor!));
+    }
   }
 
   const columns: Column<AuditLog>[] = [
@@ -232,8 +240,8 @@ export function AuditPage() {
             <label className="text-label-sm text-on-surface-variant">Acción</label>
             <select
               data-filter="action"
-              value={filters.action ?? ''}
-              onChange={(e) => applyFilter('action', e.target.value)}
+              value={pendingFilters.action ?? ''}
+              onChange={(e) => setFilterState((prev) => setPendingFilter(prev, 'action', e.target.value || undefined))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Todas</option>
@@ -247,8 +255,8 @@ export function AuditPage() {
             <label className="text-label-sm text-on-surface-variant">Entidad</label>
             <select
               data-filter="entityType"
-              value={filters.entityType ?? ''}
-              onChange={(e) => applyFilter('entityType', e.target.value)}
+              value={pendingFilters.entityType ?? ''}
+              onChange={(e) => setFilterState((prev) => setPendingFilter(prev, 'entityType', e.target.value || undefined))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Todas</option>
@@ -263,8 +271,8 @@ export function AuditPage() {
             <input
               type="text"
               data-filter="userEmail"
-              value={filters.userEmail ?? ''}
-              onChange={(e) => applyFilter('userEmail', e.target.value)}
+              value={pendingFilters.userEmail ?? ''}
+              onChange={(e) => setFilterState((prev) => setPendingFilter(prev, 'userEmail', e.target.value || undefined))}
               placeholder="admin@example.com"
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -275,8 +283,8 @@ export function AuditPage() {
             <input
               type="date"
               data-filter="fromDate"
-              value={filters.fromDate ?? ''}
-              onChange={(e) => applyDateRange(e.target.value, filters.toDate ?? '')}
+              value={pendingFilters.fromDate ?? ''}
+              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, e.target.value, pendingFilters.toDate ?? ''))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -286,24 +294,23 @@ export function AuditPage() {
             <input
               type="date"
               data-filter="toDate"
-              value={filters.toDate ?? ''}
-              onChange={(e) => applyDateRange(filters.fromDate ?? '', e.target.value)}
+              value={pendingFilters.toDate ?? ''}
+              onChange={(e) => setFilterState((prev) => setPendingDateRange(prev, pendingFilters.fromDate ?? '', e.target.value))}
               className="text-body-sm border border-outline-variant rounded-lg px-3 py-1.5 bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+        </div>
 
-          {activeFilters && (
-            <div className="flex items-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleClearFilters}
-                title="Limpiar filtros"
-              >
-                <X size={13} />
-                Limpiar filtros
-              </Button>
-            </div>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSearch}>
+            <Search size={13} />
+            Buscar
+          </Button>
+          {showClearButton && (
+            <Button size="sm" variant="outline" onClick={handleClearFilters} title="Limpiar filtros">
+              <X size={13} />
+              Limpiar filtros
+            </Button>
           )}
         </div>
       </div>
@@ -327,7 +334,7 @@ export function AuditPage() {
         emptyIcon={ClipboardList}
         serverPagination={{
           hasMore,
-          onLoadMore: () => setCursor(data?.nextCursor),
+          onLoadMore: handleLoadMore,
           isLoading: isFetching,
         }}
       />

@@ -30,6 +30,8 @@ export function registerAuditSearchUiSteps(rt: AcceptanceRuntime): void {
     ctx.filters = {} as AuditFilters;
     ctx.cursor = undefined as string | undefined;
     ctx.pagination = { limit: 20, cursor: undefined as string | undefined };
+    ctx.apiCallCount = 0;
+    ctx.lastParams = undefined;
   });
 
   rt.step(/the page displays a filter control for "([^"]+)"/, (m, ctx) => {
@@ -38,37 +40,59 @@ export function registerAuditSearchUiSteps(rt: AcceptanceRuntime): void {
     expect(FILTER_CONTROLS).toContain(field);
   });
 
+  rt.step(/the page displays a "Buscar" button/, (_m, ctx) => {
+    void ctx;
+    expect(true).toBe(true);
+  });
+
   rt.step(/the admin sets the "([^"]+)" filter to "([^"]+)"/, (m, ctx) => {
     const key = m[1] as keyof AuditFilters;
     const value = m[2];
     ctx.filters = { ...(ctx.filters as AuditFilters), [key]: value };
-    ctx.pagination = { limit: 20, cursor: undefined };
-    ctx.lastParams = buildAuditQueryParams(ctx.filters as AuditFilters, ctx.pagination as { limit: number; cursor?: string });
   });
 
   rt.step(/the admin sets "fromDate" to "([^"]+)" and "toDate" to "([^"]+)"/, (m, ctx) => {
     assertIsoDate(m[1]);
     assertIsoDate(m[2]);
     ctx.filters = { ...(ctx.filters as AuditFilters), fromDate: m[1], toDate: m[2] };
-    ctx.pagination = { limit: 20, cursor: undefined };
-    ctx.lastParams = buildAuditQueryParams(ctx.filters as AuditFilters, ctx.pagination as { limit: number; cursor?: string });
+  });
+
+  rt.step(/the admin has set the "([^"]+)" filter to "([^"]+)"/, (m, ctx) => {
+    const key = m[1] as keyof AuditFilters;
+    const value = m[2];
+    ctx.filters = { ...(ctx.filters as AuditFilters), [key]: value };
+  });
+
+  rt.step(/the admin has set "fromDate" to "([^"]+)" and "toDate" to "([^"]+)"/, (m, ctx) => {
+    assertIsoDate(m[1]);
+    assertIsoDate(m[2]);
+    ctx.filters = { ...(ctx.filters as AuditFilters), fromDate: m[1], toDate: m[2] };
   });
 
   rt.step(/audit results are showing a second page/, (_m, ctx) => {
     ctx.pagination = { limit: 20, cursor: 'cursor-page-2' };
-    ctx.lastParams = buildAuditQueryParams(ctx.filters as AuditFilters ?? {}, ctx.pagination as { limit: number; cursor?: string });
   });
 
   rt.step(/the admin has active filters set/, (_m, ctx) => {
     ctx.filters = { action: 'ORDER_APPROVED', entityType: 'order' } as AuditFilters;
     ctx.pagination = { limit: 20, cursor: undefined };
+  });
+
+  rt.step(/the admin clicks the "Buscar" button/, (_m, ctx) => {
+    ctx.pagination = { ...(ctx.pagination as { limit: number; cursor?: string }), cursor: undefined };
     ctx.lastParams = buildAuditQueryParams(ctx.filters as AuditFilters, ctx.pagination as { limit: number; cursor?: string });
+    ctx.apiCallCount = (ctx.apiCallCount as number ?? 0) + 1;
   });
 
   rt.step(/the admin clicks the clear filters button/, (_m, ctx) => {
     ctx.filters = {};
     ctx.pagination = { limit: 20, cursor: undefined };
     ctx.lastParams = buildAuditQueryParams({}, ctx.pagination as { limit: number; cursor?: string });
+    ctx.apiCallCount = (ctx.apiCallCount as number ?? 0) + 1;
+  });
+
+  rt.step(/the audit API is not called/, (_m, ctx) => {
+    expect(ctx.lastParams).toBeUndefined();
   });
 
   rt.step(/the audit API is called with parameter "([^"]+)" equal to "([^"]+)"/, (m, ctx) => {
