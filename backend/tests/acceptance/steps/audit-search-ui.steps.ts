@@ -47,6 +47,8 @@ export function registerAuditSearchUiSteps(rt: AcceptanceRuntime): void {
   });
 
   rt.step(/the admin sets "fromDate" to "([^"]+)" and "toDate" to "([^"]+)"/, (m, ctx) => {
+    assertIsoDate(m[1]);
+    assertIsoDate(m[2]);
     ctx.filters = { ...(ctx.filters as AuditFilters), fromDate: m[1], toDate: m[2] };
     ctx.pagination = { limit: 20, cursor: undefined };
     ctx.lastParams = buildAuditQueryParams(ctx.filters as AuditFilters, ctx.pagination as { limit: number; cursor?: string });
@@ -107,11 +109,21 @@ export function registerAuditSearchUiSteps(rt: AcceptanceRuntime): void {
 
   rt.step(/the results table shows only matching records/, (_m, ctx) => {
     const params = ctx.lastParams as Record<string, string | number>;
-    expect(params).toBeDefined();
+    const filterKeys = ['action', 'entityType', 'userEmail', 'fromDate', 'toDate'];
+    const active = filterKeys.filter((k) => params[k] !== undefined);
+    expect(active.length).toBeGreaterThan(0);
   });
 
   rt.step(/the results table shows all records/, (_m, ctx) => {
     const filters = ctx.filters as AuditFilters;
     expect(hasActiveFilters(filters)).toBe(false);
   });
+}
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function assertIsoDate(value: string): void {
+  if (!ISO_DATE_RE.test(value)) {
+    throw new Error(`Invalid ISO-8601 date: ${value}`);
+  }
 }
