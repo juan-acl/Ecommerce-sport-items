@@ -51,11 +51,26 @@ Feature: Reports Purchases UI
     Then the tab displays a "Compras por estado" table
 
   # Reports Purchases UI-7
+  Scenario Outline: Compras por estado table shows required columns
+    Given the admin has selected the "Compras" tab
+    Then the "Compras por estado" table has a column "<column>"
+
+    Examples:
+      | column  |
+      | Estado  |
+      | Cantidad|
+
+  # Reports Purchases UI-8
   Scenario: Top proveedores table has a CSV export button
     Given the admin has selected the "Compras" tab
     Then the "Top proveedores" table has a CSV export button
 
-  # Reports Purchases UI-8
+  # Reports Purchases UI-9
+  Scenario: Compras por estado table has a CSV export button
+    Given the admin has selected the "Compras" tab
+    Then the "Compras por estado" table has a CSV export button
+
+  # Reports Purchases UI-10
   Scenario Outline: Clicking a period button requests the purchases report for that period
     Given the admin has selected the "Compras" tab
     When the admin clicks the period button "<label>"
