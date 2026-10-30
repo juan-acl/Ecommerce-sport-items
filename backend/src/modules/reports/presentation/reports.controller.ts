@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { SalesReportUseCase, ReportPeriod } from '@modules/reports/application/use-cases/sales-report.use-case';
+import { SalesReportUseCase } from '@modules/reports/application/use-cases/sales-report.use-case';
 import { InventoryReportUseCase } from '@modules/reports/application/use-cases/inventory-report.use-case';
 import { PurchasesReportUseCase } from '@modules/reports/application/use-cases/purchases-report.use-case';
 import { ClientAnalyticsReportUseCase } from '@modules/reports/application/use-cases/client-analytics-report.use-case';
-import {
-  SalesReportQuerySchema,
-  PurchasesReportQuerySchema,
-  ClientAnalyticsQuerySchema,
-} from '@modules/reports/application/dtos/report.dto';
+import { ReportQuerySchema } from '@modules/reports/application/dtos/report.dto';
+import { type ReportPeriod } from '@modules/reports/application/utils/report-date-range';
 import { ApiResponder } from '@shared/infrastructure/http/response.builder';
 
 export class ReportsController {
@@ -20,7 +17,7 @@ export class ReportsController {
 
   getSalesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = SalesReportQuerySchema.parse({
+      const query = ReportQuerySchema.parse({
         period: req.query.period ?? 'month',
         from: req.query.from,
         to: req.query.to,
@@ -47,7 +44,7 @@ export class ReportsController {
 
   getPurchasesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = PurchasesReportQuerySchema.parse({
+      const query = ReportQuerySchema.parse({
         period: req.query.period ?? 'month',
         from: req.query.from,
         to: req.query.to,
@@ -65,7 +62,7 @@ export class ReportsController {
 
   getClientAnalyticsReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = ClientAnalyticsQuerySchema.parse({
+      const query = ReportQuerySchema.parse({
         period: req.query.period ?? 'month',
         from: req.query.from,
         to: req.query.to,
