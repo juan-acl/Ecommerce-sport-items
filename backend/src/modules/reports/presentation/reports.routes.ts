@@ -11,6 +11,8 @@ export function buildAdminReportsRouter(controller: ReportsController): Router {
   v1.use(adminMiddleware);
   v1.get('/admin/reports/sales', requirePermission('reports', 'view'), controller.getSalesReport);
   v1.get('/admin/reports/inventory', requirePermission('reports', 'view'), controller.getInventoryReport);
+  v1.get('/admin/reports/purchases', requirePermission('reports', 'view'), controller.getPurchasesReport);
+  v1.get('/admin/reports/clients', requirePermission('reports', 'view'), controller.getClientAnalyticsReport);
 
   router.use('/v1', v1);
   return router;

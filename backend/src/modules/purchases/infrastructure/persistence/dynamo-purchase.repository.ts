@@ -52,6 +52,10 @@ export class DynamoPurchaseRepository implements PurchaseRepository {
     return { items: purchases, count: purchases.length, nextCursor };
   }
 
+  async listAll(params: { limit: number; cursor?: string }): Promise<PaginatedResult<Purchase>> {
+    return this.list(params);
+  }
+
   async findById(id: string): Promise<Purchase | null> {
     const result = await this.client.send(
       new GetCommand({

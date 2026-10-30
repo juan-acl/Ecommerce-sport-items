@@ -10,8 +10,16 @@ import {
   DollarSign,
   Hash,
   Download,
+  Truck,
+  Users,
 } from 'lucide-react';
-import { useGetSalesReportQuery, useGetInventoryReportQuery, type ReportPeriod } from '@features/reports/api/reportsApi';
+import {
+  useGetSalesReportQuery,
+  useGetInventoryReportQuery,
+  useGetPurchasesReportQuery,
+  useGetClientAnalyticsReportQuery,
+  type ReportPeriod,
+} from '@features/reports/api/reportsApi';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { Spinner } from '@shared/components/ui/Spinner';
@@ -46,6 +54,20 @@ const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'info' | 'error' |
   cancelled: 'error',
 };
 
+const PURCHASE_STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendiente',
+  partial: 'Parcial',
+  received: 'Recibido',
+  cancelled: 'Cancelado',
+};
+
+const PURCHASE_STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'info' | 'error' | 'default'> = {
+  pending: 'warning',
+  partial: 'info',
+  received: 'success',
+  cancelled: 'error',
+};
+
 const MOVEMENT_FILTER_OPTIONS: { label: string; value: MovementFilter }[] = [
   { label: 'Todos', value: 'all' },
   { label: 'Compra', value: 'purchase' },
@@ -68,7 +90,7 @@ const MOVEMENT_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'defaul
   adjustment: 'default',
 };
 
-type ActiveTab = 'sales' | 'inventory';
+type ActiveTab = 'sales' | 'inventory' | 'purchases' | 'clients';
 
 function isStockCritical(stock: number, minStock: number): boolean {
   return stock === 0 || stock < minStock * 0.5;
@@ -117,19 +139,6 @@ function SectionLoading() {
   );
 }
 
-function TableHeader({ count, children }: Readonly<{ count?: number; children: React.ReactNode }>) {
-  return (
-    <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
-      <div className="flex items-center gap-2">{children}</div>
-      {count !== undefined && (
-        <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-surface-container text-[11px] font-semibold text-on-surface-variant tabular-nums">
-          {count}
-        </span>
-      )}
-    </div>
-  );
-}
-
 function EmptyRow({ colSpan, message }: Readonly<{ colSpan: number; message: string }>) {
   return (
     <tr>
@@ -140,18 +149,50 @@ function EmptyRow({ colSpan, message }: Readonly<{ colSpan: number; message: str
   );
 }
 
+function PeriodFilter({
+  period,
+  onChange,
+}: Readonly<{ period: ReportPeriod; onChange: (p: ReportPeriod) => void }>) {
+  return (
+    <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1 w-fit">
+      {PERIOD_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`h-7 px-3 rounded-md text-[13px] font-medium transition-colors ${
+            period === opt.value
+              ? 'bg-white text-on-surface shadow-soft'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('sales');
-  const [period, setPeriod] = useState<ReportPeriod>('month');
+  const [salesPeriod, setSalesPeriod] = useState<ReportPeriod>('month');
+  const [purchasesPeriod, setPurchasesPeriod] = useState<ReportPeriod>('month');
+  const [clientsPeriod, setClientsPeriod] = useState<ReportPeriod>('month');
   const [statusFilter, setStatusFilter] = useState('all');
   const [movementFilter, setMovementFilter] = useState<MovementFilter>('all');
   const [lowStockSearch, setLowStockSearch] = useState('');
 
   const { data: salesData, isLoading: salesLoading, isError: salesError } =
-    useGetSalesReportQuery({ period });
+    useGetSalesReportQuery({ period: salesPeriod });
 
   const { data: inventoryData, isLoading: inventoryLoading, isError: inventoryError } =
     useGetInventoryReportQuery();
+
+  const { data: purchasesData, isLoading: purchasesLoading, isError: purchasesError } =
+    useGetPurchasesReportQuery({ period: purchasesPeriod });
+
+  const { data: clientsData, isLoading: clientsLoading, isError: clientsError } =
+    useGetClientAnalyticsReportQuery({ period: clientsPeriod });
 
   const filteredOrders = salesData
     ? filterOrdersByStatus(salesData.ordersByStatus, statusFilter)
@@ -168,7 +209,7 @@ export function ReportsPage() {
   const handleExportTopProducts = () => {
     if (!salesData) return;
     exportToCsv(
-      `top-productos-${period}.csv`,
+      `top-productos-${salesPeriod}.csv`,
       ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'],
       salesData.topProducts.map((p, i) => [
         String(i + 1),
@@ -182,7 +223,7 @@ export function ReportsPage() {
   const handleExportOrdersByStatus = () => {
     if (!salesData) return;
     exportToCsv(
-      `ordenes-por-estado-${period}.csv`,
+      `ordenes-por-estado-${salesPeriod}.csv`,
       ['Estado', 'Cantidad'],
       Object.entries(salesData.ordersByStatus).map(([key, count]) => [
         STATUS_LABELS[key] ?? key,
@@ -219,6 +260,46 @@ export function ReportsPage() {
     );
   };
 
+  const handleExportTopSuppliers = () => {
+    if (!purchasesData) return;
+    exportToCsv(
+      `top-proveedores-${purchasesPeriod}.csv`,
+      ['#', 'Proveedor', 'Compras', 'Gasto total (GTQ)'],
+      purchasesData.topSuppliers.map((s, i) => [
+        String(i + 1),
+        s.supplierName,
+        String(s.totalPurchases),
+        s.totalSpent.toFixed(2),
+      ]),
+    );
+  };
+
+  const handleExportPurchasesByStatus = () => {
+    if (!purchasesData) return;
+    exportToCsv(
+      `compras-por-estado-${purchasesPeriod}.csv`,
+      ['Estado', 'Cantidad'],
+      Object.entries(purchasesData.purchasesByStatus).map(([key, count]) => [
+        PURCHASE_STATUS_LABELS[key] ?? key,
+        String(count),
+      ]),
+    );
+  };
+
+  const handleExportTopClients = () => {
+    if (!clientsData) return;
+    exportToCsv(
+      `top-clientes-${clientsPeriod}.csv`,
+      ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'],
+      clientsData.topClients.map((c, i) => [
+        String(i + 1),
+        c.clientName,
+        String(c.orderCount),
+        c.totalSpent.toFixed(2),
+      ]),
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -231,59 +312,41 @@ export function ReportsPage() {
             Reportes
           </h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">
-            Análisis de ventas e inventario
+            Análisis de ventas, inventario, compras y clientes
           </p>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-surface-container p-1 rounded-xl w-fit">
-        <button
-          type="button"
-          onClick={() => setActiveTab('sales')}
-          className={`flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] font-medium transition-colors ${
-            activeTab === 'sales'
-              ? 'bg-white text-on-surface shadow-soft'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <TrendingUp size={15} />
-          Ventas
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('inventory')}
-          className={`flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] font-medium transition-colors ${
-            activeTab === 'inventory'
-              ? 'bg-white text-on-surface shadow-soft'
-              : 'text-on-surface-variant hover:text-on-surface'
-          }`}
-        >
-          <Package size={15} />
-          Inventario
-        </button>
+        {(
+          [
+            { id: 'sales', icon: <TrendingUp size={15} />, label: 'Ventas' },
+            { id: 'inventory', icon: <Package size={15} />, label: 'Inventario' },
+            { id: 'purchases', icon: <Truck size={15} />, label: 'Compras' },
+            { id: 'clients', icon: <Users size={15} />, label: 'Clientes' },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 h-9 px-4 rounded-lg text-[13px] font-medium transition-colors ${
+              activeTab === tab.id
+                ? 'bg-white text-on-surface shadow-soft'
+                : 'text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* ── Sales tab ── */}
       {activeTab === 'sales' && (
         <div className="space-y-5">
-          {/* Period filter */}
-          <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1 w-fit">
-            {PERIOD_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setPeriod(opt.value)}
-                className={`h-7 px-3 rounded-md text-[13px] font-medium transition-colors ${
-                  period === opt.value
-                    ? 'bg-white text-on-surface shadow-soft'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          <PeriodFilter period={salesPeriod} onChange={setSalesPeriod} />
 
           {salesLoading ? (
             <SectionLoading />
@@ -291,7 +354,6 @@ export function ReportsPage() {
             <SectionError message="No se pudo cargar el reporte de ventas." />
           ) : (
             <div className="space-y-5">
-              {/* Stat cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatCard
                   label="Total órdenes"
@@ -424,7 +486,6 @@ export function ReportsPage() {
             <SectionError message="No se pudo cargar el reporte de inventario." />
           ) : (
             <div className="space-y-5">
-              {/* Stat cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <StatCard
                   label="Total productos"
@@ -439,7 +500,7 @@ export function ReportsPage() {
                 />
               </div>
 
-              {/* Low stock with search filter */}
+              {/* Low stock */}
               <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
                 <div className="px-5 h-14 flex items-center justify-between gap-4 border-b border-outline-variant">
                   <div className="flex items-center gap-2">
@@ -479,12 +540,8 @@ export function ReportsPage() {
                         return (
                           <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
                             <td className="px-5 py-3 font-medium text-on-surface">{p.name}</td>
-                            <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">
-                              {p.stock}
-                            </td>
-                            <td className="px-5 py-3 text-right tabular-nums text-on-surface-variant">
-                              {p.minStock}
-                            </td>
+                            <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">{p.stock}</td>
+                            <td className="px-5 py-3 text-right tabular-nums text-on-surface-variant">{p.minStock}</td>
                             <td className="px-5 py-3">
                               <Badge variant={critical ? 'error' : 'warning'}>
                                 {critical ? 'Crítico' : 'Advertencia'}
@@ -496,11 +553,7 @@ export function ReportsPage() {
                       {filteredLowStock.length === 0 && (
                         <EmptyRow
                           colSpan={4}
-                          message={
-                            lowStockSearch
-                              ? `Sin resultados para "${lowStockSearch}".`
-                              : 'No hay productos con stock bajo.'
-                          }
+                          message={lowStockSearch ? `Sin resultados para "${lowStockSearch}".` : 'No hay productos con stock bajo.'}
                         />
                       )}
                     </tbody>
@@ -508,7 +561,7 @@ export function ReportsPage() {
                 </div>
               </div>
 
-              {/* Recent movements with type filter */}
+              {/* Recent movements */}
               <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
                 <div className="px-5 h-14 flex items-center justify-between gap-4 border-b border-outline-variant">
                   <div className="flex items-center gap-2">
@@ -520,22 +573,22 @@ export function ReportsPage() {
                       <Download size={13} />
                       Exportar
                     </Button>
-                  <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1">
-                    {MOVEMENT_FILTER_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setMovementFilter(opt.value)}
-                        className={`h-6 px-2.5 rounded-md text-[11px] font-medium transition-colors ${
-                          movementFilter === opt.value
-                            ? 'bg-white text-on-surface shadow-soft'
-                            : 'text-on-surface-variant hover:text-on-surface'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
+                    <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1">
+                      {MOVEMENT_FILTER_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setMovementFilter(opt.value)}
+                          className={`h-6 px-2.5 rounded-md text-[11px] font-medium transition-colors ${
+                            movementFilter === opt.value
+                              ? 'bg-white text-on-surface shadow-soft'
+                              : 'text-on-surface-variant hover:text-on-surface'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -557,9 +610,7 @@ export function ReportsPage() {
                               {MOVEMENT_LABELS[m.type] ?? m.type}
                             </Badge>
                           </td>
-                          <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">
-                            {m.quantity}
-                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">{m.quantity}</td>
                           <td className="px-5 py-3 text-on-surface-variant text-label-md">
                             {new Date(m.createdAt).toLocaleDateString('es-GT')}
                           </td>
@@ -567,6 +618,199 @@ export function ReportsPage() {
                       ))}
                       {filteredMovements.length === 0 && (
                         <EmptyRow colSpan={4} message="No hay movimientos para el tipo seleccionado." />
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Purchases tab ── */}
+      {activeTab === 'purchases' && (
+        <div className="space-y-5">
+          <PeriodFilter period={purchasesPeriod} onChange={setPurchasesPeriod} />
+
+          {purchasesLoading ? (
+            <SectionLoading />
+          ) : purchasesError || !purchasesData ? (
+            <SectionError message="No se pudo cargar el reporte de compras." />
+          ) : (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCard
+                  label="Total compras"
+                  value={purchasesData.totalPurchases.toLocaleString('es-GT')}
+                  icon={<Truck size={18} strokeWidth={1.75} />}
+                />
+                <StatCard
+                  label="Costo total"
+                  value={formatCurrency(purchasesData.totalCost)}
+                  icon={<DollarSign size={18} strokeWidth={1.75} />}
+                  accent="#1a6b3f"
+                />
+                <StatCard
+                  label="Costo promedio"
+                  value={formatCurrency(purchasesData.averagePurchaseCost)}
+                  icon={<Hash size={18} strokeWidth={1.75} />}
+                  accent="#5b5bd6"
+                />
+              </div>
+
+              {/* Top proveedores */}
+              <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
+                <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] font-semibold text-on-surface">Top proveedores</h3>
+                    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-surface-container text-[11px] font-semibold text-on-surface-variant tabular-nums">
+                      {purchasesData.topSuppliers.length}
+                    </span>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleExportTopSuppliers}>
+                    <Download size={13} />
+                    Exportar
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-body-md">
+                    <thead>
+                      <tr className="border-b border-outline-variant bg-surface-container-low">
+                        <th className="px-5 h-9 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">#</th>
+                        <th className="px-5 h-9 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Proveedor</th>
+                        <th className="px-5 h-9 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Compras</th>
+                        <th className="px-5 h-9 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Gasto total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant">
+                      {purchasesData.topSuppliers.map((s, idx) => (
+                        <tr key={s.supplierId} className="hover:bg-surface-container-low transition-colors">
+                          <td className="px-5 py-3 tabular-nums text-on-surface-variant text-[13px] font-medium w-10">
+                            {idx + 1}
+                          </td>
+                          <td className="px-5 py-3 font-medium text-on-surface">{s.supplierName}</td>
+                          <td className="px-5 py-3 text-right tabular-nums text-on-surface-variant">
+                            {s.totalPurchases.toLocaleString('es-GT')}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">
+                            {formatCurrency(s.totalSpent)}
+                          </td>
+                        </tr>
+                      ))}
+                      {purchasesData.topSuppliers.length === 0 && (
+                        <EmptyRow colSpan={4} message="Sin datos de proveedores para este período." />
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Compras por estado */}
+              <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
+                <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
+                  <h3 className="text-[14px] font-semibold text-on-surface">Compras por estado</h3>
+                  <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatus}>
+                    <Download size={13} />
+                    Exportar
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-body-md">
+                    <thead>
+                      <tr className="border-b border-outline-variant bg-surface-container-low">
+                        <th className="px-5 h-9 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Estado</th>
+                        <th className="px-5 h-9 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Cantidad</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant">
+                      {Object.entries(purchasesData.purchasesByStatus).map(([key, count]) => (
+                        <tr key={key} className="hover:bg-surface-container-low transition-colors">
+                          <td className="px-5 py-3">
+                            <Badge variant={PURCHASE_STATUS_VARIANTS[key] ?? 'default'}>
+                              {PURCHASE_STATUS_LABELS[key] ?? key}
+                            </Badge>
+                          </td>
+                          <td className="px-5 py-3 text-right font-semibold tabular-nums text-on-surface">
+                            {count.toLocaleString('es-GT')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Clients tab ── */}
+      {activeTab === 'clients' && (
+        <div className="space-y-5">
+          <PeriodFilter period={clientsPeriod} onChange={setClientsPeriod} />
+
+          {clientsLoading ? (
+            <SectionLoading />
+          ) : clientsError || !clientsData ? (
+            <SectionError message="No se pudo cargar el reporte de clientes." />
+          ) : (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <StatCard
+                  label="Total clientes"
+                  value={clientsData.totalClients.toLocaleString('es-GT')}
+                  icon={<Users size={18} strokeWidth={1.75} />}
+                />
+                <StatCard
+                  label="Nuevos clientes"
+                  value={clientsData.newClients.toLocaleString('es-GT')}
+                  icon={<Users size={18} strokeWidth={1.75} />}
+                  accent="#1a6b3f"
+                />
+              </div>
+
+              {/* Top clientes */}
+              <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
+                <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] font-semibold text-on-surface">Top clientes</h3>
+                    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-surface-container text-[11px] font-semibold text-on-surface-variant tabular-nums">
+                      {clientsData.topClients.length}
+                    </span>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleExportTopClients}>
+                    <Download size={13} />
+                    Exportar
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-body-md">
+                    <thead>
+                      <tr className="border-b border-outline-variant bg-surface-container-low">
+                        <th className="px-5 h-9 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">#</th>
+                        <th className="px-5 h-9 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Cliente</th>
+                        <th className="px-5 h-9 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Órdenes</th>
+                        <th className="px-5 h-9 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-on-surface-variant">Gasto total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant">
+                      {clientsData.topClients.map((c, idx) => (
+                        <tr key={c.clientId} className="hover:bg-surface-container-low transition-colors">
+                          <td className="px-5 py-3 tabular-nums text-on-surface-variant text-[13px] font-medium w-10">
+                            {idx + 1}
+                          </td>
+                          <td className="px-5 py-3 font-medium text-on-surface">{c.clientName}</td>
+                          <td className="px-5 py-3 text-right tabular-nums text-on-surface-variant">
+                            {c.orderCount.toLocaleString('es-GT')}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums font-semibold text-on-surface">
+                            {formatCurrency(c.totalSpent)}
+                          </td>
+                        </tr>
+                      ))}
+                      {clientsData.topClients.length === 0 && (
+                        <EmptyRow colSpan={4} message="Sin datos de clientes para este período." />
                       )}
                     </tbody>
                   </table>

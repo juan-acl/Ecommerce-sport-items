@@ -195,3 +195,17 @@ export interface InventoryMovement {
   createdAt: string;
   createdBy: string;
 }
+
+export interface PurchasesReport {
+  totalPurchases: number;
+  totalCost: number;
+  averagePurchaseCost: number;
+  purchasesByStatus: { pending: number; partial: number; received: number; cancelled: number };
+  topSuppliers: Array<{ supplierId: string; supplierName: string; totalPurchases: number; totalSpent: number }>;
+}
+
+export interface ClientAnalyticsReport {
+  totalClients: number;
+  newClients: number;
+  topClients: Array<{ clientId: string; clientName: string; orderCount: number; totalSpent: number }>;
+}

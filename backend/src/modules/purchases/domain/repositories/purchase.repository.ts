@@ -9,6 +9,7 @@ export interface ListPurchasesParams {
 
 export interface PurchaseRepository {
   list(params: ListPurchasesParams): Promise<PaginatedResult<Purchase>>;
+  listAll(params: { limit: number; cursor?: string }): Promise<PaginatedResult<Purchase>>;
   findById(id: string): Promise<Purchase | null>;
   save(purchase: Purchase): Promise<void>;
   update(purchase: Purchase): Promise<void>;
