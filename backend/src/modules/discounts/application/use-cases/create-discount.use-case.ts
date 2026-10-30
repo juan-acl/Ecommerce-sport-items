@@ -13,8 +13,6 @@ export class CreateDiscountUseCase {
       throw new ConflictException(`Ya existe un descuento activo con el código '${dto.code}'`);
     }
 
-    const needsApproval = dto.type === 'percentage' && dto.value > 10;
-
     const discount = new Discount({
       id: uuid(),
       code: dto.code,
@@ -23,12 +21,13 @@ export class CreateDiscountUseCase {
       minPurchase: dto.minPurchase ?? 0,
       maxUses: dto.maxUses ?? 0,
       usedCount: 0,
-      isActive: !needsApproval,
-      needsApproval,
+      isActive: true,
+      needsApproval: false,
       expiresAt: dto.expiresAt ?? null,
       createdAt: new Date().toISOString(),
       createdBy,
       applicableCategories: dto.applicableCategories ?? [],
+      targetClientId: dto.targetClientId ?? null,
     });
 
     await this.discountRepo.save(discount);

@@ -33,6 +33,7 @@ export const CreateDiscountSchema = z
     applicableCategories: z
       .array(z.enum(DISCOUNT_CATEGORY_VALUES, { error: 'Categoría inválida' }))
       .optional(),
+    targetClientId: z.string().nullable().optional(),
   })
   .refine(
     (data) => {

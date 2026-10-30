@@ -17,3 +17,12 @@ export class DiscountInvalidException extends DomainException {
     super(reason);
   }
 }
+
+export class DiscountNotApplicableException extends DomainException {
+  readonly code = 'DISCOUNT_NOT_APPLICABLE';
+  readonly statusCode = 422;
+
+  constructor() {
+    super('Este descuento no está disponible para ti');
+  }
+}

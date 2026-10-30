@@ -18,6 +18,7 @@ export class DiscountMapper {
       needsApproval: (item.needsApproval as boolean | undefined) ?? false,
       approvedBy: item.approvedBy as string | undefined,
       approvalReason: item.approvalReason as string | undefined,
+      targetClientId: (item.targetClientId as string | null | undefined) ?? null,
     };
     return new Discount(props);
   }

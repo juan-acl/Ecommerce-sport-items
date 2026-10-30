@@ -6,6 +6,7 @@ import { SalesReportUseCase } from '@modules/reports/application/use-cases/sales
 import { InventoryReportUseCase } from '@modules/reports/application/use-cases/inventory-report.use-case';
 import { PurchasesReportUseCase } from '@modules/reports/application/use-cases/purchases-report.use-case';
 import { ClientAnalyticsReportUseCase } from '@modules/reports/application/use-cases/client-analytics-report.use-case';
+import { ProductsReportUseCase } from '@modules/reports/application/use-cases/products-report.use-case';
 import { DynamoOrderRepository } from '@modules/orders/infrastructure/persistence/dynamo-order.repository';
 import { DynamoProductRepository } from '@modules/products/infrastructure/persistence/dynamo-product.repository';
 import { DynamoMovementRepository } from '@modules/inventory/infrastructure/persistence/dynamo-movement.repository';
@@ -23,12 +24,14 @@ const salesReportUseCase = new SalesReportUseCase(orderRepository);
 const inventoryReportUseCase = new InventoryReportUseCase(productRepository, movementRepository);
 const purchasesReportUseCase = new PurchasesReportUseCase(purchaseRepository);
 const clientAnalyticsUseCase = new ClientAnalyticsReportUseCase(userRepository, orderRepository);
+const productsReportUseCase = new ProductsReportUseCase(productRepository);
 
 const controller = new ReportsController(
   salesReportUseCase,
   inventoryReportUseCase,
   purchasesReportUseCase,
   clientAnalyticsUseCase,
+  productsReportUseCase,
 );
 
 const router = buildAdminReportsRouter(controller);

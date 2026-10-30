@@ -1,6 +1,7 @@
 import { ValidateDiscountUseCase } from '@modules/discounts/application/use-cases/validate-discount.use-case';
 import { Discount, DiscountProps } from '@modules/discounts/domain/entities/discount.entity';
 import type { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
+import { DiscountNotApplicableException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 
 const activeDiscount = (overrides: Partial<DiscountProps> = {}): Discount =>
   new Discount({
@@ -96,6 +97,35 @@ describe('ValidateDiscountUseCase — category subtotal', () => {
     });
     expect(result.discountAmount).toBe(40);
     expect(result.finalTotal).toBe(360);
+  });
+});
+
+describe('ValidateDiscountUseCase — client-specific coupon', () => {
+  // TC-CC-01
+  it('TC-CC-01: acepta cupón específico cuando targetClientId coincide con userId', async () => {
+    const repo = makeRepo(activeDiscount({ targetClientId: 'client-123' } as Partial<DiscountProps>));
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'client-123' }),
+    ).resolves.toMatchObject({ code: 'RUNNING10' });
+  });
+
+  // TC-CC-02
+  it('TC-CC-02: rechaza cupón específico cuando targetClientId no coincide con userId', async () => {
+    const repo = makeRepo(activeDiscount({ targetClientId: 'client-123' } as Partial<DiscountProps>));
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'client-456' }),
+    ).rejects.toBeInstanceOf(DiscountNotApplicableException);
+  });
+
+  // TC-CC-03
+  it('TC-CC-03: acepta cupón global (targetClientId=null) por cualquier userId', async () => {
+    const repo = makeRepo(activeDiscount({ targetClientId: null } as Partial<DiscountProps>));
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'client-999' }),
+    ).resolves.toMatchObject({ code: 'RUNNING10' });
   });
 });
 

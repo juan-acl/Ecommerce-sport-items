@@ -15,13 +15,13 @@ beforeEach(() => jest.clearAllMocks());
 
 describe('CreateDiscountUseCase — approval requirement', () => {
   // TC-CD-01
-  it('TC-CD-01: descuento porcentual >10% se crea inactivo y con needsApproval=true', async () => {
+  it('TC-CD-01: descuento porcentual >10% se crea activo sin needsApproval', async () => {
     const result = await buildUseCase().execute(
       { code: 'BIG20', type: 'percentage', value: 20, minPurchase: 0, maxUses: 0 },
       'admin@test.com',
     );
-    expect(result.isActive).toBe(false);
-    expect(result.needsApproval).toBe(true);
+    expect(result.isActive).toBe(true);
+    expect(result.needsApproval).toBe(false);
   });
 
   // TC-CD-02

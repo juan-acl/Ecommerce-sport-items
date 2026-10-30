@@ -7,3 +7,13 @@ export const ReportQuerySchema = z.object({
 });
 
 export type ReportQueryDto = z.infer<typeof ReportQuerySchema>;
+
+export const ProductsReportQuerySchema = z.object({
+  category: z.string().optional(),
+  name: z.string().optional(),
+  stockStatus: z.enum(['out_of_stock', 'low_stock', 'in_stock']).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export type ProductsReportQueryDto = z.infer<typeof ProductsReportQuerySchema>;

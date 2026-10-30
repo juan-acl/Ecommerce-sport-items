@@ -16,6 +16,7 @@ export interface DiscountProps {
   needsApproval?: boolean;
   approvedBy?: string;
   approvalReason?: string;
+  targetClientId?: string | null;
 }
 
 export class Discount {
@@ -36,6 +37,7 @@ export class Discount {
   get needsApproval(): boolean { return this.props.needsApproval ?? false; }
   get approvedBy(): string | undefined { return this.props.approvedBy; }
   get approvalReason(): string | undefined { return this.props.approvalReason; }
+  get targetClientId(): string | null { return this.props.targetClientId ?? null; }
 
   isValid(orderTotal: number, cartCategories?: string[]): boolean {
     if (!this.props.isActive) return false;

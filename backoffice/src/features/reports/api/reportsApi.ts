@@ -1,7 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithAuth } from '@shared/api/baseQuery';
 import type { ApiSuccessResponse } from '@shared/types/api';
-import type { SalesReport, InventoryReport, PurchasesReport, ClientAnalyticsReport } from '@shared/types/common';
+import type { SalesReport, InventoryReport, PurchasesReport, ClientAnalyticsReport, ProductsReport, StockStatus } from '@shared/types/common';
 
 export type ReportPeriod = 'day' | 'week' | 'month';
 
@@ -9,6 +9,14 @@ export interface ReportQueryParams {
   period?: ReportPeriod;
   from?: string;
   to?: string;
+}
+
+export interface ProductsReportQueryParams {
+  category?: string;
+  name?: string;
+  stockStatus?: StockStatus;
+  page?: number;
+  pageSize?: number;
 }
 
 export const reportsApi = createApi({
@@ -48,6 +56,21 @@ export const reportsApi = createApi({
       transformResponse: (response: ApiSuccessResponse<ClientAnalyticsReport>) => response.data,
       providesTags: ['Reports'],
     }),
+
+    getProductsReport: builder.query<ProductsReport, ProductsReportQueryParams>({
+      query: ({ category, name, stockStatus, page = 1, pageSize = 20 } = {}) => ({
+        url: '/admin/reports/products',
+        params: {
+          ...(category ? { category } : {}),
+          ...(name ? { name } : {}),
+          ...(stockStatus ? { stockStatus } : {}),
+          page,
+          pageSize,
+        },
+      }),
+      transformResponse: (response: ApiSuccessResponse<ProductsReport>) => response.data,
+      providesTags: ['Reports'],
+    }),
   }),
 });
 
@@ -56,4 +79,5 @@ export const {
   useGetInventoryReportQuery,
   useGetPurchasesReportQuery,
   useGetClientAnalyticsReportQuery,
+  useGetProductsReportQuery,
 } = reportsApi;

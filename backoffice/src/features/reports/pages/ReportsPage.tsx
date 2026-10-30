@@ -18,8 +18,10 @@ import {
   useGetInventoryReportQuery,
   useGetPurchasesReportQuery,
   useGetClientAnalyticsReportQuery,
+  useGetProductsReportQuery,
   type ReportPeriod,
 } from '@features/reports/api/reportsApi';
+import type { StockStatus } from '@shared/types/common';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { Spinner } from '@shared/components/ui/Spinner';
@@ -90,7 +92,7 @@ const MOVEMENT_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'defaul
   adjustment: 'default',
 };
 
-type ActiveTab = 'sales' | 'inventory' | 'purchases' | 'clients';
+type ActiveTab = 'sales' | 'inventory' | 'purchases' | 'clients' | 'products';
 
 function isStockCritical(stock: number, minStock: number): boolean {
   return stock === 0 || stock < minStock * 0.5;
@@ -181,6 +183,9 @@ export function ReportsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [movementFilter, setMovementFilter] = useState<MovementFilter>('all');
   const [lowStockSearch, setLowStockSearch] = useState('');
+  const [productCategory, setProductCategory] = useState('');
+  const [productName, setProductName] = useState('');
+  const [productStockStatus, setProductStockStatus] = useState<StockStatus | ''>('');
 
   const { data: salesData, isLoading: salesLoading, isError: salesError } =
     useGetSalesReportQuery({ period: salesPeriod });
@@ -193,6 +198,13 @@ export function ReportsPage() {
 
   const { data: clientsData, isLoading: clientsLoading, isError: clientsError } =
     useGetClientAnalyticsReportQuery({ period: clientsPeriod });
+
+  const { data: productsData, isLoading: productsLoading, isError: productsError } =
+    useGetProductsReportQuery({
+      ...(productCategory ? { category: productCategory } : {}),
+      ...(productName ? { name: productName } : {}),
+      ...(productStockStatus ? { stockStatus: productStockStatus } : {}),
+    });
 
   const filteredOrders = salesData
     ? filterOrdersByStatus(salesData.ordersByStatus, statusFilter)
@@ -300,6 +312,22 @@ export function ReportsPage() {
     );
   };
 
+  const handleExportProducts = () => {
+    if (!productsData) return;
+    exportToCsv(
+      'reporte-productos.csv',
+      ['Producto', 'Categoría', 'Precio (GTQ)', 'Stock', 'Mínimo', 'Estado'],
+      productsData.products.map((p) => [
+        p.name,
+        p.category,
+        p.price.toFixed(2),
+        String(p.stock),
+        String(p.minStock),
+        p.stock === 0 ? 'Sin stock' : p.stock < p.minStock ? 'Stock bajo' : 'En stock',
+      ]),
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -325,6 +353,7 @@ export function ReportsPage() {
             { id: 'inventory', icon: <Package size={15} />, label: 'Inventario' },
             { id: 'purchases', icon: <Truck size={15} />, label: 'Compras' },
             { id: 'clients', icon: <Users size={15} />, label: 'Clientes' },
+            { id: 'products', icon: <Package size={15} />, label: 'Productos' },
           ] as const
         ).map((tab) => (
           <button

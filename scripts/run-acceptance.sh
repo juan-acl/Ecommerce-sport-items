@@ -18,6 +18,12 @@ gherkin-parser "$ROOT/features/reports-client-analytics-api.feature" "$TMP/repor
 gherkin-parser "$ROOT/features/reports-date-range-api.feature"       "$TMP/reports-date-range-api.json"
 gherkin-parser "$ROOT/features/reports-purchases-ui.feature"         "$TMP/reports-purchases-ui.json"
 gherkin-parser "$ROOT/features/reports-client-analytics-ui.feature"  "$TMP/reports-client-analytics-ui.json"
+gherkin-parser "$ROOT/features/reports-products-api.feature"         "$TMP/reports-products-api.json"
+gherkin-parser "$ROOT/features/reports-products-ui.feature"          "$TMP/reports-products-ui.json"
+gherkin-parser "$ROOT/features/discounts-no-approval.feature"        "$TMP/discounts-no-approval.json"
+gherkin-parser "$ROOT/features/discounts-no-approval-ui.feature"     "$TMP/discounts-no-approval-ui.json"
+gherkin-parser "$ROOT/features/discounts-client-coupon-api.feature"  "$TMP/discounts-client-coupon-api.json"
+gherkin-parser "$ROOT/features/discounts-client-coupon-ui.feature"   "$TMP/discounts-client-coupon-ui.json"
 
 echo "=== Generating acceptance tests ==="
 cd "$ROOT"
@@ -75,6 +81,42 @@ backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
   "${STEPS_BASE}/reports-client-analytics-ui.steps" \
   "registerReportsClientAnalyticsUiSteps"
 
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/reports-products-api.json" \
+  "$GEN/reports-products-api.acceptance.test.ts" \
+  "${STEPS_BASE}/reports-products-api.steps" \
+  "registerReportsProductsApiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/reports-products-ui.json" \
+  "$GEN/reports-products-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/reports-products-ui.steps" \
+  "registerReportsProductsUiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-no-approval.json" \
+  "$GEN/discounts-no-approval.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-no-approval.steps" \
+  "registerDiscountsNoApprovalSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-no-approval-ui.json" \
+  "$GEN/discounts-no-approval-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-no-approval-ui.steps" \
+  "registerDiscountsNoApprovalUiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-client-coupon-api.json" \
+  "$GEN/discounts-client-coupon-api.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-client-coupon-api.steps" \
+  "registerDiscountsClientCouponApiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-client-coupon-ui.json" \
+  "$GEN/discounts-client-coupon-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-client-coupon-ui.steps" \
+  "registerDiscountsClientCouponUiSteps"
+
 echo "=== Running acceptance tests ==="
 cd "$ROOT/backend"
 ./node_modules/.bin/jest \
@@ -87,4 +129,10 @@ cd "$ROOT/backend"
   tests/acceptance/generated/reports-date-range-api.acceptance.test.ts \
   tests/acceptance/generated/reports-purchases-ui.acceptance.test.ts \
   tests/acceptance/generated/reports-client-analytics-ui.acceptance.test.ts \
+  tests/acceptance/generated/reports-products-api.acceptance.test.ts \
+  tests/acceptance/generated/reports-products-ui.acceptance.test.ts \
+  tests/acceptance/generated/discounts-no-approval.acceptance.test.ts \
+  tests/acceptance/generated/discounts-no-approval-ui.acceptance.test.ts \
+  tests/acceptance/generated/discounts-client-coupon-api.acceptance.test.ts \
+  tests/acceptance/generated/discounts-client-coupon-ui.acceptance.test.ts \
   --no-coverage

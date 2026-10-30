@@ -156,6 +156,7 @@ export interface Discount {
   needsApproval?: boolean;
   approvedBy?: string;
   approvalReason?: string;
+  targetClientId?: string | null;
 }
 
 export interface AuditLog {
@@ -208,4 +209,22 @@ export interface ClientAnalyticsReport {
   totalClients: number;
   newClients: number;
   topClients: Array<{ clientId: string; clientName: string; orderCount: number; totalSpent: number }>;
+}
+
+export interface ProductReportEntry {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  minStock: number;
+}
+
+export type StockStatus = 'out_of_stock' | 'low_stock' | 'in_stock';
+
+export interface ProductsReport {
+  products: ProductReportEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

@@ -13,6 +13,7 @@ export function buildAdminReportsRouter(controller: ReportsController): Router {
   v1.get('/admin/reports/inventory', requirePermission('reports', 'view'), controller.getInventoryReport);
   v1.get('/admin/reports/purchases', requirePermission('reports', 'view'), controller.getPurchasesReport);
   v1.get('/admin/reports/clients', requirePermission('reports', 'view'), controller.getClientAnalyticsReport);
+  v1.get('/admin/reports/products', requirePermission('reports', 'view'), controller.getProductsReport);
 
   router.use('/v1', v1);
   return router;

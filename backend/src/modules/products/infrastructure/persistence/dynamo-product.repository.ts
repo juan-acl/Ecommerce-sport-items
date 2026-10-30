@@ -24,6 +24,10 @@ export class DynamoProductRepository implements ProductRepository {
     private readonly tableName: string,
   ) {}
 
+  async listAll(params: { limit: number; cursor?: string }): Promise<PaginatedResult<Product>> {
+    return this.list({ limit: params.limit, cursor: params.cursor });
+  }
+
   async list(params: ListProductsParams): Promise<PaginatedResult<Product>> {
     const { limit, cursor, category } = params;
 
