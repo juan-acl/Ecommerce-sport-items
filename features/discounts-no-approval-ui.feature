@@ -31,8 +31,8 @@ Feature: Discount No Approval UI
       | 100   |
 
   # Discount No Approval UI-3
-  Scenario Outline: A newly created percentage discount above 10% shows as Activo immediately
-    When the admin creates a percentage discount with value <value>
+  Scenario Outline: A newly created global percentage discount above 10% shows as Activo immediately
+    When the admin creates a global percentage discount with value <value>
     Then the discount list shows status "Activo" for that discount
 
     Examples:
