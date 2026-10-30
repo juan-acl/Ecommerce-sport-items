@@ -96,16 +96,9 @@ export function registerReportsDateRangeApiSteps(rt: AcceptanceRuntime): void {
     ctx.to = to;
   });
 
-  rt.step(/the response "totalOrders" counts only orders created from "([^"]+)" to "([^"]+)"/, (m, ctx) => {
-    const from = m[1];
-    const to = m[2];
+  rt.step(/the response "totalOrders" counts only orders created from "([^"]+)" to "([^"]+)"/, (_m, ctx) => {
     const response = ctx.response as { totalOrders: number };
-    const expectedFrom = new Date(from + 'T00:00:00.000Z');
-    const expectedTo = new Date(to + 'T23:59:59.999Z');
-    expect(expectedFrom.toISOString()).toBe(new Date(from + 'T00:00:00.000Z').toISOString());
-    expect(expectedTo.toISOString()).toBe(new Date(to + 'T23:59:59.999Z').toISOString());
-    expect(response.totalOrders).toBeGreaterThanOrEqual(0);
-    expect(typeof response.totalOrders).toBe('number');
+    expect(response.totalOrders).toBe(1);
   });
 
   rt.step(/the client requests the purchases report with from "([^"]+)" and to "([^"]+)"/, async (m, ctx) => {
@@ -130,11 +123,9 @@ export function registerReportsDateRangeApiSteps(rt: AcceptanceRuntime): void {
     ctx.to = to;
   });
 
-  rt.step(/the response "totalPurchases" counts only purchases created from "([^"]+)" to "([^"]+)"/, (m, ctx) => {
+  rt.step(/the response "totalPurchases" counts only purchases created from "([^"]+)" to "([^"]+)"/, (_m, ctx) => {
     const response = ctx.response as { totalPurchases: number };
-    void m;
-    expect(typeof response.totalPurchases).toBe('number');
-    expect(response.totalPurchases).toBeGreaterThanOrEqual(0);
+    expect(response.totalPurchases).toBe(1);
   });
 
   rt.step(/the client requests the client analytics report with from "([^"]+)" and to "([^"]+)"/, async (m, ctx) => {
@@ -151,10 +142,8 @@ export function registerReportsDateRangeApiSteps(rt: AcceptanceRuntime): void {
     ctx.to = to;
   });
 
-  rt.step(/the response "newClients" counts only clients registered from "([^"]+)" to "([^"]+)"/, (m, ctx) => {
+  rt.step(/the response "newClients" counts only clients registered from "([^"]+)" to "([^"]+)"/, (_m, ctx) => {
     const response = ctx.response as { newClients: number };
-    void m;
-    expect(typeof response.newClients).toBe('number');
-    expect(response.newClients).toBeGreaterThanOrEqual(0);
+    expect(response.newClients).toBe(1);
   });
 }
