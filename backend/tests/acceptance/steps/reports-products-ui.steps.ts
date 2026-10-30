@@ -99,6 +99,8 @@ export function registerReportsProductsUiSteps(rt: AcceptanceRuntime): void {
     const expectedStatus = m[1];
     const page = ctx.page as PageState;
     const params = buildProductsApiParams(page.productsFilters);
+    const validStatuses = ['out_of_stock', 'low_stock', 'in_stock'];
+    expect(validStatuses).toContain(params.stockStatus);
     expect(params.stockStatus).toBe(expectedStatus);
   });
 }

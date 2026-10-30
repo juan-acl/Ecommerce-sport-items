@@ -37,11 +37,13 @@ export function registerDiscountsNoApprovalUiSteps(rt: AcceptanceRuntime): void 
 
   rt.step(/the discount list does not show an "Aprobar" action for that discount/, (_m, ctx) => {
     const discount = ctx.discount as DiscountProps;
+    expect([11, 50, 100]).toContain(discount.value);
     expect(isPendingApproval(discount)).toBe(false);
   });
 
   rt.step(/the discount list does not show status "Pendiente aprobación" for that discount/, (_m, ctx) => {
     const discount = ctx.discount as DiscountProps;
+    expect([11, 50, 100]).toContain(discount.value);
     expect(isPendingApproval(discount)).toBe(false);
   });
 
@@ -56,6 +58,7 @@ export function registerDiscountsNoApprovalUiSteps(rt: AcceptanceRuntime): void 
 
   rt.step(/the discount list shows status "Activo" for that discount/, (_m, ctx) => {
     const discount = ctx.discount as DiscountProps;
+    expect([11, 50, 100]).toContain(discount.value);
     expect(discount.isActive).toBe(true);
     expect(isPendingApproval(discount)).toBe(false);
   });

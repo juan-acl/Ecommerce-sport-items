@@ -9,6 +9,7 @@ export interface ProductReportEntry {
   price: number;
   stock: number;
   minStock: number;
+  stockStatus: StockStatus;
 }
 
 export interface ProductsReportResult {
@@ -72,6 +73,7 @@ export class ProductsReportUseCase {
       price: p.price,
       stock: p.stock,
       minStock: p.minStock,
+      stockStatus: p.stock === 0 ? 'out_of_stock' : p.stock < p.minStock ? 'low_stock' : 'in_stock',
     }));
 
     return { products, total, page, pageSize };

@@ -62,6 +62,24 @@ describe('ProductsReportUseCase', () => {
     expect(entry).toHaveProperty('price');
     expect(entry).toHaveProperty('stock');
     expect(entry).toHaveProperty('minStock');
+    expect(entry).toHaveProperty('stockStatus');
+  });
+
+  it('stockStatus field is correctly derived for each product', async () => {
+    mockRepo.listAll.mockResolvedValueOnce({
+      items: [
+        makeProduct({ id: 'a', stock: 0, minStock: 5 }),
+        makeProduct({ id: 'b', stock: 3, minStock: 5 }),
+        makeProduct({ id: 'c', stock: 10, minStock: 5 }),
+      ],
+      nextCursor: undefined,
+      count: 3,
+    });
+    const uc = new ProductsReportUseCase(mockRepo as never);
+    const result = await uc.execute({});
+    expect(result.products.find((p) => p.id === 'a')?.stockStatus).toBe('out_of_stock');
+    expect(result.products.find((p) => p.id === 'b')?.stockStatus).toBe('low_stock');
+    expect(result.products.find((p) => p.id === 'c')?.stockStatus).toBe('in_stock');
   });
 
   it('category filter returns only matching products', async () => {

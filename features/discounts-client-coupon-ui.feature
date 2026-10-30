@@ -1,3 +1,8 @@
+# mutation-stamp: sha256=0ce7aa04d2d54b9eb3bb8ccc67ae9b83bee9d4828f001ce874d48abd7141273e
+# acceptance-mutation-manifest-begin
+# {"version":1,"tested_at":"2026-10-30T21:30:58.088810Z","feature_name":"Discount Client Coupon UI","feature_path":"features/discounts-client-coupon-ui.feature","background_hash":"02681590342f5e299ba73104e26ad558d7399f7dacf49f743eb7264eddbd9309","implementation_hash":"unknown","scenarios":[]}
+# acceptance-mutation-manifest-end
+
 Feature: Discount Client Coupon UI
 
   Background:

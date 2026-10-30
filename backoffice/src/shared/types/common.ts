@@ -174,14 +174,14 @@ export interface SalesReport {
   totalOrders: number;
   totalRevenue: number;
   averageOrderValue: number;
-  ordersByStatus: { paid: number; cancelled: number; pending: number; shipped: number; pendingApproval: number };
+  ordersByStatus: { paid: number; processing: number; shipped: number; delivered: number; cancelled: number };
   topProducts: Array<{ productId: string; productName: string; totalQuantity: number; totalRevenue: number }>;
 }
 
 export interface InventoryReport {
   totalProducts: number;
   totalStockValue: number;
-  lowStockProducts: Array<{ id: string; name: string; stock: number; minStock: number }>;
+  lowStockProducts: Array<{ id: string; name: string; stock: number; minStock: number; isCritical: boolean }>;
   recentMovements: Array<{ id: string; productName: string; type: string; quantity: number; createdAt: string }>;
 }
 
@@ -218,6 +218,7 @@ export interface ProductReportEntry {
   price: number;
   stock: number;
   minStock: number;
+  stockStatus: StockStatus;
 }
 
 export type StockStatus = 'out_of_stock' | 'low_stock' | 'in_stock';

@@ -6,6 +6,7 @@ export interface LowStockProduct {
   name: string;
   stock: number;
   minStock: number;
+  isCritical: boolean;
 }
 
 export interface InventoryReportResult {
@@ -38,7 +39,7 @@ export class InventoryReportUseCase {
     );
     const lowStockProducts: LowStockProduct[] = allProducts
       .filter((p) => p.stock <= p.minStock)
-      .map((p) => ({ id: p.id, name: p.name, stock: p.stock, minStock: p.minStock }));
+      .map((p) => ({ id: p.id, name: p.name, stock: p.stock, minStock: p.minStock, isCritical: p.stock === 0 || p.stock < p.minStock * 0.5 }));
 
     // Fetch recent movements
     const movementsPage = await this.movementRepo.list({ limit: 20 });
