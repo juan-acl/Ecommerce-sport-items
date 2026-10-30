@@ -19,8 +19,32 @@ export interface DiscountProps {
   targetClientId?: string | null;
 }
 
+export interface DiscountCreateInput {
+  id: string;
+  code: string;
+  type: DiscountType;
+  value: number;
+  minPurchase: number;
+  maxUses: number;
+  expiresAt: string | null;
+  applicableCategories: string[];
+  targetClientId: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
 export class Discount {
   constructor(private readonly props: DiscountProps) {}
+
+  static create(input: DiscountCreateInput): Discount {
+    const isClientSpecific = input.targetClientId !== null;
+    return new Discount({
+      ...input,
+      usedCount: 0,
+      isActive: !isClientSpecific,
+      needsApproval: isClientSpecific,
+    });
+  }
 
   get id(): string { return this.props.id; }
   get code(): string { return this.props.code; }
@@ -38,6 +62,7 @@ export class Discount {
   get approvedBy(): string | undefined { return this.props.approvedBy; }
   get approvalReason(): string | undefined { return this.props.approvalReason; }
   get targetClientId(): string | null { return this.props.targetClientId ?? null; }
+  get isPendingApproval(): boolean { return (this.props.needsApproval ?? false) && !this.props.isActive; }
 
   isValid(orderTotal: number, cartCategories?: string[]): boolean {
     if (!this.props.isActive) return false;

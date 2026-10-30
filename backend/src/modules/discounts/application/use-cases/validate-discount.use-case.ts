@@ -21,7 +21,7 @@ export class ValidateDiscountUseCase {
       throw new DiscountNotFoundException(dto.code);
     }
 
-    if (discount.needsApproval && !discount.isActive) {
+    if (discount.isPendingApproval) {
       throw new DiscountPendingApprovalException();
     }
 

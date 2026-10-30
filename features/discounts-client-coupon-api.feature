@@ -1,6 +1,6 @@
-# mutation-stamp: sha256=7774526ab1fcda38f9547f35f86a2d74f8913bb027f9c3e9265381abee305746
+# mutation-stamp: sha256=ee1e56ddf11f2232b45e0ba53b6aea8aa0beb71a46ea2a7b686a4d038585a58d
 # acceptance-mutation-manifest-begin
-# {"version":1,"tested_at":"2026-10-30T21:30:55.642745Z","feature_name":"Discount Client Coupon API","feature_path":"features/discounts-client-coupon-api.feature","background_hash":"559c630a0ac90b6d101862a354c02cc79ec4a3b3ef26c0f28518559d19722c49","implementation_hash":"unknown","scenarios":[]}
+# {"version":1,"tested_at":"2026-10-30T22:52:43.294887Z","feature_name":"Discount Client Coupon API","feature_path":"features/discounts-client-coupon-api.feature","background_hash":"559c630a0ac90b6d101862a354c02cc79ec4a3b3ef26c0f28518559d19722c49","implementation_hash":"unknown","scenarios":[]}
 # acceptance-mutation-manifest-end
 
 Feature: Discount Client Coupon API

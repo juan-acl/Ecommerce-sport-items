@@ -3,7 +3,7 @@ import { CreateDiscountUseCase } from '../../../src/modules/discounts/applicatio
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
 
 function isPendingApproval(discount: DiscountProps): boolean {
-  return !!discount.needsApproval && !discount.isActive && !discount.approvedBy;
+  return !!discount.needsApproval && !discount.isActive;
 }
 
 function buildCreateMockRepo() {
