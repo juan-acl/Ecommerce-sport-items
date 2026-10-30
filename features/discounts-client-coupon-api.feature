@@ -40,3 +40,16 @@ Feature: Discount Client Coupon API
   Scenario: Discount list response includes targetClientId for each discount
     When the client requests the discounts list
     Then each discount entry contains field "targetClientId"
+
+  # Discount Client Coupon API-7
+  Scenario: Creating a client-specific coupon requires approval and is initially inactive
+    When the admin creates a discount with targetClientId "client-123"
+    Then the created discount has needsApproval equal to true
+    And the created discount has isActive equal to false
+
+  # Discount Client Coupon API-8
+  Scenario: Approving a client-specific coupon activates it and clears needsApproval
+    Given a client-specific discount with code "VIP10" is pending approval
+    When the admin approves the discount
+    Then the discount has isActive equal to true
+    And the discount has needsApproval equal to false

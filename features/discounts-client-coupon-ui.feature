@@ -33,3 +33,21 @@ Feature: Discount Client Coupon UI
     And the admin has selected client "Juan Pérez" with id "client-123" in the client selector
     When the admin submits the form
     Then the create discount API request includes targetClientId "client-123"
+
+  # Discount Client Coupon UI-6
+  Scenario: A newly created client-specific coupon shows status Pendiente aprobación
+    Given the admin has opened the create discount form
+    And the admin has selected client "Juan Pérez" with id "client-123" in the client selector
+    When the admin submits the form
+    Then the discount list shows status "Pendiente aprobación" for that discount
+
+  # Discount Client Coupon UI-7
+  Scenario: Discount list shows Aprobar action for a pending client-specific coupon
+    Given a client-specific discount targeting "Juan Pérez" is pending approval in the list
+    Then the discount list shows an "Aprobar" action for that discount
+
+  # Discount Client Coupon UI-8
+  Scenario: Clicking Aprobar on a client-specific coupon changes its status to Activo
+    Given a client-specific discount targeting "Juan Pérez" is pending approval in the list
+    When the admin clicks "Aprobar" for that discount
+    Then the discount list shows status "Activo" for that discount
