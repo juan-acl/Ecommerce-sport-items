@@ -26,3 +26,12 @@ export class DiscountNotApplicableException extends DomainException {
     super('Este descuento no está disponible para ti');
   }
 }
+
+export class DiscountPendingApprovalException extends DomainException {
+  readonly code = 'DISCOUNT_PENDING_APPROVAL';
+  readonly statusCode = 422;
+
+  constructor() {
+    super('Este cupón está pendiente de aprobación por un administrador');
+  }
+}

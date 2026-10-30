@@ -1,7 +1,7 @@
 import { ValidateDiscountUseCase } from '@modules/discounts/application/use-cases/validate-discount.use-case';
 import { Discount, DiscountProps } from '@modules/discounts/domain/entities/discount.entity';
 import type { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
-import { DiscountNotApplicableException } from '@modules/discounts/domain/exceptions/discount.exceptions';
+import { DiscountNotApplicableException, DiscountPendingApprovalException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 
 const activeDiscount = (overrides: Partial<DiscountProps> = {}): Discount =>
   new Discount({
@@ -156,5 +156,25 @@ describe('ValidateDiscountUseCase — per-user usage', () => {
       useCase.execute({ code: 'RUNNING10', orderTotal: 100 }),
     ).resolves.toMatchObject({ code: 'RUNNING10' });
     expect(repo.hasUserUsedDiscount).not.toHaveBeenCalled();
+  });
+});
+
+describe('ValidateDiscountUseCase — pending approval', () => {
+  // TC-PA-01
+  it('TC-PA-01: cupón pendiente de aprobación lanza DiscountPendingApprovalException para cualquier cliente', async () => {
+    const repo = makeRepo(activeDiscount({ isActive: false, needsApproval: true, targetClientId: 'client-123' } as Partial<DiscountProps>));
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'client-999' }),
+    ).rejects.toBeInstanceOf(DiscountPendingApprovalException);
+  });
+
+  // TC-PA-02
+  it('TC-PA-02: cupón pendiente de aprobación lanza DiscountPendingApprovalException incluso para el cliente objetivo', async () => {
+    const repo = makeRepo(activeDiscount({ isActive: false, needsApproval: true, targetClientId: 'client-123' } as Partial<DiscountProps>));
+    const useCase = new ValidateDiscountUseCase(repo);
+    await expect(
+      useCase.execute({ code: 'RUNNING10', orderTotal: 100, userId: 'client-123' }),
+    ).rejects.toBeInstanceOf(DiscountPendingApprovalException);
   });
 });

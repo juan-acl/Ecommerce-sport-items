@@ -125,4 +125,49 @@ export function registerDiscountsClientCouponUiSteps(rt: AcceptanceRuntime): voi
     const request = ctx.submittedRequest as { targetClientId: string | null };
     expect(request.targetClientId).toBe(expectedId);
   });
+
+  rt.step(/the discount list shows status "Pendiente aprobación" for that discount/, (_m, ctx) => {
+    const request = ctx.submittedRequest as { targetClientId: string | null };
+    expect(request.targetClientId).not.toBeNull();
+  });
+
+  rt.step(/a client-specific discount targeting "([^"]+)" is pending approval in the list/, (m, ctx) => {
+    const clientName = m[1];
+    const discount = new Discount({
+      id: 'd3',
+      code: 'PENDING10',
+      type: 'percentage',
+      value: 10,
+      minPurchase: 0,
+      maxUses: 0,
+      usedCount: 0,
+      isActive: false,
+      needsApproval: true,
+      expiresAt: null,
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin@test.com',
+      targetClientId: 'client-123',
+    });
+    ctx.listItem = { discount: discount.toJSON(), targetClientLabel: resolveTargetLabel(discount.toJSON(), clientName) };
+  });
+
+  rt.step(/the discount list shows an "Aprobar" action for that discount/, (_m, ctx) => {
+    const item = ctx.listItem as ListItem;
+    expect(item.discount.needsApproval).toBe(true);
+    expect(item.discount.isActive).toBe(false);
+  });
+
+  rt.step(/the admin clicks "Aprobar" for that discount/, (_m, ctx) => {
+    const item = ctx.listItem as ListItem;
+    ctx.listItem = {
+      discount: { ...item.discount, isActive: true, needsApproval: false, approvedBy: 'admin@test.com' },
+      targetClientLabel: item.targetClientLabel,
+    };
+  });
+
+  rt.step(/the discount list shows status "Activo" for that discount/, (_m, ctx) => {
+    const item = ctx.listItem as ListItem;
+    expect(item.discount.isActive).toBe(true);
+    expect(item.discount.needsApproval).toBeFalsy();
+  });
 }

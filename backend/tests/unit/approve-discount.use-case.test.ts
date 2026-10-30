@@ -64,4 +64,16 @@ describe('ApproveDiscountUseCase', () => {
       buildUseCase().execute({ id: 'missing', approvedBy: 'sup@test.com', approvalReason: 'reason' }),
     ).rejects.toThrow();
   });
+
+  // TC-AD-04
+  it('TC-AD-04: aprobar cupón limpia needsApproval', async () => {
+    mockRepo.findById.mockResolvedValue(makeDiscount());
+    const result = await buildUseCase().execute({
+      id: 'disc-1',
+      approvedBy: 'supervisor@test.com',
+      approvalReason: 'Cupón VIP autorizado',
+    });
+    expect(result.isActive).toBe(true);
+    expect(result.needsApproval).toBe(false);
+  });
 });

@@ -45,4 +45,28 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the create discount API request includes targetClientId "client-123"`);
   });
 
+  it("A newly created client-specific coupon shows status Pendiente aprobación", async () => {
+    rt.reset();
+    await rt.run(`an admin is authenticated and viewing the Descuentos page`);
+    await rt.run(`the admin has opened the create discount form`);
+    await rt.run(`the admin has selected client "Juan Pérez" with id "client-123" in the client selector`);
+    await rt.run(`the admin submits the form`);
+    await rt.run(`the discount list shows status "Pendiente aprobación" for that discount`);
+  });
+
+  it("Discount list shows Aprobar action for a pending client-specific coupon", async () => {
+    rt.reset();
+    await rt.run(`an admin is authenticated and viewing the Descuentos page`);
+    await rt.run(`a client-specific discount targeting "Juan Pérez" is pending approval in the list`);
+    await rt.run(`the discount list shows an "Aprobar" action for that discount`);
+  });
+
+  it("Clicking Aprobar on a client-specific coupon changes its status to Activo", async () => {
+    rt.reset();
+    await rt.run(`an admin is authenticated and viewing the Descuentos page`);
+    await rt.run(`a client-specific discount targeting "Juan Pérez" is pending approval in the list`);
+    await rt.run(`the admin clicks "Aprobar" for that discount`);
+    await rt.run(`the discount list shows status "Activo" for that discount`);
+  });
+
 });

@@ -1,6 +1,7 @@
 import { AcceptanceRuntime } from '../runtime/acceptance-runtime';
 import { CreateDiscountUseCase } from '../../../src/modules/discounts/application/use-cases/create-discount.use-case';
 import { ValidateDiscountUseCase } from '../../../src/modules/discounts/application/use-cases/validate-discount.use-case';
+import { ApproveDiscountUseCase } from '../../../src/modules/discounts/application/use-cases/approve-discount.use-case';
 import { ListDiscountsUseCase } from '../../../src/modules/discounts/application/use-cases/list-discounts.use-case';
 import { Discount } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
@@ -19,6 +20,23 @@ function buildCreateRepo(existingDiscount?: Discount) {
   };
 }
 
+function buildApproveRepo(existingDiscount: Discount) {
+  let current = existingDiscount;
+  return {
+    findByCode: async () => null,
+    save: async () => undefined,
+    findById: async () => current,
+    listAll: async () => ({ items: [], nextCursor: undefined, count: 0 }),
+    setActive: async () => undefined,
+    approve: async (_id: string, approvedBy: string, approvalReason: string) => {
+      current = current.withApproved(approvedBy, approvalReason);
+    },
+    incrementUsedCount: async () => undefined,
+    hasUserUsedDiscount: async () => false,
+    recordUserUsage: async () => undefined,
+  };
+}
+
 function makeDiscount(props: Partial<DiscountProps>): Discount {
   return new Discount({
     id: 'disc-1',
@@ -28,8 +46,8 @@ function makeDiscount(props: Partial<DiscountProps>): Discount {
     minPurchase: 0,
     maxUses: 0,
     usedCount: 0,
-    isActive: true,
-    needsApproval: false,
+    isActive: props.isActive ?? true,
+    needsApproval: props.needsApproval ?? false,
     expiresAt: null,
     createdAt: new Date().toISOString(),
     createdBy: 'admin@test.com',
@@ -71,17 +89,37 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
     expect(discount.targetClientId).toBeNull();
   });
 
-  rt.step(/a discount with targetClientId "([^"]+)" exists with code "([^"]+)"/, (m, ctx) => {
+  rt.step(/the created discount has needsApproval equal to (true|false)/, (m, ctx) => {
+    const expected = m[1] === 'true';
+    const discount = ctx.createdDiscount as DiscountProps;
+    expect(discount.needsApproval).toBe(expected);
+  });
+
+  rt.step(/the created discount has isActive equal to (true|false)/, (m, ctx) => {
+    const expected = m[1] === 'true';
+    const discount = ctx.createdDiscount as DiscountProps;
+    expect(discount.isActive).toBe(expected);
+  });
+
+  rt.step(/an approved discount with targetClientId "([^"]+)" exists with code "([^"]+)"/, (m, ctx) => {
     const targetClientId = m[1];
     const code = m[2];
-    ctx.existingDiscount = makeDiscount({ targetClientId, code });
+    ctx.existingDiscount = makeDiscount({ targetClientId, code, isActive: true, needsApproval: false });
+    const repo = buildCreateRepo(ctx.existingDiscount as Discount);
+    ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
+  });
+
+  rt.step(/a pending discount with targetClientId "([^"]+)" exists with code "([^"]+)"/, (m, ctx) => {
+    const targetClientId = m[1];
+    const code = m[2];
+    ctx.existingDiscount = makeDiscount({ targetClientId, code, isActive: false, needsApproval: true });
     const repo = buildCreateRepo(ctx.existingDiscount as Discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
   rt.step(/a global discount exists with code "([^"]+)"/, (m, ctx) => {
     const code = m[1];
-    ctx.existingDiscount = makeDiscount({ targetClientId: null, code });
+    ctx.existingDiscount = makeDiscount({ targetClientId: null, code, isActive: true, needsApproval: false });
     const repo = buildCreateRepo(ctx.existingDiscount as Discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
@@ -112,7 +150,7 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
   });
 
   rt.step(/the client requests the discounts list/, async (_m, ctx) => {
-    const discount = makeDiscount({ targetClientId: 'client-abc' });
+    const discount = makeDiscount({ targetClientId: 'client-abc', isActive: true });
     const repo = buildCreateRepo(discount);
     const uc = new ListDiscountsUseCase(repo as never);
     ctx.listResult = await uc.execute({ limit: 20 });
@@ -125,5 +163,33 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
     for (const entry of result.items) {
       expect(entry).toHaveProperty(field);
     }
+  });
+
+  rt.step(/a client-specific discount with code "([^"]+)" is pending approval/, (m, ctx) => {
+    const code = m[1];
+    ctx.pendingDiscount = makeDiscount({ code, targetClientId: 'client-123', isActive: false, needsApproval: true });
+    ctx.approveRepo = buildApproveRepo(ctx.pendingDiscount as Discount);
+    ctx.approveUseCase = new ApproveDiscountUseCase(ctx.approveRepo as never);
+  });
+
+  rt.step(/the admin approves the discount/, async (_m, ctx) => {
+    const uc = ctx.approveUseCase as ApproveDiscountUseCase;
+    ctx.approvedDiscount = await uc.execute({
+      id: 'disc-1',
+      approvedBy: 'admin@test.com',
+      approvalReason: 'Cupón VIP aprobado',
+    });
+  });
+
+  rt.step(/the discount has isActive equal to (true|false)/, (m, ctx) => {
+    const expected = m[1] === 'true';
+    const discount = ctx.approvedDiscount as DiscountProps;
+    expect(discount.isActive).toBe(expected);
+  });
+
+  rt.step(/the discount has needsApproval equal to (true|false)/, (m, ctx) => {
+    const expected = m[1] === 'true';
+    const discount = ctx.approvedDiscount as DiscountProps;
+    expect(discount.needsApproval).toBe(expected);
   });
 }

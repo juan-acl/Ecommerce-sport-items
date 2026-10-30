@@ -54,3 +54,27 @@ describe('CreateDiscountUseCase — approval requirement', () => {
     expect(result.needsApproval).toBe(false);
   });
 });
+
+describe('CreateDiscountUseCase — client-specific coupon approval', () => {
+  // TC-CD-05
+  it('TC-CD-05: cupón con targetClientId se crea inactivo y requiere aprobación', async () => {
+    const result = await buildUseCase().execute(
+      { code: 'VIP10', type: 'percentage', value: 10, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.isActive).toBe(false);
+    expect(result.needsApproval).toBe(true);
+    expect(result.targetClientId).toBe('client-123');
+  });
+
+  // TC-CD-06
+  it('TC-CD-06: cupón global (sin targetClientId) se crea activo sin needsApproval', async () => {
+    const result = await buildUseCase().execute(
+      { code: 'GLOBAL10', type: 'percentage', value: 10, minPurchase: 0, maxUses: 0 },
+      'admin@test.com',
+    );
+    expect(result.isActive).toBe(true);
+    expect(result.needsApproval).toBe(false);
+    expect(result.targetClientId).toBeNull();
+  });
+});

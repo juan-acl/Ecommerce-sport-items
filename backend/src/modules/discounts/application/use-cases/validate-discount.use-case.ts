@@ -1,6 +1,6 @@
 import { computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
 import { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
-import { DiscountNotFoundException, DiscountInvalidException, DiscountNotApplicableException } from '@modules/discounts/domain/exceptions/discount.exceptions';
+import { DiscountNotFoundException, DiscountInvalidException, DiscountNotApplicableException, DiscountPendingApprovalException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 import { ValidateDiscountDto } from '../dtos/discount.dto';
 
 export interface ValidateDiscountResult {
@@ -19,6 +19,10 @@ export class ValidateDiscountUseCase {
     const discount = await this.discountRepo.findByCode(dto.code);
     if (!discount) {
       throw new DiscountNotFoundException(dto.code);
+    }
+
+    if (discount.needsApproval && !discount.isActive) {
+      throw new DiscountPendingApprovalException();
     }
 
     if (discount.targetClientId !== null && discount.targetClientId !== dto.userId) {

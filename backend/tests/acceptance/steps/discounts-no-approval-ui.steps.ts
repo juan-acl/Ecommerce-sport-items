@@ -26,7 +26,7 @@ export function registerDiscountsNoApprovalUiSteps(rt: AcceptanceRuntime): void 
     ctx.createUseCase = new CreateDiscountUseCase(ctx.createRepo as never);
   });
 
-  rt.step(/a percentage discount with value (\d+) exists in the list/, async (m, ctx) => {
+  rt.step(/a global percentage discount with value (\d+) exists in the list/, async (m, ctx) => {
     const value = parseInt(m[1], 10);
     const uc = ctx.createUseCase as CreateDiscountUseCase;
     ctx.discount = await uc.execute(
@@ -47,7 +47,7 @@ export function registerDiscountsNoApprovalUiSteps(rt: AcceptanceRuntime): void 
     expect(isPendingApproval(discount)).toBe(false);
   });
 
-  rt.step(/the admin creates a percentage discount with value (\d+)/, async (m, ctx) => {
+  rt.step(/the admin creates a global percentage discount with value (\d+)/, async (m, ctx) => {
     const value = parseInt(m[1], 10);
     const uc = ctx.createUseCase as CreateDiscountUseCase;
     ctx.discount = await uc.execute(

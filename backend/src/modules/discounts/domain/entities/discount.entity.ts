@@ -64,7 +64,7 @@ export class Discount {
   }
 
   withApproved(approvedBy: string, approvalReason: string): Discount {
-    return new Discount({ ...this.props, isActive: true, approvedBy, approvalReason });
+    return new Discount({ ...this.props, isActive: true, needsApproval: false, approvedBy, approvalReason });
   }
 
   toJSON(): DiscountProps {
