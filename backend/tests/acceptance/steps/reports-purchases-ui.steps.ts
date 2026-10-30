@@ -78,7 +78,8 @@ export function registerReportsPurchasesUiSteps(rt: AcceptanceRuntime): void {
 
   rt.step(/the admin clicks the period button "([^"]+)"/, (m, ctx) => {
     const label = m[1];
-    const period = PERIOD_MAP[label] ?? 'month';
+    const period = PERIOD_MAP[label];
+    if (!period) throw new Error(`Unknown period label: ${label}`);
     const page = ctx.page as PageState;
     page.purchasesPeriod = period;
     page.apiCalls.push({ endpoint: 'purchases', period });

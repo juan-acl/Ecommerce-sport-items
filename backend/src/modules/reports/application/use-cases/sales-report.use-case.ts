@@ -2,8 +2,6 @@ import { OrderRepository } from '@modules/orders/domain/repositories/order.repos
 import { Order } from '@modules/orders/domain/entities/order.entity';
 import { type ReportPeriod, getDateRange } from '../utils/report-date-range';
 
-export type { ReportPeriod };
-
 export interface TopProduct {
   productId: string;
   productName: string;

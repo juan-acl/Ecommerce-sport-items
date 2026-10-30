@@ -15,13 +15,16 @@ export function getDateRange(input: {
   const start = new Date(now);
   const period = input.period ?? 'month';
   if (period === 'day') {
-    start.setHours(0, 0, 0, 0);
+    start.setUTCHours(0, 0, 0, 0);
   } else if (period === 'week') {
-    start.setDate(start.getDate() - start.getDay());
-    start.setHours(0, 0, 0, 0);
+    start.setUTCDate(start.getUTCDate() - start.getUTCDay());
+    start.setUTCHours(0, 0, 0, 0);
+  } else if (period === 'month') {
+    start.setUTCDate(1);
+    start.setUTCHours(0, 0, 0, 0);
   } else {
-    start.setDate(1);
-    start.setHours(0, 0, 0, 0);
+    const _exhaustive: never = period;
+    throw new Error(`Unknown period: ${_exhaustive}`);
   }
   return { start, end: now };
 }

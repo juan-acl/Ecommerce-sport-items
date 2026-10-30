@@ -75,7 +75,8 @@ export function registerReportsClientAnalyticsUiSteps(rt: AcceptanceRuntime): vo
 
   rt.step(/the admin clicks the period button "([^"]+)"/, (m, ctx) => {
     const label = m[1];
-    const period = PERIOD_MAP[label] ?? 'month';
+    const period = PERIOD_MAP[label];
+    if (!period) throw new Error(`Unknown period label: ${label}`);
     const page = ctx.page as PageState;
     page.clientsPeriod = period;
     page.apiCalls.push({ endpoint: 'clients', period });

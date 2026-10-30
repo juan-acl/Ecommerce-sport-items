@@ -4,7 +4,6 @@ import { InventoryReportUseCase } from '@modules/reports/application/use-cases/i
 import { PurchasesReportUseCase } from '@modules/reports/application/use-cases/purchases-report.use-case';
 import { ClientAnalyticsReportUseCase } from '@modules/reports/application/use-cases/client-analytics-report.use-case';
 import { ReportQuerySchema } from '@modules/reports/application/dtos/report.dto';
-import { type ReportPeriod } from '@modules/reports/application/utils/report-date-range';
 import { ApiResponder } from '@shared/infrastructure/http/response.builder';
 
 export class ReportsController {
@@ -18,12 +17,12 @@ export class ReportsController {
   getSalesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query = ReportQuerySchema.parse({
-        period: req.query.period ?? 'month',
+        period: req.query.period,
         from: req.query.from,
         to: req.query.to,
       });
       const result = await this.salesReportUseCase.execute({
-        period: query.period as ReportPeriod,
+        period: query.period,
         from: query.from,
         to: query.to,
       });
@@ -45,12 +44,12 @@ export class ReportsController {
   getPurchasesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query = ReportQuerySchema.parse({
-        period: req.query.period ?? 'month',
+        period: req.query.period,
         from: req.query.from,
         to: req.query.to,
       });
       const result = await this.purchasesReportUseCase.execute({
-        period: query.period as ReportPeriod,
+        period: query.period,
         from: query.from,
         to: query.to,
       });
@@ -63,12 +62,12 @@ export class ReportsController {
   getClientAnalyticsReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query = ReportQuerySchema.parse({
-        period: req.query.period ?? 'month',
+        period: req.query.period,
         from: req.query.from,
         to: req.query.to,
       });
       const result = await this.clientAnalyticsUseCase.execute({
-        period: query.period as ReportPeriod,
+        period: query.period,
         from: query.from,
         to: query.to,
       });

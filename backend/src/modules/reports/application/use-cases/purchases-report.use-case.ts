@@ -2,8 +2,6 @@ import type { PurchaseRepository } from '@modules/purchases/domain/repositories/
 import type { Purchase } from '@modules/purchases/domain/entities/purchase.entity';
 import { type ReportPeriod, getDateRange } from '../utils/report-date-range';
 
-export type { ReportPeriod };
-
 export interface TopSupplier {
   supplierId: string;
   supplierName: string;
