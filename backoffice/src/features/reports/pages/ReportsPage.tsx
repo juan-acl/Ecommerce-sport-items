@@ -92,6 +92,24 @@ const MOVEMENT_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'defaul
   adjustment: 'default',
 };
 
+const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
+  out_of_stock: 'Sin stock',
+  low_stock: 'Stock bajo',
+  in_stock: 'En stock',
+};
+
+const STOCK_STATUS_VARIANTS: Record<StockStatus, 'error' | 'warning' | 'success'> = {
+  out_of_stock: 'error',
+  low_stock: 'warning',
+  in_stock: 'success',
+};
+
+function stockStatusOf(stock: number, minStock: number): StockStatus {
+  if (stock === 0) return 'out_of_stock';
+  if (stock < minStock) return 'low_stock';
+  return 'in_stock';
+}
+
 type ActiveTab = 'sales' | 'inventory' | 'purchases' | 'clients' | 'products';
 
 function isStockCritical(stock: number, minStock: number): boolean {
@@ -323,7 +341,7 @@ export function ReportsPage() {
         p.price.toFixed(2),
         String(p.stock),
         String(p.minStock),
-        p.stock === 0 ? 'Sin stock' : p.stock < p.minStock ? 'Stock bajo' : 'En stock',
+        STOCK_STATUS_LABELS[stockStatusOf(p.stock, p.minStock)],
       ]),
     );
   };
@@ -859,7 +877,7 @@ export function ReportsPage() {
             <SectionError message="No se pudo cargar el reporte de productos." />
           ) : (
             <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <StatCard
                   label="Total productos"
                   value={productsData.total.toLocaleString('es-GT')}
@@ -923,9 +941,7 @@ export function ReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-outline-variant">
                       {productsData.products.map((p) => {
-                        const status = p.stock === 0 ? 'out_of_stock' : p.stock < p.minStock ? 'low_stock' : 'in_stock';
-                        const statusLabel = status === 'out_of_stock' ? 'Sin stock' : status === 'low_stock' ? 'Stock bajo' : 'En stock';
-                        const statusVariant: 'danger' | 'warning' | 'success' = status === 'out_of_stock' ? 'danger' : status === 'low_stock' ? 'warning' : 'success';
+                        const status = stockStatusOf(p.stock, p.minStock);
                         return (
                           <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
                             <td className="px-5 py-3 font-medium text-on-surface">{p.name}</td>
@@ -934,7 +950,7 @@ export function ReportsPage() {
                             <td className="px-5 py-3 text-right tabular-nums text-on-surface">{p.stock.toLocaleString('es-GT')}</td>
                             <td className="px-5 py-3 text-right tabular-nums text-on-surface-variant">{p.minStock.toLocaleString('es-GT')}</td>
                             <td className="px-5 py-3">
-                              <Badge variant={statusVariant}>{statusLabel}</Badge>
+                              <Badge variant={STOCK_STATUS_VARIANTS[status]}>{STOCK_STATUS_LABELS[status]}</Badge>
                             </td>
                           </tr>
                         );

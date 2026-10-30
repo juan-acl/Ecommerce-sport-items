@@ -18,16 +18,8 @@ export class ReportsController {
 
   getSalesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = ReportQuerySchema.parse({
-        period: req.query.period,
-        from: req.query.from,
-        to: req.query.to,
-      });
-      const result = await this.salesReportUseCase.execute({
-        period: query.period,
-        from: query.from,
-        to: query.to,
-      });
+      const query = this.parseDateRangeQuery(req);
+      const result = await this.salesReportUseCase.execute(query);
       ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);
@@ -45,16 +37,8 @@ export class ReportsController {
 
   getPurchasesReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = ReportQuerySchema.parse({
-        period: req.query.period,
-        from: req.query.from,
-        to: req.query.to,
-      });
-      const result = await this.purchasesReportUseCase.execute({
-        period: query.period,
-        from: query.from,
-        to: query.to,
-      });
+      const query = this.parseDateRangeQuery(req);
+      const result = await this.purchasesReportUseCase.execute(query);
       ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);
@@ -63,21 +47,21 @@ export class ReportsController {
 
   getClientAnalyticsReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const query = ReportQuerySchema.parse({
-        period: req.query.period,
-        from: req.query.from,
-        to: req.query.to,
-      });
-      const result = await this.clientAnalyticsUseCase.execute({
-        period: query.period,
-        from: query.from,
-        to: query.to,
-      });
+      const query = this.parseDateRangeQuery(req);
+      const result = await this.clientAnalyticsUseCase.execute(query);
       ApiResponder.ok(req, res, result);
     } catch (err) {
       next(err);
     }
   };
+
+  private parseDateRangeQuery(req: Request) {
+    return ReportQuerySchema.parse({
+      period: req.query.period,
+      from: req.query.from,
+      to: req.query.to,
+    });
+  }
 
   getProductsReport = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
