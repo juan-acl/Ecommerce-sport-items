@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildTrendBars } from '../utils/dashboardUtils';
+import { buildTrendBars, isCounted } from '../utils/dashboardUtils';
 
 const TODAY = new Date('2026-10-31T12:00:00.000Z');
 
@@ -14,6 +14,44 @@ function makeOrder(daysAgo: number, revenue: number) {
     items: [],
   };
 }
+
+describe('isCounted', () => {
+  it('returns true for paid', () => {
+    expect(isCounted('paid')).toBe(true);
+  });
+
+  it('returns true for shipped', () => {
+    expect(isCounted('shipped')).toBe(true);
+  });
+
+  it('returns false for pending', () => {
+    expect(isCounted('pending')).toBe(false);
+  });
+
+  it('counts shipped orders as revenue in buildTrendBars', () => {
+    const shippedOrder = {
+      id: 'shipped-1',
+      status: 'shipped' as const,
+      total: 150,
+      createdAt: new Date(TODAY).toISOString(),
+      items: [],
+    };
+    const bars = buildTrendBars([shippedOrder], 'week', TODAY);
+    expect(bars[bars.length - 1].revenue).toBe(150);
+  });
+
+  it('excludes pending orders from revenue in buildTrendBars', () => {
+    const pendingOrder = {
+      id: 'pending-1',
+      status: 'pending' as const,
+      total: 200,
+      createdAt: new Date(TODAY).toISOString(),
+      items: [],
+    };
+    const bars = buildTrendBars([pendingOrder], 'week', TODAY);
+    expect(bars[bars.length - 1].revenue).toBe(0);
+  });
+});
 
 describe('buildTrendBars — week', () => {
   it('produces exactly 7 bars', () => {
