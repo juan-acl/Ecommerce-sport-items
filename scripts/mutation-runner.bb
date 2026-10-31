@@ -29,7 +29,8 @@
    "discounts-special-coupon-ui"  {:steps "../steps/discounts-special-coupon-ui.steps"  :fn "registerDiscountsSpecialCouponUiSteps"}
    "dashboard-charts-ui"          {:steps "../steps/dashboard-charts-ui.steps"          :fn "registerDashboardChartsUiSteps"}
    "reports-inventory-chart-ui"   {:steps "../steps/reports-inventory-chart-ui.steps"   :fn "registerReportsInventoryChartUiSteps"}
-   "reports-sales-chart-ui"       {:steps "../steps/reports-sales-chart-ui.steps"       :fn "registerReportsSalesChartUiSteps"}})
+   "reports-sales-chart-ui"       {:steps "../steps/reports-sales-chart-ui.steps"       :fn "registerReportsSalesChartUiSteps"}
+   "reports-pdf-ui"               {:steps "../steps/reports-pdf-ui.steps"               :fn "registerReportsPdfUiSteps"}})
 
 (defn- project-root []
   (-> *file* io/file .getParentFile .getParentFile .getCanonicalPath))

@@ -28,8 +28,8 @@ export function registerReportsPdfUiSteps(rt: AcceptanceRuntime): void {
   });
 
   rt.step(/the products table has a PDF export button/, (_m, ctx) => {
-    void ctx;
-    expect(true).toBe(true);
+    const state = ctx.page as PageState;
+    expect(state.activeTab).toBe('Productos');
   });
 
   rt.step(/the tab displays a PDF export button/, (_m, ctx) => {
