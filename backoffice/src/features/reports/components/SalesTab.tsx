@@ -6,7 +6,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
-import { buildTrendBars } from '@features/dashboard/utils/dashboardUtils';
+import { buildTrendBars } from '@shared/utils/trendBars';
 import { filterOrdersByStatus } from '../utils/reportFilters';
 import { StatCard, SectionLoading, SectionError, EmptyRow, PeriodFilter } from './ReportShared';
 

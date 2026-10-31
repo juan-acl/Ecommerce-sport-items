@@ -18,7 +18,7 @@ import { Spinner } from "@shared/components/ui/Spinner";
 import { formatCurrency } from "@shared/utils/formatCurrency";
 import type { OrderStatus } from "@shared/types/common";
 import { ROUTES } from "@shared/constants/routes";
-import { buildTrendBars, isCounted } from "@features/dashboard/utils/dashboardUtils";
+import { buildTrendBars, isCounted } from "@shared/utils/trendBars";
 import type { ReportPeriod } from "@features/reports/api/reportsApi";
 
 const TREND_PERIOD_OPTIONS: { label: string; value: ReportPeriod }[] = [

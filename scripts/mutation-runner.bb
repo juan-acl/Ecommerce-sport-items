@@ -26,7 +26,10 @@
    "discounts-client-coupon-api"  {:steps "../steps/discounts-client-coupon-api.steps"  :fn "registerDiscountsClientCouponApiSteps"}
    "discounts-client-coupon-ui"   {:steps "../steps/discounts-client-coupon-ui.steps"   :fn "registerDiscountsClientCouponUiSteps"}
    "discounts-special-coupon-api" {:steps "../steps/discounts-special-coupon-api.steps" :fn "registerDiscountsSpecialCouponApiSteps"}
-   "discounts-special-coupon-ui"  {:steps "../steps/discounts-special-coupon-ui.steps"  :fn "registerDiscountsSpecialCouponUiSteps"}})
+   "discounts-special-coupon-ui"  {:steps "../steps/discounts-special-coupon-ui.steps"  :fn "registerDiscountsSpecialCouponUiSteps"}
+   "dashboard-charts-ui"          {:steps "../steps/dashboard-charts-ui.steps"          :fn "registerDashboardChartsUiSteps"}
+   "reports-inventory-chart-ui"   {:steps "../steps/reports-inventory-chart-ui.steps"   :fn "registerReportsInventoryChartUiSteps"}
+   "reports-sales-chart-ui"       {:steps "../steps/reports-sales-chart-ui.steps"       :fn "registerReportsSalesChartUiSteps"}})
 
 (defn- project-root []
   (-> *file* io/file .getParentFile .getParentFile .getCanonicalPath))
