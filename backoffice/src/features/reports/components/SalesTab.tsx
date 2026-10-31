@@ -26,14 +26,6 @@ const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'info' | 'error' |
   cancelled: 'error',
 };
 
-const STATUS_CHART_LABELS: Record<string, string> = {
-  paid: 'Confirmado',
-  processing: 'En proceso',
-  shipped: 'En tránsito',
-  delivered: 'Entregado',
-  cancelled: 'Cancelado',
-};
-
 const STATUS_CHART_COLORS: Record<string, string> = {
   paid: 'bg-secondary',
   processing: 'bg-amber-400',
@@ -51,6 +43,7 @@ export function SalesTab() {
 
   const orders = ordersData?.items ?? [];
   const trendBars = useMemo(() => buildTrendBars(orders, period), [orders, period]);
+  const trendMaxRev = useMemo(() => Math.max(...trendBars.map((b) => b.revenue), 1), [trendBars]);
 
   const filteredOrders = data ? filterOrdersByStatus(data.ordersByStatus, statusFilter) : {};
 
@@ -99,8 +92,7 @@ export function SalesTab() {
         <div className="px-5 py-5">
           <div className="flex items-end gap-1.5 h-24">
             {trendBars.map((bar, i) => {
-              const maxRev = Math.max(...trendBars.map((b) => b.revenue), 1);
-              const pct = maxRev > 0 ? Math.max((bar.revenue / maxRev) * 100, bar.revenue > 0 ? 4 : 0) : 0;
+              const pct = trendMaxRev > 0 ? Math.max((bar.revenue / trendMaxRev) * 100, bar.revenue > 0 ? 4 : 0) : 0;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1" title={formatCurrency(bar.revenue)}>
                   <div className="w-full flex flex-col justify-end" style={{ height: '72px' }}>
@@ -127,7 +119,7 @@ export function SalesTab() {
             {Object.entries(data.ordersByStatus).map(([key, count]) => {
               const pct = totalStatusOrders > 0 ? Math.round((count / totalStatusOrders) * 100) : 0;
               const barClass = STATUS_CHART_COLORS[key] ?? 'bg-primary';
-              const label = STATUS_CHART_LABELS[key] ?? key;
+              const label = STATUS_LABELS[key] ?? key;
               return (
                 <div key={key} data-bar-label={label}>
                   <div className="flex items-center justify-between mb-1">

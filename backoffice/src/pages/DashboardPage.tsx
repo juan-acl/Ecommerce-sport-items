@@ -83,6 +83,7 @@ export function DashboardPage() {
   const users = usersData?.items ?? [];
 
   const trendBars = useMemo(() => buildTrendBars(orders, trendPeriod), [orders, trendPeriod]);
+  const trendMaxRev = useMemo(() => Math.max(...trendBars.map((b) => b.revenue), 1), [trendBars]);
 
   const m = useMemo(() => {
     const confirmedOrders = orders.filter(
@@ -300,11 +301,10 @@ export function DashboardPage() {
           <div className="px-5 py-5">
             <div className="flex items-end gap-2 h-28">
               {trendBars.map((bar, i) => {
-                const maxRev = Math.max(...trendBars.map((b) => b.revenue), 1);
                 const pct =
-                  maxRev > 0
+                  trendMaxRev > 0
                     ? Math.max(
-                        (bar.revenue / maxRev) * 100,
+                        (bar.revenue / trendMaxRev) * 100,
                         bar.revenue > 0 ? 4 : 0,
                       )
                     : 0;
