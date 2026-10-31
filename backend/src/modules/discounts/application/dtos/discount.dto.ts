@@ -12,7 +12,8 @@ export const CreateDiscountSchema = z
       .min(3, 'El código debe tener al menos 3 caracteres')
       .max(20, 'El código no puede exceder 20 caracteres')
       .toUpperCase()
-      .regex(/^[A-Z0-9\-]+$/, 'El código solo puede contener letras mayúsculas, números y guiones'),
+      .regex(/^[A-Z0-9\-]+$/, 'El código solo puede contener letras mayúsculas, números y guiones')
+      .optional(),
     type: z.enum(['percentage', 'fixed'], { error: 'El tipo debe ser percentage o fixed' }),
     value: z.number().positive('El valor debe ser mayor a 0'),
     minPurchase: z.number().min(0, 'La compra mínima no puede ser negativa').default(0),
@@ -34,7 +35,12 @@ export const CreateDiscountSchema = z
       .array(z.enum(DISCOUNT_CATEGORY_VALUES, { error: 'Categoría inválida' }))
       .optional(),
     targetClientId: z.string().nullable().optional(),
+    isSpecial: z.boolean().optional(),
   })
+  .refine(
+    (data) => data.isSpecial || data.code !== undefined,
+    { message: 'El código es requerido para cupones no especiales', path: ['code'] },
+  )
   .refine(
     (data) => {
       if (data.type === 'percentage') {

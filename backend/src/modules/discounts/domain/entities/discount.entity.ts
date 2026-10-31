@@ -17,6 +17,7 @@ export interface DiscountProps {
   approvedBy?: string;
   approvalReason?: string;
   targetClientId?: string | null;
+  isSpecial?: boolean;
 }
 
 export interface DiscountCreateInput {
@@ -31,6 +32,7 @@ export interface DiscountCreateInput {
   targetClientId: string | null;
   createdBy: string;
   createdAt: string;
+  isSpecial?: boolean;
 }
 
 export class Discount {
@@ -42,11 +44,14 @@ export class Discount {
       isClientSpecific &&
       input.type === 'percentage' &&
       input.value <= 10;
+    const maxUses = input.isSpecial ? 1 : input.maxUses;
     return new Discount({
       ...input,
+      maxUses,
       usedCount: 0,
       isActive: !needsApproval,
       needsApproval,
+      isSpecial: input.isSpecial ?? false,
     });
   }
 
@@ -66,6 +71,7 @@ export class Discount {
   get approvedBy(): string | undefined { return this.props.approvedBy; }
   get approvalReason(): string | undefined { return this.props.approvalReason; }
   get targetClientId(): string | null { return this.props.targetClientId ?? null; }
+  get isSpecial(): boolean { return this.props.isSpecial ?? false; }
   get isPendingApproval(): boolean { return this.needsApproval && !this.isActive; }
 
   isValid(orderTotal: number, cartCategories?: string[]): boolean {

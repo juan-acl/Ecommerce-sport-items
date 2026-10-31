@@ -89,3 +89,62 @@ describe('CreateDiscountUseCase — client-specific coupon approval', () => {
     expect(result.targetClientId).toBeNull();
   });
 });
+
+describe('CreateDiscountUseCase — special coupons', () => {
+  // TC-CD-08
+  it('TC-CD-08: cupón especial sin targetClientId lanza SPECIAL_COUPON_REQUIRES_CLIENT', async () => {
+    await expect(
+      buildUseCase().execute(
+        { isSpecial: true, type: 'percentage', value: 15, minPurchase: 0, maxUses: 0 },
+        'admin@test.com',
+      ),
+    ).rejects.toMatchObject({ code: 'SPECIAL_COUPON_REQUIRES_CLIENT' });
+  });
+
+  // TC-CD-09
+  it('TC-CD-09: cupón especial con targetClientId genera código con prefijo SPEC-', async () => {
+    const result = await buildUseCase().execute(
+      { isSpecial: true, type: 'percentage', value: 15, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.code).toMatch(/^SPEC-/);
+  });
+
+  // TC-CD-10
+  it('TC-CD-10: cupón especial fuerza maxUses=1', async () => {
+    const result = await buildUseCase().execute(
+      { isSpecial: true, type: 'percentage', value: 15, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.maxUses).toBe(1);
+  });
+
+  // TC-CD-11
+  it('TC-CD-11: cupón especial ≤10% requiere aprobación', async () => {
+    const result = await buildUseCase().execute(
+      { isSpecial: true, type: 'percentage', value: 10, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.needsApproval).toBe(true);
+    expect(result.isActive).toBe(false);
+  });
+
+  // TC-CD-12
+  it('TC-CD-12: cupón especial >10% se activa inmediatamente', async () => {
+    const result = await buildUseCase().execute(
+      { isSpecial: true, type: 'percentage', value: 11, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.needsApproval).toBe(false);
+    expect(result.isActive).toBe(true);
+  });
+
+  // TC-CD-13
+  it('TC-CD-13: cupón especial tiene isSpecial=true en el resultado', async () => {
+    const result = await buildUseCase().execute(
+      { isSpecial: true, type: 'percentage', value: 15, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.isSpecial).toBe(true);
+  });
+});

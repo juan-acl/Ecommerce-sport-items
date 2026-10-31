@@ -127,6 +127,78 @@ describe('Discount entity — applicableCategories', () => {
   });
 });
 
+describe('Discount entity — isSpecial', () => {
+  // TC-SP-01
+  it('TC-SP-01: isSpecial=true forces maxUses to 1', () => {
+    const discount = Discount.create({
+      id: 'sp-1',
+      code: 'SPEC-ABC',
+      type: 'percentage',
+      value: 15,
+      minPurchase: 0,
+      maxUses: 0,
+      expiresAt: null,
+      applicableCategories: [],
+      targetClientId: 'client-123',
+      isSpecial: true,
+      createdBy: 'admin@test.com',
+      createdAt: new Date().toISOString(),
+    });
+    expect(discount.maxUses).toBe(1);
+  });
+
+  // TC-SP-02
+  it('TC-SP-02: isSpecial=true sets isSpecial getter to true', () => {
+    const discount = Discount.create({
+      id: 'sp-2',
+      code: 'SPEC-DEF',
+      type: 'percentage',
+      value: 15,
+      minPurchase: 0,
+      maxUses: 0,
+      expiresAt: null,
+      applicableCategories: [],
+      targetClientId: 'client-123',
+      isSpecial: true,
+      createdBy: 'admin@test.com',
+      createdAt: new Date().toISOString(),
+    });
+    expect(discount.isSpecial).toBe(true);
+  });
+
+  // TC-SP-03
+  it('TC-SP-03: isSpecial not set defaults to false on getter', () => {
+    const discount = Discount.create({
+      id: 'sp-3',
+      code: 'REGULAR',
+      type: 'percentage',
+      value: 15,
+      minPurchase: 0,
+      maxUses: 5,
+      expiresAt: null,
+      applicableCategories: [],
+      targetClientId: null,
+      createdBy: 'admin@test.com',
+      createdAt: new Date().toISOString(),
+    });
+    expect(discount.isSpecial).toBe(false);
+    expect(discount.maxUses).toBe(5);
+  });
+
+  // TC-SP-04
+  it('TC-SP-04: special coupon used once is no longer valid', () => {
+    const discount = new Discount({
+      ...baseProps,
+      maxUses: 1,
+      usedCount: 1,
+      isActive: true,
+      isSpecial: true,
+      targetClientId: 'client-123',
+    });
+    expect(discount.isValid(100)).toBe(false);
+  });
+});
+
 describe('computeEffectiveSubtotal()', () => {
   const items = [
     { category: 'running', unitPrice: 300, quantity: 1 },

@@ -24,6 +24,8 @@ gherkin-parser "$ROOT/features/discounts-no-approval.feature"        "$TMP/disco
 gherkin-parser "$ROOT/features/discounts-no-approval-ui.feature"     "$TMP/discounts-no-approval-ui.json"
 gherkin-parser "$ROOT/features/discounts-client-coupon-api.feature"  "$TMP/discounts-client-coupon-api.json"
 gherkin-parser "$ROOT/features/discounts-client-coupon-ui.feature"   "$TMP/discounts-client-coupon-ui.json"
+gherkin-parser "$ROOT/features/discounts-special-coupon-api.feature" "$TMP/discounts-special-coupon-api.json"
+gherkin-parser "$ROOT/features/discounts-special-coupon-ui.feature"  "$TMP/discounts-special-coupon-ui.json"
 
 echo "=== Generating acceptance tests ==="
 cd "$ROOT"
@@ -117,6 +119,18 @@ backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
   "${STEPS_BASE}/discounts-client-coupon-ui.steps" \
   "registerDiscountsClientCouponUiSteps"
 
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-special-coupon-api.json" \
+  "$GEN/discounts-special-coupon-api.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-special-coupon-api.steps" \
+  "registerDiscountsSpecialCouponApiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/discounts-special-coupon-ui.json" \
+  "$GEN/discounts-special-coupon-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/discounts-special-coupon-ui.steps" \
+  "registerDiscountsSpecialCouponUiSteps"
+
 echo "=== Running acceptance tests ==="
 cd "$ROOT/backend"
 ./node_modules/.bin/jest \
@@ -135,4 +149,6 @@ cd "$ROOT/backend"
   tests/acceptance/generated/discounts-no-approval-ui.acceptance.test.ts \
   tests/acceptance/generated/discounts-client-coupon-api.acceptance.test.ts \
   tests/acceptance/generated/discounts-client-coupon-ui.acceptance.test.ts \
+  tests/acceptance/generated/discounts-special-coupon-api.acceptance.test.ts \
+  tests/acceptance/generated/discounts-special-coupon-ui.acceptance.test.ts \
   --no-coverage

@@ -35,3 +35,12 @@ export class DiscountPendingApprovalException extends DomainException {
     super('Este cupón está pendiente de aprobación por un administrador');
   }
 }
+
+export class SpecialCouponRequiresClientException extends DomainException {
+  readonly code = 'SPECIAL_COUPON_REQUIRES_CLIENT';
+  readonly statusCode = 422;
+
+  constructor() {
+    super('Un cupón especial requiere un cliente objetivo');
+  }
+}
