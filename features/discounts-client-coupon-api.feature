@@ -1,6 +1,6 @@
-# mutation-stamp: sha256=ee1e56ddf11f2232b45e0ba53b6aea8aa0beb71a46ea2a7b686a4d038585a58d
+# mutation-stamp: sha256=92c87ffeead737c0dc42e3182ca8eb09bd72d6cfd4bc7ffdfa96d8f36b903c90
 # acceptance-mutation-manifest-begin
-# {"version":1,"tested_at":"2026-10-30T22:52:43.294887Z","feature_name":"Discount Client Coupon API","feature_path":"features/discounts-client-coupon-api.feature","background_hash":"559c630a0ac90b6d101862a354c02cc79ec4a3b3ef26c0f28518559d19722c49","implementation_hash":"unknown","scenarios":[]}
+# {"version":1,"tested_at":"2026-10-31T13:22:07.124317Z","feature_name":"Discount Client Coupon API","feature_path":"features/discounts-client-coupon-api.feature","background_hash":"559c630a0ac90b6d101862a354c02cc79ec4a3b3ef26c0f28518559d19722c49","implementation_hash":"unknown","scenarios":[{"index":9,"name":"Creating a client-specific percentage coupon above 10% activates immediately","scenario_hash":"b71de7acec7c7992bcfcaec00a732e8805679f4d8919363ce1c3ecca5e4ee687","mutation_count":3,"result":{"Total":3,"Killed":3,"Survived":0,"Errors":0},"tested_at":"2026-10-31T13:22:07.124317Z"},{"index":7,"name":"Creating a client-specific percentage coupon at or below 10% requires approval","scenario_hash":"4dcf6d2eb6ab81640066e652a9277a563a2895836dbb1275d5e3033df407e236","mutation_count":2,"result":{"Total":2,"Killed":2,"Survived":0,"Errors":0},"tested_at":"2026-10-31T13:20:43.227634Z"}]}
 # acceptance-mutation-manifest-end
 
 Feature: Discount Client Coupon API

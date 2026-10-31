@@ -1,6 +1,6 @@
-# mutation-stamp: sha256=30ca50b246869d1d8907189228ed0eefeefbb23dd57451916783517dfeb839ea
+# mutation-stamp: sha256=13741b2cacf9f4c27efd0b016655bb450d5d082a2bda56e77f3a558d770a9f1b
 # acceptance-mutation-manifest-begin
-# {"version":1,"tested_at":"2026-10-30T22:52:43.347425Z","feature_name":"Discount Client Coupon UI","feature_path":"features/discounts-client-coupon-ui.feature","background_hash":"02681590342f5e299ba73104e26ad558d7399f7dacf49f743eb7264eddbd9309","implementation_hash":"unknown","scenarios":[]}
+# {"version":1,"tested_at":"2026-10-31T13:23:31.571599Z","feature_name":"Discount Client Coupon UI","feature_path":"features/discounts-client-coupon-ui.feature","background_hash":"02681590342f5e299ba73104e26ad558d7399f7dacf49f743eb7264eddbd9309","implementation_hash":"unknown","scenarios":[{"index":8,"name":"A newly created client-specific percentage coupon above 10% shows Activo immediately","scenario_hash":"c044459870e352ae6c5525b6b71ad64021a303d0ca4bce26a3978f2a9cb05d69","mutation_count":3,"result":{"Total":3,"Killed":3,"Survived":0,"Errors":0},"tested_at":"2026-10-31T13:23:31.571599Z"},{"index":5,"name":"A newly created client-specific percentage coupon at or below 10% shows Pendiente aprobación","scenario_hash":"d4d0e95f120a91e49d2eff05e02ddaece05ebf9a854d9c1317e1df9a4360940a","mutation_count":2,"result":{"Total":2,"Killed":2,"Survived":0,"Errors":0},"tested_at":"2026-10-31T13:22:21.457155Z"}]}
 # acceptance-mutation-manifest-end
 
 Feature: Discount Client Coupon UI
