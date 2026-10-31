@@ -66,7 +66,7 @@ export class Discount {
   get approvedBy(): string | undefined { return this.props.approvedBy; }
   get approvalReason(): string | undefined { return this.props.approvalReason; }
   get targetClientId(): string | null { return this.props.targetClientId ?? null; }
-  get isPendingApproval(): boolean { return (this.props.needsApproval ?? false) && !this.props.isActive; }
+  get isPendingApproval(): boolean { return this.needsApproval && !this.isActive; }
 
   isValid(orderTotal: number, cartCategories?: string[]): boolean {
     if (!this.props.isActive) return false;
