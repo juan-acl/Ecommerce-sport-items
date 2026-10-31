@@ -46,18 +46,17 @@ export function InventoryTab() {
   const filteredLowStock = data ? filterLowStockByName(data.lowStockProducts, lowStockSearch) : [];
   const stockDist = useMemo(() => (data ? computeStockDistribution(data) : null), [data]);
 
-  const handleExportLowStock = () => {
+  const handleExportLowStock = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      'stock-bajo.csv',
-      ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'],
-      data.lowStockProducts.map((p) => [
-        p.name,
-        String(p.stock),
-        String(p.minStock),
-        p.isCritical ? 'Crítico' : 'Advertencia',
-      ]),
-    );
+    const headers = ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'];
+    const rows = data.lowStockProducts.map((p) => [
+      p.name,
+      String(p.stock),
+      String(p.minStock),
+      p.isCritical ? 'Crítico' : 'Advertencia',
+    ]);
+    if (format === 'csv') exportToCsv('stock-bajo.csv', headers, rows);
+    else exportToPdf('Reporte de inventario — stock bajo', headers, rows);
   };
 
   const handleExportMovements = () => {
@@ -70,20 +69,6 @@ export function InventoryTab() {
         MOVEMENT_LABELS[m.type] ?? m.type,
         String(m.quantity),
         new Date(m.createdAt).toLocaleDateString('es-GT'),
-      ]),
-    );
-  };
-
-  const handleExportInventoryPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      'Reporte de inventario — stock bajo',
-      ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'],
-      data.lowStockProducts.map((p) => [
-        p.name,
-        String(p.stock),
-        String(p.minStock),
-        p.isCritical ? 'Crítico' : 'Advertencia',
       ]),
     );
   };
@@ -103,7 +88,7 @@ export function InventoryTab() {
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <Button size="sm" variant="outline" onClick={handleExportInventoryPdf}>
+        <Button size="sm" variant="outline" onClick={() => handleExportLowStock('pdf')}>
           <Download size={13} />
           Exportar PDF
         </Button>
@@ -157,7 +142,7 @@ export function InventoryTab() {
             <h3 className="text-[14px] font-semibold text-on-surface">Stock bajo</h3>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleExportLowStock}>
+            <Button size="sm" variant="outline" onClick={() => handleExportLowStock('csv')}>
               <Download size={13} />
               Exportar
             </Button>
