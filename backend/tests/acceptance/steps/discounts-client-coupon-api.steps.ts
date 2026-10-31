@@ -61,6 +61,16 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
     ctx.createUseCase = new CreateDiscountUseCase(ctx.createRepo as never);
   });
 
+  rt.step(/the admin creates a percentage discount with targetClientId "([^"]+)" and value (\d+)/, async (m, ctx) => {
+    const targetClientId = m[1];
+    const value = parseInt(m[2], 10);
+    const uc = ctx.createUseCase as CreateDiscountUseCase;
+    ctx.createdDiscount = await uc.execute(
+      { code: `VIP${value}`, type: 'percentage', value, minPurchase: 0, maxUses: 0, targetClientId },
+      'admin@test.com',
+    );
+  });
+
   rt.step(/the admin creates a discount with targetClientId "([^"]+)"/, async (m, ctx) => {
     const targetClientId = m[1];
     const uc = ctx.createUseCase as CreateDiscountUseCase;

@@ -38,11 +38,15 @@ export class Discount {
 
   static create(input: DiscountCreateInput): Discount {
     const isClientSpecific = input.targetClientId !== null;
+    const needsApproval =
+      isClientSpecific &&
+      input.type === 'percentage' &&
+      input.value <= 10;
     return new Discount({
       ...input,
       usedCount: 0,
-      isActive: !isClientSpecific,
-      needsApproval: isClientSpecific,
+      isActive: !needsApproval,
+      needsApproval,
     });
   }
 

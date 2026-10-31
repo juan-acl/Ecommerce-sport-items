@@ -67,6 +67,17 @@ describe('CreateDiscountUseCase — client-specific coupon approval', () => {
     expect(result.targetClientId).toBe('client-123');
   });
 
+  // TC-CD-07
+  it('TC-CD-07: cupón con targetClientId y porcentaje >10% se crea activo sin needsApproval', async () => {
+    const result = await buildUseCase().execute(
+      { code: 'VIP11', type: 'percentage', value: 11, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+      'admin@test.com',
+    );
+    expect(result.isActive).toBe(true);
+    expect(result.needsApproval).toBe(false);
+    expect(result.targetClientId).toBe('client-123');
+  });
+
   // TC-CD-06
   it('TC-CD-06: cupón global (sin targetClientId) se crea activo sin needsApproval', async () => {
     const result = await buildUseCase().execute(
