@@ -1,5 +1,5 @@
 import { AcceptanceRuntime } from '../runtime/acceptance-runtime';
-import { buildTrendBars } from '../../../../backoffice/src/features/dashboard/utils/dashboardUtils';
+import { buildTrendBars } from '../../../../backoffice/src/shared/utils/trendBars';
 
 const PERIOD_MAP: Record<string, string> = { Hoy: 'day', Semana: 'week', Mes: 'month' };
 const PERIOD_BAR_COUNTS: Record<string, number> = { day: 24, week: 7, month: 30 };
