@@ -5,6 +5,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { exportToPdf } from '@shared/utils/exportToPdf';
 import { computeStockDistribution } from '../utils/stockDistribution';
 import {
   filterMovementsByType,
@@ -73,6 +74,20 @@ export function InventoryTab() {
     );
   };
 
+  const handleExportInventoryPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      'Reporte de inventario — stock bajo',
+      ['Producto', 'Stock actual', 'Stock mínimo', 'Estado'],
+      data.lowStockProducts.map((p) => [
+        p.name,
+        String(p.stock),
+        String(p.minStock),
+        p.isCritical ? 'Crítico' : 'Advertencia',
+      ]),
+    );
+  };
+
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de inventario." />;
 
@@ -87,6 +102,12 @@ export function InventoryTab() {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={handleExportInventoryPdf}>
+          <Download size={13} />
+          Exportar PDF
+        </Button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           label="Total productos"

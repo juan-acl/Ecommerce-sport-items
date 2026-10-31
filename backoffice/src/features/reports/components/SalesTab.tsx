@@ -6,6 +6,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { exportToPdf } from '@shared/utils/exportToPdf';
 import { buildTrendBars } from '@shared/utils/trendBars';
 import { filterOrdersByStatus } from '../utils/reportFilters';
 import { StatCard, SectionLoading, SectionError, EmptyRow, PeriodFilter } from './ReportShared';
@@ -73,6 +74,20 @@ export function SalesTab() {
     );
   };
 
+  const handleExportSalesPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      `Reporte de ventas (${period})`,
+      ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'],
+      data.topProducts.map((p, i) => [
+        String(i + 1),
+        p.productName,
+        String(p.totalQuantity),
+        p.totalRevenue.toFixed(2),
+      ]),
+    );
+  };
+
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de ventas." />;
 
@@ -82,7 +97,13 @@ export function SalesTab() {
 
   return (
     <div className="space-y-5">
-      <PeriodFilter period={period} onChange={setPeriod} />
+      <div className="flex items-center justify-between gap-2">
+        <PeriodFilter period={period} onChange={setPeriod} />
+        <Button size="sm" variant="outline" onClick={handleExportSalesPdf}>
+          <Download size={13} />
+          Exportar PDF
+        </Button>
+      </div>
 
       <div className="bg-white border border-outline-variant rounded-xl shadow-soft" data-section="Tendencia de ingresos">
         <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">

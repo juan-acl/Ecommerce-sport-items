@@ -5,6 +5,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { exportToPdf } from '@shared/utils/exportToPdf';
 import { StatCard, SectionLoading, SectionError, EmptyRow, PeriodFilter } from './ReportShared';
 
 const PURCHASE_STATUS_LABELS: Record<string, string> = {
@@ -52,6 +53,32 @@ export function PurchasesTab() {
     );
   };
 
+  const handleExportTopSuppliersPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      `Top proveedores (${period})`,
+      ['#', 'Proveedor', 'Compras', 'Gasto total (GTQ)'],
+      data.topSuppliers.map((s, i) => [
+        String(i + 1),
+        s.supplierName,
+        String(s.totalPurchases),
+        s.totalSpent.toFixed(2),
+      ]),
+    );
+  };
+
+  const handleExportPurchasesByStatusPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      `Compras por estado (${period})`,
+      ['Estado', 'Cantidad'],
+      Object.entries(data.purchasesByStatus).map(([key, count]) => [
+        PURCHASE_STATUS_LABELS[key] ?? key,
+        String(count),
+      ]),
+    );
+  };
+
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de compras." />;
 
@@ -88,10 +115,16 @@ export function PurchasesTab() {
                 {data.topSuppliers.length}
               </span>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExportTopSuppliers}>
-              <Download size={13} />
-              Exportar
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="outline" onClick={handleExportTopSuppliers}>
+                <Download size={13} />
+                Exportar
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleExportTopSuppliersPdf}>
+                <Download size={13} />
+                PDF
+              </Button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-body-md">
@@ -129,10 +162,16 @@ export function PurchasesTab() {
         <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
           <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
             <h3 className="text-[14px] font-semibold text-on-surface">Compras por estado</h3>
-            <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatus}>
-              <Download size={13} />
-              Exportar
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatus}>
+                <Download size={13} />
+                Exportar
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatusPdf}>
+                <Download size={13} />
+                PDF
+              </Button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-body-md">

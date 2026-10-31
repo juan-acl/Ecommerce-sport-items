@@ -4,6 +4,7 @@ import { useGetClientAnalyticsReportQuery, type ReportPeriod } from '@features/r
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { exportToPdf } from '@shared/utils/exportToPdf';
 import { StatCard, SectionLoading, SectionError, EmptyRow, PeriodFilter } from './ReportShared';
 
 export function ClientsTab() {
@@ -15,6 +16,20 @@ export function ClientsTab() {
     if (!data) return;
     exportToCsv(
       `top-clientes-${period}.csv`,
+      ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'],
+      data.topClients.map((c, i) => [
+        String(i + 1),
+        c.clientName,
+        String(c.orderCount),
+        c.totalSpent.toFixed(2),
+      ]),
+    );
+  };
+
+  const handleExportTopClientsPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      `Top clientes (${period})`,
       ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'],
       data.topClients.map((c, i) => [
         String(i + 1),
@@ -55,10 +70,16 @@ export function ClientsTab() {
                 {data.topClients.length}
               </span>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExportTopClients}>
-              <Download size={13} />
-              Exportar
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="outline" onClick={handleExportTopClients}>
+                <Download size={13} />
+                Exportar
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleExportTopClientsPdf}>
+                <Download size={13} />
+                PDF
+              </Button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-body-md">

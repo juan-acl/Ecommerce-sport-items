@@ -29,6 +29,7 @@ gherkin-parser "$ROOT/features/discounts-special-coupon-ui.feature"  "$TMP/disco
 gherkin-parser "$ROOT/features/dashboard-charts-ui.feature"          "$TMP/dashboard-charts-ui.json"
 gherkin-parser "$ROOT/features/reports-sales-chart-ui.feature"       "$TMP/reports-sales-chart-ui.json"
 gherkin-parser "$ROOT/features/reports-inventory-chart-ui.feature"   "$TMP/reports-inventory-chart-ui.json"
+gherkin-parser "$ROOT/features/reports-pdf-ui.feature"              "$TMP/reports-pdf-ui.json"
 
 echo "=== Generating acceptance tests ==="
 cd "$ROOT"
@@ -152,6 +153,12 @@ backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
   "${STEPS_BASE}/reports-inventory-chart-ui.steps" \
   "registerReportsInventoryChartUiSteps"
 
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/reports-pdf-ui.json" \
+  "$GEN/reports-pdf-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/reports-pdf-ui.steps" \
+  "registerReportsPdfUiSteps"
+
 echo "=== Running acceptance tests ==="
 cd "$ROOT/backend"
 ./node_modules/.bin/jest \
@@ -175,4 +182,5 @@ cd "$ROOT/backend"
   tests/acceptance/generated/dashboard-charts-ui.acceptance.test.ts \
   tests/acceptance/generated/reports-sales-chart-ui.acceptance.test.ts \
   tests/acceptance/generated/reports-inventory-chart-ui.acceptance.test.ts \
+  tests/acceptance/generated/reports-pdf-ui.acceptance.test.ts \
   --no-coverage

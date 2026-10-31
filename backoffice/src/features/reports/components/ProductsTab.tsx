@@ -6,6 +6,7 @@ import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { exportToPdf } from '@shared/utils/exportToPdf';
 import { StatCard, SectionLoading, SectionError, EmptyRow } from './ReportShared';
 
 const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
@@ -47,6 +48,22 @@ export function ProductsTab() {
     );
   };
 
+  const handleExportProductsPdf = () => {
+    if (!data) return;
+    exportToPdf(
+      'Reporte de productos',
+      ['Producto', 'Categoría', 'Precio (GTQ)', 'Stock', 'Mínimo', 'Estado'],
+      data.products.map((p) => [
+        p.name,
+        p.category,
+        p.price.toFixed(2),
+        String(p.stock),
+        String(p.minStock),
+        STOCK_STATUS_LABELS[p.stockStatus],
+      ]),
+    );
+  };
+
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de productos." />;
 
@@ -67,6 +84,10 @@ export function ProductsTab() {
             <Button size="sm" variant="outline" onClick={handleExportProducts}>
               <Download size={13} />
               Exportar CSV
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleExportProductsPdf}>
+              <Download size={13} />
+              Exportar PDF
             </Button>
             <input
               type="text"
