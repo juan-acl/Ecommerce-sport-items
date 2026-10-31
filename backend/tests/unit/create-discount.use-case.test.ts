@@ -90,6 +90,35 @@ describe('CreateDiscountUseCase — client-specific coupon approval', () => {
   });
 });
 
+describe('CreateDiscountUseCase — conflict guard', () => {
+  // TC-CD-14
+  it('TC-CD-14: lanza ConflictException si el código generado ya existe y está activo', async () => {
+    const { Discount } = await import('@modules/discounts/domain/entities/discount.entity');
+    const active = new Discount({
+      id: 'existing-1',
+      code: 'SPEC-DISC-TES',
+      type: 'percentage',
+      value: 15,
+      minPurchase: 0,
+      maxUses: 1,
+      usedCount: 0,
+      isActive: true,
+      needsApproval: false,
+      expiresAt: null,
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin@test.com',
+      isSpecial: true,
+    });
+    mockRepo.findByCode.mockResolvedValueOnce(active);
+    await expect(
+      buildUseCase().execute(
+        { isSpecial: true, type: 'percentage', value: 15, minPurchase: 0, maxUses: 0, targetClientId: 'client-123' },
+        'admin@test.com',
+      ),
+    ).rejects.toMatchObject({ message: expect.stringContaining('SPEC-DISC-TES') });
+  });
+});
+
 describe('CreateDiscountUseCase — special coupons', () => {
   // TC-CD-08
   it('TC-CD-08: cupón especial sin targetClientId lanza SPECIAL_COUPON_REQUIRES_CLIENT', async () => {
