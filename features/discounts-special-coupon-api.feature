@@ -54,4 +54,9 @@ Feature: Discount Special Coupon API
   Scenario: A special coupon is invalidated after it is used once
     Given an approved special coupon for client "client-123" with code "SPEC-ABC123" has been used once
     When client "client-123" validates the coupon code "SPEC-ABC123"
-    Then the validation fails with error "DISCOUNT_MAX_USES_REACHED"
+    Then the validation fails with error "DISCOUNT_INVALID"
+
+  # Discount Special Coupon API-8
+  Scenario: Discount list response includes isSpecial for each discount
+    When the client requests the discounts list
+    Then each discount entry contains field "isSpecial"
