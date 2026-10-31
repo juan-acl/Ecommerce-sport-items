@@ -2,20 +2,7 @@ import { AcceptanceRuntime } from '../runtime/acceptance-runtime';
 import { Discount } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import { CreateDiscountUseCase } from '../../../src/modules/discounts/application/use-cases/create-discount.use-case';
-
-function buildMockRepo() {
-  return {
-    findByCode: async () => null,
-    save: async () => undefined,
-    findById: async () => null,
-    listAll: async () => ({ items: [], nextCursor: undefined, count: 0 }),
-    setActive: async () => undefined,
-    approve: async () => undefined,
-    incrementUsedCount: async () => undefined,
-    hasUserUsedDiscount: async () => false,
-    recordUserUsage: async () => undefined,
-  };
-}
+import { buildDiscountRepo } from '../helpers/discount-repo-builders';
 
 const FORM_FIELDS = ['Cliente específico'];
 const LIST_COLUMNS = ['Cliente'];
@@ -126,7 +113,7 @@ export function registerDiscountsClientCouponUiSteps(rt: AcceptanceRuntime): voi
   rt.step(/the admin submits the form with percentage value (\d+)/, async (m, ctx) => {
     const value = parseInt(m[1], 10);
     const form = ctx.form as FormState;
-    const uc = new CreateDiscountUseCase(buildMockRepo() as never);
+    const uc = new CreateDiscountUseCase(buildDiscountRepo() as never);
     const created = await uc.execute(
       { code: `VIP${value}`, type: 'percentage', value, minPurchase: 0, maxUses: 0, targetClientId: form.selectedClientId },
       'admin@test.com',

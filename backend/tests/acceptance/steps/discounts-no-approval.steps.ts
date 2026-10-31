@@ -3,20 +3,7 @@ import { CreateDiscountUseCase } from '../../../src/modules/discounts/applicatio
 import { ToggleDiscountUseCase } from '../../../src/modules/discounts/application/use-cases/toggle-discount.use-case';
 import { Discount } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
-
-function buildCreateMockRepo() {
-  return {
-    findByCode: async () => null,
-    save: async () => undefined,
-    findById: async () => null,
-    listAll: async () => ({ items: [], nextCursor: undefined, count: 0 }),
-    setActive: async () => undefined,
-    approve: async () => undefined,
-    incrementUsedCount: async () => undefined,
-    hasUserUsedDiscount: async () => false,
-    recordUserUsage: async () => undefined,
-  };
-}
+import { buildDiscountRepo } from '../helpers/discount-repo-builders';
 
 function buildToggleMockRepo(discount: Discount) {
   return {
@@ -52,7 +39,7 @@ function makeDiscount(props: Partial<DiscountProps>): Discount {
 
 export function registerDiscountsNoApprovalSteps(rt: AcceptanceRuntime): void {
   rt.step(/the admin API client is initialized/, (_m, ctx) => {
-    ctx.createRepo = buildCreateMockRepo();
+    ctx.createRepo = buildDiscountRepo();
     ctx.createUseCase = new CreateDiscountUseCase(ctx.createRepo as never);
   });
 

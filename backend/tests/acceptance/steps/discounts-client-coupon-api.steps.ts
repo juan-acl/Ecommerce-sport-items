@@ -5,37 +5,7 @@ import { ApproveDiscountUseCase } from '../../../src/modules/discounts/applicati
 import { ListDiscountsUseCase } from '../../../src/modules/discounts/application/use-cases/list-discounts.use-case';
 import { Discount } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
-
-function buildCreateRepo(existingDiscount?: Discount) {
-  return {
-    findByCode: async (code: string) => (existingDiscount?.code === code ? existingDiscount : null),
-    save: async () => undefined,
-    findById: async () => null,
-    listAll: async () => ({ items: existingDiscount ? [existingDiscount] : [], nextCursor: undefined, count: existingDiscount ? 1 : 0 }),
-    setActive: async () => undefined,
-    approve: async () => undefined,
-    incrementUsedCount: async () => undefined,
-    hasUserUsedDiscount: async () => false,
-    recordUserUsage: async () => undefined,
-  };
-}
-
-function buildApproveRepo(existingDiscount: Discount) {
-  let current = existingDiscount;
-  return {
-    findByCode: async () => null,
-    save: async () => undefined,
-    findById: async () => current,
-    listAll: async () => ({ items: [], nextCursor: undefined, count: 0 }),
-    setActive: async () => undefined,
-    approve: async (_id: string, approvedBy: string, approvalReason: string) => {
-      current = current.withApproved(approvedBy, approvalReason);
-    },
-    incrementUsedCount: async () => undefined,
-    hasUserUsedDiscount: async () => false,
-    recordUserUsage: async () => undefined,
-  };
-}
+import { buildDiscountRepo, buildApproveRepo } from '../helpers/discount-repo-builders';
 
 function makeDiscount(props: Partial<DiscountProps>): Discount {
   return new Discount({
@@ -57,7 +27,7 @@ function makeDiscount(props: Partial<DiscountProps>): Discount {
 
 export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): void {
   rt.step(/the admin API client is initialized/, (_m, ctx) => {
-    ctx.createRepo = buildCreateRepo();
+    ctx.createRepo = buildDiscountRepo();
     ctx.createUseCase = new CreateDiscountUseCase(ctx.createRepo as never);
   });
 
@@ -117,7 +87,7 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
     const targetClientId = m[1];
     const code = m[2];
     ctx.existingDiscount = makeDiscount({ targetClientId, code, isActive: true, needsApproval: false });
-    const repo = buildCreateRepo(ctx.existingDiscount as Discount);
+    const repo = buildDiscountRepo(ctx.existingDiscount as Discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
@@ -125,14 +95,14 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
     const targetClientId = m[1];
     const code = m[2];
     ctx.existingDiscount = makeDiscount({ targetClientId, code, isActive: false, needsApproval: true });
-    const repo = buildCreateRepo(ctx.existingDiscount as Discount);
+    const repo = buildDiscountRepo(ctx.existingDiscount as Discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
   rt.step(/a global discount exists with code "([^"]+)"/, (m, ctx) => {
     const code = m[1];
     ctx.existingDiscount = makeDiscount({ targetClientId: null, code, isActive: true, needsApproval: false });
-    const repo = buildCreateRepo(ctx.existingDiscount as Discount);
+    const repo = buildDiscountRepo(ctx.existingDiscount as Discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
@@ -163,7 +133,7 @@ export function registerDiscountsClientCouponApiSteps(rt: AcceptanceRuntime): vo
 
   rt.step(/the client requests the discounts list/, async (_m, ctx) => {
     const discount = makeDiscount({ targetClientId: 'client-abc', isActive: true });
-    const repo = buildCreateRepo(discount);
+    const repo = buildDiscountRepo(discount);
     const uc = new ListDiscountsUseCase(repo as never);
     ctx.listResult = await uc.execute({ limit: 20 });
   });

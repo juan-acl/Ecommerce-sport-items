@@ -4,20 +4,7 @@ import { ValidateDiscountUseCase } from '../../../src/modules/discounts/applicat
 import { ListDiscountsUseCase } from '../../../src/modules/discounts/application/use-cases/list-discounts.use-case';
 import { Discount } from '../../../src/modules/discounts/domain/entities/discount.entity';
 import type { DiscountProps } from '../../../src/modules/discounts/domain/entities/discount.entity';
-
-function buildCreateRepo(existingDiscount?: Discount) {
-  return {
-    findByCode: async (code: string) => (existingDiscount?.code === code ? existingDiscount : null),
-    save: async () => undefined,
-    findById: async () => null,
-    listAll: async () => ({ items: existingDiscount ? [existingDiscount] : [], nextCursor: undefined, count: existingDiscount ? 1 : 0 }),
-    setActive: async () => undefined,
-    approve: async () => undefined,
-    incrementUsedCount: async () => undefined,
-    hasUserUsedDiscount: async () => false,
-    recordUserUsage: async () => undefined,
-  };
-}
+import { buildDiscountRepo } from '../helpers/discount-repo-builders';
 
 function makeSpecialDiscount(props: Partial<DiscountProps> & { code: string; targetClientId: string }): Discount {
   return new Discount({
@@ -40,7 +27,7 @@ function makeSpecialDiscount(props: Partial<DiscountProps> & { code: string; tar
 
 export function registerDiscountsSpecialCouponApiSteps(rt: AcceptanceRuntime): void {
   rt.step(/the admin API client is initialized/, (_m, ctx) => {
-    ctx.createRepo = buildCreateRepo();
+    ctx.createRepo = buildDiscountRepo();
     ctx.createUseCase = new CreateDiscountUseCase(ctx.createRepo as never);
   });
 
@@ -121,7 +108,7 @@ export function registerDiscountsSpecialCouponApiSteps(rt: AcceptanceRuntime): v
     const targetClientId = m[1];
     const code = m[2];
     const discount = makeSpecialDiscount({ targetClientId, code, isActive: true, needsApproval: false });
-    const repo = buildCreateRepo(discount);
+    const repo = buildDiscountRepo(discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
@@ -129,7 +116,7 @@ export function registerDiscountsSpecialCouponApiSteps(rt: AcceptanceRuntime): v
     const targetClientId = m[1];
     const code = m[2];
     const discount = makeSpecialDiscount({ targetClientId, code, isActive: true, needsApproval: false, usedCount: 1 });
-    const repo = buildCreateRepo(discount);
+    const repo = buildDiscountRepo(discount);
     ctx.validateUseCase = new ValidateDiscountUseCase(repo as never);
   });
 
@@ -160,7 +147,7 @@ export function registerDiscountsSpecialCouponApiSteps(rt: AcceptanceRuntime): v
 
   rt.step(/the client requests the discounts list/, async (_m, ctx) => {
     const discount = makeSpecialDiscount({ targetClientId: 'client-abc', code: 'SPEC-LIST1', isActive: true });
-    const repo = buildCreateRepo(discount);
+    const repo = buildDiscountRepo(discount);
     const uc = new ListDiscountsUseCase(repo as never);
     ctx.listResult = await uc.execute({ limit: 20 });
   });
