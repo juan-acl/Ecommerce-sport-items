@@ -45,7 +45,7 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the create discount API request includes targetClientId "client-123"`);
   });
 
-  it("A newly created client-specific percentage coupon at or below 10% shows Pendiente aprobación (value=5)", async () => {
+  it("A newly created client-specific percentage coupon at or below 10% shows Pendiente aprobación [value=5]", async () => {
     rt.reset();
     await rt.run(`an admin is authenticated and viewing the Descuentos page`);
     await rt.run(`the admin has opened the create discount form`);
@@ -54,7 +54,7 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the discount list shows status "Pendiente aprobación" for that discount`);
   });
 
-  it("A newly created client-specific percentage coupon at or below 10% shows Pendiente aprobación (value=10)", async () => {
+  it("A newly created client-specific percentage coupon at or below 10% shows Pendiente aprobación [value=10]", async () => {
     rt.reset();
     await rt.run(`an admin is authenticated and viewing the Descuentos page`);
     await rt.run(`the admin has opened the create discount form`);
@@ -78,7 +78,7 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the discount list shows status "Activo" for that discount`);
   });
 
-  it("A newly created client-specific percentage coupon above 10% shows Activo immediately (value=11)", async () => {
+  it("A newly created client-specific percentage coupon above 10% shows Activo immediately [value=11]", async () => {
     rt.reset();
     await rt.run(`an admin is authenticated and viewing the Descuentos page`);
     await rt.run(`the admin has opened the create discount form`);
@@ -87,7 +87,7 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the discount list shows status "Activo" for that discount`);
   });
 
-  it("A newly created client-specific percentage coupon above 10% shows Activo immediately (value=50)", async () => {
+  it("A newly created client-specific percentage coupon above 10% shows Activo immediately [value=50]", async () => {
     rt.reset();
     await rt.run(`an admin is authenticated and viewing the Descuentos page`);
     await rt.run(`the admin has opened the create discount form`);
@@ -96,7 +96,7 @@ describe("Discount Client Coupon UI", () => {
     await rt.run(`the discount list shows status "Activo" for that discount`);
   });
 
-  it("A newly created client-specific percentage coupon above 10% shows Activo immediately (value=100)", async () => {
+  it("A newly created client-specific percentage coupon above 10% shows Activo immediately [value=100]", async () => {
     rt.reset();
     await rt.run(`an admin is authenticated and viewing the Descuentos page`);
     await rt.run(`the admin has opened the create discount form`);
