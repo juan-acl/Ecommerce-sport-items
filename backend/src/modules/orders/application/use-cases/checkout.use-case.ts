@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
+import { computeEffectiveSubtotal } from '@modules/discounts/domain/discount-calculation';
 import { Order } from '@modules/orders/domain/entities/order.entity';
 import { OrderItem } from '@modules/orders/domain/entities/order-item.entity';
 import { OrderRepository } from '@modules/orders/domain/repositories/order.repository';

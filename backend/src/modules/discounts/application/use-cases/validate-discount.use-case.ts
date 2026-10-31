@@ -1,4 +1,5 @@
-import { Discount, computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
+import { Discount } from '@modules/discounts/domain/entities/discount.entity';
+import { computeEffectiveSubtotal } from '@modules/discounts/domain/discount-calculation';
 import { DiscountRepository } from '@modules/discounts/domain/repositories/discount.repository';
 import { DiscountNotFoundException, DiscountInvalidException, DiscountNotApplicableException, DiscountPendingApprovalException } from '@modules/discounts/domain/exceptions/discount.exceptions';
 import { ValidateDiscountDto } from '../dtos/discount.dto';

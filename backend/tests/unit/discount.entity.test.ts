@@ -1,4 +1,5 @@
-import { Discount, DiscountProps, computeEffectiveSubtotal } from '@modules/discounts/domain/entities/discount.entity';
+import { Discount, DiscountProps } from '@modules/discounts/domain/entities/discount.entity';
+import { computeEffectiveSubtotal } from '@modules/discounts/domain/discount-calculation';
 
 const baseProps: DiscountProps = {
   id: 'disc-1',

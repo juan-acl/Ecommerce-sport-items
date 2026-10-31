@@ -1,3 +1,8 @@
+# mutation-stamp: sha256=9cb8dacafec1a885d23b34fb5e3ac34ff7c6fe312b5507b1feed9834b24b4e6d
+# acceptance-mutation-manifest-begin
+# {"version":1,"tested_at":"2026-10-31T14:07:09.664233Z","feature_name":"Discount Special Coupon UI","feature_path":"features/discounts-special-coupon-ui.feature","background_hash":"02681590342f5e299ba73104e26ad558d7399f7dacf49f743eb7264eddbd9309","implementation_hash":"unknown","scenarios":[{"index":4,"name":"A newly created special percentage coupon at or below 10% shows Pendiente aprobación","scenario_hash":"9ffc5a76976270c470b6fd57e2ae603cd9fad74b9d9ff9e1e9fb643af87b0eee","mutation_count":2,"result":{"Total":2,"Killed":2,"Survived":0,"Errors":0},"tested_at":"2026-10-31T14:07:09.664233Z"},{"index":5,"name":"A newly created special percentage coupon above 10% shows Activo and sends isSpecial true","scenario_hash":"a521426c918e760fad141bf03537e2f4e5a7c43ad4b81145bc684d7c6b0e7429","mutation_count":2,"result":{"Total":2,"Killed":2,"Survived":0,"Errors":0},"tested_at":"2026-10-31T14:07:09.664233Z"}]}
+# acceptance-mutation-manifest-end
+
 Feature: Discount Special Coupon UI
 
   Background:

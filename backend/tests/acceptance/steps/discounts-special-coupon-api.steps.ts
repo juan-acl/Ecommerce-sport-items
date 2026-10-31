@@ -74,12 +74,14 @@ export function registerDiscountsSpecialCouponApiSteps(rt: AcceptanceRuntime): v
   rt.step(/the created discount has needsApproval equal to (true|false)/, (m, ctx) => {
     const expected = m[1] === 'true';
     const discount = ctx.createdDiscount as DiscountProps;
+    expect([5, 10, 11, 50]).toContain(discount.value);
     expect(discount.needsApproval).toBe(expected);
   });
 
   rt.step(/the created discount has isActive equal to (true|false)/, (m, ctx) => {
     const expected = m[1] === 'true';
     const discount = ctx.createdDiscount as DiscountProps;
+    expect([5, 10, 11, 50]).toContain(discount.value);
     expect(discount.isActive).toBe(expected);
   });
 
