@@ -138,12 +138,14 @@ export function registerDiscountsSpecialCouponUiSteps(rt: AcceptanceRuntime): vo
 
   rt.step(/the discount list shows status "Pendiente aprobación" for that discount/, (_m, ctx) => {
     const item = ctx.listItem as ListItem;
+    expect([5, 10]).toContain(item.discount.value);
     expect(item.discount.needsApproval).toBe(true);
     expect(item.discount.isActive).toBe(false);
   });
 
   rt.step(/the discount list shows status "Activo" for that discount/, (_m, ctx) => {
     const item = ctx.listItem as ListItem;
+    expect([11, 50]).toContain(item.discount.value);
     expect(item.discount.isActive).toBe(true);
     expect(item.discount.needsApproval).toBeFalsy();
   });

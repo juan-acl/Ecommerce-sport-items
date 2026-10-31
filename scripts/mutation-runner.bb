@@ -24,7 +24,9 @@
    "discounts-no-approval"        {:steps "../steps/discounts-no-approval.steps"        :fn "registerDiscountsNoApprovalSteps"}
    "discounts-no-approval-ui"     {:steps "../steps/discounts-no-approval-ui.steps"     :fn "registerDiscountsNoApprovalUiSteps"}
    "discounts-client-coupon-api"  {:steps "../steps/discounts-client-coupon-api.steps"  :fn "registerDiscountsClientCouponApiSteps"}
-   "discounts-client-coupon-ui"   {:steps "../steps/discounts-client-coupon-ui.steps"   :fn "registerDiscountsClientCouponUiSteps"}})
+   "discounts-client-coupon-ui"   {:steps "../steps/discounts-client-coupon-ui.steps"   :fn "registerDiscountsClientCouponUiSteps"}
+   "discounts-special-coupon-api" {:steps "../steps/discounts-special-coupon-api.steps" :fn "registerDiscountsSpecialCouponApiSteps"}
+   "discounts-special-coupon-ui"  {:steps "../steps/discounts-special-coupon-ui.steps"  :fn "registerDiscountsSpecialCouponUiSteps"}})
 
 (defn- project-root []
   (-> *file* io/file .getParentFile .getParentFile .getCanonicalPath))
