@@ -18,7 +18,7 @@ import { Spinner } from "@shared/components/ui/Spinner";
 import { formatCurrency } from "@shared/utils/formatCurrency";
 import type { OrderStatus } from "@shared/types/common";
 import { ROUTES } from "@shared/constants/routes";
-import { buildTrendBars } from "@features/dashboard/utils/dashboardUtils";
+import { buildTrendBars, isCounted } from "@features/dashboard/utils/dashboardUtils";
 import type { ReportPeriod } from "@features/reports/api/reportsApi";
 
 const TREND_PERIOD_OPTIONS: { label: string; value: ReportPeriod }[] = [
@@ -86,9 +86,7 @@ export function DashboardPage() {
   const trendMaxRev = useMemo(() => Math.max(...trendBars.map((b) => b.revenue), 1), [trendBars]);
 
   const m = useMemo(() => {
-    const confirmedOrders = orders.filter(
-      (o) => o.status === "paid" || o.status === "shipped",
-    );
+    const confirmedOrders = orders.filter((o) => isCounted(o.status));
     const totalRevenue = confirmedOrders.reduce((s, o) => s + o.total, 0);
     const avgTicket = confirmedOrders.length
       ? totalRevenue / confirmedOrders.length

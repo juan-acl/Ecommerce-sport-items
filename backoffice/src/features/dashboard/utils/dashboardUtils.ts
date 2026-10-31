@@ -10,7 +10,7 @@ interface OrderSlice {
   createdAt: string;
 }
 
-function isCounted(status: string): boolean {
+export function isCounted(status: string): boolean {
   return status === 'paid' || status === 'shipped';
 }
 
