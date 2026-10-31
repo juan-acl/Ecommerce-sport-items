@@ -62,7 +62,7 @@ describe("Discount Client Coupon API", () => {
     await rt.run(`each discount entry contains field "targetClientId"`);
   });
 
-  it("Creating a client-specific percentage coupon at or below 10% requires approval (value=5)", async () => {
+  it("Creating a client-specific percentage coupon at or below 10% requires approval [value=5]", async () => {
     rt.reset();
     await rt.run(`the admin API client is initialized`);
     await rt.run(`the admin creates a percentage discount with targetClientId "client-123" and value 5`);
@@ -70,7 +70,7 @@ describe("Discount Client Coupon API", () => {
     await rt.run(`the created discount has isActive equal to false`);
   });
 
-  it("Creating a client-specific percentage coupon at or below 10% requires approval (value=10)", async () => {
+  it("Creating a client-specific percentage coupon at or below 10% requires approval [value=10]", async () => {
     rt.reset();
     await rt.run(`the admin API client is initialized`);
     await rt.run(`the admin creates a percentage discount with targetClientId "client-123" and value 10`);
@@ -87,7 +87,7 @@ describe("Discount Client Coupon API", () => {
     await rt.run(`the discount has needsApproval equal to false`);
   });
 
-  it("Creating a client-specific percentage coupon above 10% activates immediately (value=11)", async () => {
+  it("Creating a client-specific percentage coupon above 10% activates immediately [value=11]", async () => {
     rt.reset();
     await rt.run(`the admin API client is initialized`);
     await rt.run(`the admin creates a percentage discount with targetClientId "client-123" and value 11`);
@@ -95,7 +95,7 @@ describe("Discount Client Coupon API", () => {
     await rt.run(`the created discount has isActive equal to true`);
   });
 
-  it("Creating a client-specific percentage coupon above 10% activates immediately (value=50)", async () => {
+  it("Creating a client-specific percentage coupon above 10% activates immediately [value=50]", async () => {
     rt.reset();
     await rt.run(`the admin API client is initialized`);
     await rt.run(`the admin creates a percentage discount with targetClientId "client-123" and value 50`);
@@ -103,7 +103,7 @@ describe("Discount Client Coupon API", () => {
     await rt.run(`the created discount has isActive equal to true`);
   });
 
-  it("Creating a client-specific percentage coupon above 10% activates immediately (value=100)", async () => {
+  it("Creating a client-specific percentage coupon above 10% activates immediately [value=100]", async () => {
     rt.reset();
     await rt.run(`the admin API client is initialized`);
     await rt.run(`the admin creates a percentage discount with targetClientId "client-123" and value 100`);
