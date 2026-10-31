@@ -48,10 +48,15 @@ Feature: Discount Client Coupon API
     Then each discount entry contains field "targetClientId"
 
   # Discount Client Coupon API-7
-  Scenario: Creating a client-specific coupon requires approval and is initially inactive
-    When the admin creates a discount with targetClientId "client-123"
+  Scenario Outline: Creating a client-specific percentage coupon at or below 10% requires approval
+    When the admin creates a percentage discount with targetClientId "client-123" and value <value>
     Then the created discount has needsApproval equal to true
     And the created discount has isActive equal to false
+
+    Examples:
+      | value |
+      | 5     |
+      | 10    |
 
   # Discount Client Coupon API-8
   Scenario: Approving a client-specific coupon activates it and clears needsApproval
@@ -59,3 +64,15 @@ Feature: Discount Client Coupon API
     When the admin approves the discount
     Then the discount has isActive equal to true
     And the discount has needsApproval equal to false
+
+  # Discount Client Coupon API-9
+  Scenario Outline: Creating a client-specific percentage coupon above 10% activates immediately
+    When the admin creates a percentage discount with targetClientId "client-123" and value <value>
+    Then the created discount has needsApproval equal to false
+    And the created discount has isActive equal to true
+
+    Examples:
+      | value |
+      | 11    |
+      | 50    |
+      | 100   |
