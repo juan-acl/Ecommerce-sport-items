@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ShoppingCart, DollarSign, Hash, Download } from 'lucide-react';
 import { useGetSalesReportQuery, type ReportPeriod } from '@features/reports/api/reportsApi';
+import { useGetOrdersQuery } from '@features/orders/api/ordersApi';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { buildTrendBars } from '@features/dashboard/utils/dashboardUtils';
 import { filterOrdersByStatus } from '../utils/reportFilters';
 import { StatCard, SectionLoading, SectionError, EmptyRow, PeriodFilter } from './ReportShared';
 
@@ -24,11 +26,31 @@ const STATUS_VARIANTS: Record<string, 'success' | 'warning' | 'info' | 'error' |
   cancelled: 'error',
 };
 
+const STATUS_CHART_LABELS: Record<string, string> = {
+  paid: 'Confirmado',
+  processing: 'En proceso',
+  shipped: 'En tránsito',
+  delivered: 'Entregado',
+  cancelled: 'Cancelado',
+};
+
+const STATUS_CHART_COLORS: Record<string, string> = {
+  paid: 'bg-secondary',
+  processing: 'bg-amber-400',
+  shipped: 'bg-primary',
+  delivered: 'bg-emerald-500',
+  cancelled: 'bg-red-400',
+};
+
 export function SalesTab() {
   const [period, setPeriod] = useState<ReportPeriod>('month');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const { data, isLoading, isError } = useGetSalesReportQuery({ period });
+  const { data: ordersData } = useGetOrdersQuery({ limit: 100 });
+
+  const orders = ordersData?.items ?? [];
+  const trendBars = useMemo(() => buildTrendBars(orders, period), [orders, period]);
 
   const filteredOrders = data ? filterOrdersByStatus(data.ordersByStatus, statusFilter) : {};
 
@@ -61,9 +83,69 @@ export function SalesTab() {
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de ventas." />;
 
+  const totalStatusOrders = data
+    ? Object.values(data.ordersByStatus).reduce((s, c) => s + c, 0)
+    : 0;
+
   return (
     <div className="space-y-5">
       <PeriodFilter period={period} onChange={setPeriod} />
+
+      <div className="bg-white border border-outline-variant rounded-xl shadow-soft" data-section="Tendencia de ingresos">
+        <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">
+          <p className="text-[14px] font-semibold tracking-tight text-on-surface">Tendencia de ingresos</p>
+          <p className="text-label-md text-on-surface-variant mt-0.5">Ingresos confirmados por período</p>
+        </div>
+        <div className="px-5 py-5">
+          <div className="flex items-end gap-1.5 h-24">
+            {trendBars.map((bar, i) => {
+              const maxRev = Math.max(...trendBars.map((b) => b.revenue), 1);
+              const pct = maxRev > 0 ? Math.max((bar.revenue / maxRev) * 100, bar.revenue > 0 ? 4 : 0) : 0;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1" title={formatCurrency(bar.revenue)}>
+                  <div className="w-full flex flex-col justify-end" style={{ height: '72px' }}>
+                    <div
+                      className={`w-full rounded-t transition-all ${bar.revenue > 0 ? 'bg-primary' : 'bg-outline-variant/40'}`}
+                      style={{ height: `${pct}%`, minHeight: bar.orders > 0 ? '4px' : '0' }}
+                    />
+                  </div>
+                  <span className="text-[9px] font-medium text-on-surface-variant capitalize leading-none">{bar.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {data && (
+        <div className="bg-white border border-outline-variant rounded-xl shadow-soft" data-section="Distribución por estado">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">
+            <p className="text-[14px] font-semibold tracking-tight text-on-surface">Distribución por estado</p>
+            <p className="text-label-md text-on-surface-variant mt-0.5">{data.totalOrders.toLocaleString('es-GT')} órdenes en total</p>
+          </div>
+          <div className="px-5 py-5 space-y-3">
+            {Object.entries(data.ordersByStatus).map(([key, count]) => {
+              const pct = totalStatusOrders > 0 ? Math.round((count / totalStatusOrders) * 100) : 0;
+              const barClass = STATUS_CHART_COLORS[key] ?? 'bg-primary';
+              const label = STATUS_CHART_LABELS[key] ?? key;
+              return (
+                <div key={key} data-bar-label={label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-body-md text-on-surface">{label}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <span className="text-label-md text-on-surface-variant tabular-nums">{pct}%</span>
+                      <span className="text-body-md font-semibold text-on-surface tabular-nums min-w-[28px] text-right">{count}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                    <div className={`h-full ${barClass} rounded-full`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   TrendingUp,
   ShoppingCart,
@@ -18,6 +18,14 @@ import { Spinner } from "@shared/components/ui/Spinner";
 import { formatCurrency } from "@shared/utils/formatCurrency";
 import type { OrderStatus } from "@shared/types/common";
 import { ROUTES } from "@shared/constants/routes";
+import { buildTrendBars } from "@features/dashboard/utils/dashboardUtils";
+import type { ReportPeriod } from "@features/reports/api/reportsApi";
+
+const TREND_PERIOD_OPTIONS: { label: string; value: ReportPeriod }[] = [
+  { label: "Hoy", value: "day" },
+  { label: "Semana", value: "week" },
+  { label: "Mes", value: "month" },
+];
 
 const STATUS_VARIANTS: Record<
   OrderStatus,
@@ -62,6 +70,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function DashboardPage() {
+  const [trendPeriod, setTrendPeriod] = useState<ReportPeriod>("week");
+
   const { data: productsData, isLoading: lp } = useGetProductsQuery({
     limit: 100,
   });
@@ -71,6 +81,8 @@ export function DashboardPage() {
   const products = productsData?.items ?? [];
   const orders = ordersData?.items ?? [];
   const users = usersData?.items ?? [];
+
+  const trendBars = useMemo(() => buildTrendBars(orders, trendPeriod), [orders, trendPeriod]);
 
   const m = useMemo(() => {
     const confirmedOrders = orders.filter(
@@ -93,22 +105,6 @@ export function DashboardPage() {
       shipped: orders.filter((o) => o.status === "shipped"),
       cancelled: orders.filter((o) => o.status === "cancelled"),
     };
-
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() - (6 - i));
-      const date = d.toISOString().split("T")[0];
-      const dayOrders = orders.filter((o) => o.createdAt.startsWith(date));
-      return {
-        label: d.toLocaleDateString("es-GT", { weekday: "short" }),
-        orders: dayOrders.length,
-        revenue: dayOrders
-          .filter((o) => o.status === "paid" || o.status === "shipped")
-          .reduce((s, o) => s + o.total, 0),
-      };
-    });
-    const maxDayRevenue = Math.max(...days.map((d) => d.revenue), 1);
 
     const productMap = new Map<
       string,
@@ -187,8 +183,6 @@ export function DashboardPage() {
       confirmedOrders,
       byStatus,
       clientCount,
-      days,
-      maxDayRevenue,
       topProducts,
       maxProdRevenue,
       topCustomers,
@@ -272,54 +266,73 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         <div className="xl:col-span-8 bg-white border border-outline-variant rounded-xl shadow-soft">
-          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant flex items-center justify-between gap-3">
             <div>
               <p className="text-[14px] font-semibold tracking-tight text-on-surface">
-                Tendencia — últimos 7 días
+                Tendencia de ingresos
               </p>
               <p className="text-label-md text-on-surface-variant mt-0.5">
-                Ingresos confirmados por día
+                Ingresos confirmados por período
               </p>
             </div>
-            <span className="text-headline-sm font-bold text-on-surface tabular-nums">
-              {formatCurrency(m.totalRevenue)}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1 bg-surface-container rounded-lg p-1">
+                {TREND_PERIOD_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTrendPeriod(opt.value)}
+                    className={`h-7 px-3 rounded-md text-[13px] font-medium transition-colors ${
+                      trendPeriod === opt.value
+                        ? "bg-white text-on-surface shadow-soft"
+                        : "text-on-surface-variant hover:text-on-surface"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <span className="text-headline-sm font-bold text-on-surface tabular-nums">
+                {formatCurrency(m.totalRevenue)}
+              </span>
+            </div>
           </div>
           <div className="px-5 py-5">
             <div className="flex items-end gap-2 h-28">
-              {m.days.map((day, i) => {
+              {trendBars.map((bar, i) => {
+                const maxRev = Math.max(...trendBars.map((b) => b.revenue), 1);
                 const pct =
-                  m.maxDayRevenue > 0
+                  maxRev > 0
                     ? Math.max(
-                        (day.revenue / m.maxDayRevenue) * 100,
-                        day.revenue > 0 ? 4 : 0,
+                        (bar.revenue / maxRev) * 100,
+                        bar.revenue > 0 ? 4 : 0,
                       )
                     : 0;
                 return (
                   <div
                     key={i}
                     className="flex-1 flex flex-col items-center gap-1.5"
-                    title={formatCurrency(day.revenue)}
+                    title={formatCurrency(bar.revenue)}
                   >
                     <div
                       className="w-full flex flex-col justify-end"
                       style={{ height: "88px" }}
                     >
                       <div
-                        className={`w-full rounded-t transition-all ${day.revenue > 0 ? "bg-primary" : "bg-outline-variant/40"}`}
+                        className={`w-full rounded-t transition-all ${bar.revenue > 0 ? "bg-primary" : "bg-outline-variant/40"}`}
                         style={{
                           height: `${pct}%`,
-                          minHeight: day.orders > 0 ? "4px" : "0",
+                          minHeight: bar.orders > 0 ? "4px" : "0",
                         }}
                       />
                     </div>
                     <div className="flex flex-col items-center gap-0.5">
                       <span className="text-[10px] font-medium text-on-surface-variant capitalize">
-                        {day.label}
+                        {bar.label}
                       </span>
-                      {day.orders > 0 && (
+                      {bar.orders > 0 && (
                         <span className="text-[9px] text-on-surface-variant/60 tabular-nums">
-                          {day.orders}
+                          {bar.orders}
                         </span>
                       )}
                     </div>

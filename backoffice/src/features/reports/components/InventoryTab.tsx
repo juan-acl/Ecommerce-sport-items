@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AlertTriangle, ArrowRightLeft, Search, Package, DollarSign, Download } from 'lucide-react';
 import { useGetInventoryReportQuery } from '@features/reports/api/reportsApi';
 import { Badge } from '@shared/components/ui/Badge';
 import { Button } from '@shared/components/ui/Button';
 import { formatCurrency } from '@shared/utils/formatCurrency';
 import { exportToCsv } from '@shared/utils/exportToCsv';
+import { computeStockDistribution } from '../utils/stockDistribution';
 import {
   filterMovementsByType,
   filterLowStockByName,
@@ -42,6 +43,7 @@ export function InventoryTab() {
 
   const filteredMovements = data ? filterMovementsByType(data.recentMovements, movementFilter) : [];
   const filteredLowStock = data ? filterLowStockByName(data.lowStockProducts, lowStockSearch) : [];
+  const stockDist = useMemo(() => (data ? computeStockDistribution(data) : null), [data]);
 
   const handleExportLowStock = () => {
     if (!data) return;
@@ -74,6 +76,15 @@ export function InventoryTab() {
   if (isLoading) return <SectionLoading />;
   if (isError || !data) return <SectionError message="No se pudo cargar el reporte de inventario." />;
 
+  const stockBars: { label: string; count: number; barClass: string }[] = stockDist
+    ? [
+        { label: 'En stock', count: stockDist.inStock, barClass: 'bg-secondary' },
+        { label: 'Stock bajo', count: stockDist.lowStock, barClass: 'bg-amber-400' },
+        { label: 'Sin stock', count: stockDist.outOfStock, barClass: 'bg-red-400' },
+      ]
+    : [];
+  const totalStockItems = stockDist ? stockDist.inStock + stockDist.lowStock + stockDist.outOfStock : 0;
+
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -89,6 +100,34 @@ export function InventoryTab() {
           accent="#1a6b3f"
         />
       </div>
+
+      {stockDist && (
+        <div className="bg-white border border-outline-variant rounded-xl shadow-soft" data-section="Distribución de stock">
+          <div className="px-5 pt-4 pb-3.5 border-b border-outline-variant">
+            <p className="text-[14px] font-semibold tracking-tight text-on-surface">Distribución de stock</p>
+            <p className="text-label-md text-on-surface-variant mt-0.5">{data.totalProducts.toLocaleString('es-GT')} productos en total</p>
+          </div>
+          <div className="px-5 py-5 space-y-3">
+            {stockBars.map(({ label, count, barClass }) => {
+              const pct = totalStockItems > 0 ? Math.round((count / totalStockItems) * 100) : 0;
+              return (
+                <div key={label} data-bar-label={label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-body-md text-on-surface">{label}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <span className="text-label-md text-on-surface-variant tabular-nums">{pct}%</span>
+                      <span className="text-body-md font-semibold text-on-surface tabular-nums min-w-[28px] text-right">{count}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                    <div className={`h-full ${barClass} rounded-full`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white border border-outline-variant rounded-xl shadow-soft overflow-hidden">
         <div className="px-5 h-14 flex items-center justify-between gap-4 border-b border-outline-variant">

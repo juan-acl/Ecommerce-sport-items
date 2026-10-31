@@ -26,6 +26,9 @@ gherkin-parser "$ROOT/features/discounts-client-coupon-api.feature"  "$TMP/disco
 gherkin-parser "$ROOT/features/discounts-client-coupon-ui.feature"   "$TMP/discounts-client-coupon-ui.json"
 gherkin-parser "$ROOT/features/discounts-special-coupon-api.feature" "$TMP/discounts-special-coupon-api.json"
 gherkin-parser "$ROOT/features/discounts-special-coupon-ui.feature"  "$TMP/discounts-special-coupon-ui.json"
+gherkin-parser "$ROOT/features/dashboard-charts-ui.feature"          "$TMP/dashboard-charts-ui.json"
+gherkin-parser "$ROOT/features/reports-sales-chart-ui.feature"       "$TMP/reports-sales-chart-ui.json"
+gherkin-parser "$ROOT/features/reports-inventory-chart-ui.feature"   "$TMP/reports-inventory-chart-ui.json"
 
 echo "=== Generating acceptance tests ==="
 cd "$ROOT"
@@ -131,6 +134,24 @@ backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
   "${STEPS_BASE}/discounts-special-coupon-ui.steps" \
   "registerDiscountsSpecialCouponUiSteps"
 
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/dashboard-charts-ui.json" \
+  "$GEN/dashboard-charts-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/dashboard-charts-ui.steps" \
+  "registerDashboardChartsUiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/reports-sales-chart-ui.json" \
+  "$GEN/reports-sales-chart-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/reports-sales-chart-ui.steps" \
+  "registerReportsSalesChartUiSteps"
+
+backend/node_modules/.bin/ts-node scripts/generate-acceptance.ts \
+  "$TMP/reports-inventory-chart-ui.json" \
+  "$GEN/reports-inventory-chart-ui.acceptance.test.ts" \
+  "${STEPS_BASE}/reports-inventory-chart-ui.steps" \
+  "registerReportsInventoryChartUiSteps"
+
 echo "=== Running acceptance tests ==="
 cd "$ROOT/backend"
 ./node_modules/.bin/jest \
@@ -151,4 +172,7 @@ cd "$ROOT/backend"
   tests/acceptance/generated/discounts-client-coupon-ui.acceptance.test.ts \
   tests/acceptance/generated/discounts-special-coupon-api.acceptance.test.ts \
   tests/acceptance/generated/discounts-special-coupon-ui.acceptance.test.ts \
+  tests/acceptance/generated/dashboard-charts-ui.acceptance.test.ts \
+  tests/acceptance/generated/reports-sales-chart-ui.acceptance.test.ts \
+  tests/acceptance/generated/reports-inventory-chart-ui.acceptance.test.ts \
   --no-coverage
