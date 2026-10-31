@@ -32,36 +32,19 @@ export function ProductsTab() {
     ...(productStockStatus ? { stockStatus: productStockStatus } : {}),
   });
 
-  const handleExportProducts = () => {
+  const handleExportProducts = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      'reporte-productos.csv',
-      ['Producto', 'Categoría', 'Precio (GTQ)', 'Stock', 'Mínimo', 'Estado'],
-      data.products.map((p) => [
-        p.name,
-        p.category,
-        p.price.toFixed(2),
-        String(p.stock),
-        String(p.minStock),
-        STOCK_STATUS_LABELS[p.stockStatus],
-      ]),
-    );
-  };
-
-  const handleExportProductsPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      'Reporte de productos',
-      ['Producto', 'Categoría', 'Precio (GTQ)', 'Stock', 'Mínimo', 'Estado'],
-      data.products.map((p) => [
-        p.name,
-        p.category,
-        p.price.toFixed(2),
-        String(p.stock),
-        String(p.minStock),
-        STOCK_STATUS_LABELS[p.stockStatus],
-      ]),
-    );
+    const headers = ['Producto', 'Categoría', 'Precio (GTQ)', 'Stock', 'Mínimo', 'Estado'];
+    const rows = data.products.map((p) => [
+      p.name,
+      p.category,
+      p.price.toFixed(2),
+      String(p.stock),
+      String(p.minStock),
+      STOCK_STATUS_LABELS[p.stockStatus],
+    ]);
+    if (format === 'csv') exportToCsv('reporte-productos.csv', headers, rows);
+    else exportToPdf('Reporte de productos', headers, rows);
   };
 
   if (isLoading) return <SectionLoading />;
@@ -81,11 +64,11 @@ export function ProductsTab() {
         <div className="px-5 h-14 flex items-center justify-between gap-4 border-b border-outline-variant">
           <h3 className="text-[14px] font-semibold text-on-surface">Productos</h3>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleExportProducts}>
+            <Button size="sm" variant="outline" onClick={() => handleExportProducts('csv')}>
               <Download size={13} />
               Exportar CSV
             </Button>
-            <Button size="sm" variant="outline" onClick={handleExportProductsPdf}>
+            <Button size="sm" variant="outline" onClick={() => handleExportProducts('pdf')}>
               <Download size={13} />
               Exportar PDF
             </Button>

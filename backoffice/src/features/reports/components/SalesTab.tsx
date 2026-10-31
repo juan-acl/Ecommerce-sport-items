@@ -48,18 +48,17 @@ export function SalesTab() {
 
   const filteredOrders = data ? filterOrdersByStatus(data.ordersByStatus, statusFilter) : {};
 
-  const handleExportTopProducts = () => {
+  const handleExportTopProducts = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      `top-productos-${period}.csv`,
-      ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'],
-      data.topProducts.map((p, i) => [
-        String(i + 1),
-        p.productName,
-        String(p.totalQuantity),
-        p.totalRevenue.toFixed(2),
-      ]),
-    );
+    const headers = ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'];
+    const rows = data.topProducts.map((p, i) => [
+      String(i + 1),
+      p.productName,
+      String(p.totalQuantity),
+      p.totalRevenue.toFixed(2),
+    ]);
+    if (format === 'csv') exportToCsv(`top-productos-${period}.csv`, headers, rows);
+    else exportToPdf(`Reporte de ventas (${period})`, headers, rows);
   };
 
   const handleExportOrdersByStatus = () => {
@@ -70,20 +69,6 @@ export function SalesTab() {
       Object.entries(data.ordersByStatus).map(([key, count]) => [
         STATUS_LABELS[key] ?? key,
         String(count),
-      ]),
-    );
-  };
-
-  const handleExportSalesPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      `Reporte de ventas (${period})`,
-      ['#', 'Producto', 'Unidades', 'Ingresos (GTQ)'],
-      data.topProducts.map((p, i) => [
-        String(i + 1),
-        p.productName,
-        String(p.totalQuantity),
-        p.totalRevenue.toFixed(2),
       ]),
     );
   };
@@ -99,7 +84,7 @@ export function SalesTab() {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-2">
         <PeriodFilter period={period} onChange={setPeriod} />
-        <Button size="sm" variant="outline" onClick={handleExportSalesPdf}>
+        <Button size="sm" variant="outline" onClick={() => handleExportTopProducts('pdf')}>
           <Download size={13} />
           Exportar PDF
         </Button>
@@ -240,7 +225,7 @@ export function SalesTab() {
                 {data.topProducts.length}
               </span>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExportTopProducts}>
+            <Button size="sm" variant="outline" onClick={() => handleExportTopProducts('csv')}>
               <Download size={13} />
               Exportar
             </Button>

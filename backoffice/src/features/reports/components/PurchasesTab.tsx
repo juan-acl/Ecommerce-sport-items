@@ -27,56 +27,28 @@ export function PurchasesTab() {
 
   const { data, isLoading, isError } = useGetPurchasesReportQuery({ period });
 
-  const handleExportTopSuppliers = () => {
+  const handleExportTopSuppliers = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      `top-proveedores-${period}.csv`,
-      ['#', 'Proveedor', 'Compras', 'Gasto total (GTQ)'],
-      data.topSuppliers.map((s, i) => [
-        String(i + 1),
-        s.supplierName,
-        String(s.totalPurchases),
-        s.totalSpent.toFixed(2),
-      ]),
-    );
+    const headers = ['#', 'Proveedor', 'Compras', 'Gasto total (GTQ)'];
+    const rows = data.topSuppliers.map((s, i) => [
+      String(i + 1),
+      s.supplierName,
+      String(s.totalPurchases),
+      s.totalSpent.toFixed(2),
+    ]);
+    if (format === 'csv') exportToCsv(`top-proveedores-${period}.csv`, headers, rows);
+    else exportToPdf(`Top proveedores (${period})`, headers, rows);
   };
 
-  const handleExportPurchasesByStatus = () => {
+  const handleExportPurchasesByStatus = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      `compras-por-estado-${period}.csv`,
-      ['Estado', 'Cantidad'],
-      Object.entries(data.purchasesByStatus).map(([key, count]) => [
-        PURCHASE_STATUS_LABELS[key] ?? key,
-        String(count),
-      ]),
-    );
-  };
-
-  const handleExportTopSuppliersPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      `Top proveedores (${period})`,
-      ['#', 'Proveedor', 'Compras', 'Gasto total (GTQ)'],
-      data.topSuppliers.map((s, i) => [
-        String(i + 1),
-        s.supplierName,
-        String(s.totalPurchases),
-        s.totalSpent.toFixed(2),
-      ]),
-    );
-  };
-
-  const handleExportPurchasesByStatusPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      `Compras por estado (${period})`,
-      ['Estado', 'Cantidad'],
-      Object.entries(data.purchasesByStatus).map(([key, count]) => [
-        PURCHASE_STATUS_LABELS[key] ?? key,
-        String(count),
-      ]),
-    );
+    const headers = ['Estado', 'Cantidad'];
+    const rows = Object.entries(data.purchasesByStatus).map(([key, count]) => [
+      PURCHASE_STATUS_LABELS[key] ?? key,
+      String(count),
+    ]);
+    if (format === 'csv') exportToCsv(`compras-por-estado-${period}.csv`, headers, rows);
+    else exportToPdf(`Compras por estado (${period})`, headers, rows);
   };
 
   if (isLoading) return <SectionLoading />;
@@ -116,11 +88,11 @@ export function PurchasesTab() {
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Button size="sm" variant="outline" onClick={handleExportTopSuppliers}>
+              <Button size="sm" variant="outline" onClick={() => handleExportTopSuppliers('csv')}>
                 <Download size={13} />
                 Exportar
               </Button>
-              <Button size="sm" variant="outline" onClick={handleExportTopSuppliersPdf}>
+              <Button size="sm" variant="outline" onClick={() => handleExportTopSuppliers('pdf')}>
                 <Download size={13} />
                 PDF
               </Button>
@@ -163,11 +135,11 @@ export function PurchasesTab() {
           <div className="px-5 h-12 flex items-center justify-between gap-4 border-b border-outline-variant">
             <h3 className="text-[14px] font-semibold text-on-surface">Compras por estado</h3>
             <div className="flex items-center gap-1">
-              <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatus}>
+              <Button size="sm" variant="outline" onClick={() => handleExportPurchasesByStatus('csv')}>
                 <Download size={13} />
                 Exportar
               </Button>
-              <Button size="sm" variant="outline" onClick={handleExportPurchasesByStatusPdf}>
+              <Button size="sm" variant="outline" onClick={() => handleExportPurchasesByStatus('pdf')}>
                 <Download size={13} />
                 PDF
               </Button>

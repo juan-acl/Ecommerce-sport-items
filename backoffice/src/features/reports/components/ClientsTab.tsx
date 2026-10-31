@@ -12,32 +12,17 @@ export function ClientsTab() {
 
   const { data, isLoading, isError } = useGetClientAnalyticsReportQuery({ period });
 
-  const handleExportTopClients = () => {
+  const handleExportTopClients = (format: 'csv' | 'pdf') => {
     if (!data) return;
-    exportToCsv(
-      `top-clientes-${period}.csv`,
-      ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'],
-      data.topClients.map((c, i) => [
-        String(i + 1),
-        c.clientName,
-        String(c.orderCount),
-        c.totalSpent.toFixed(2),
-      ]),
-    );
-  };
-
-  const handleExportTopClientsPdf = () => {
-    if (!data) return;
-    exportToPdf(
-      `Top clientes (${period})`,
-      ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'],
-      data.topClients.map((c, i) => [
-        String(i + 1),
-        c.clientName,
-        String(c.orderCount),
-        c.totalSpent.toFixed(2),
-      ]),
-    );
+    const headers = ['#', 'Cliente', 'Órdenes', 'Gasto total (GTQ)'];
+    const rows = data.topClients.map((c, i) => [
+      String(i + 1),
+      c.clientName,
+      String(c.orderCount),
+      c.totalSpent.toFixed(2),
+    ]);
+    if (format === 'csv') exportToCsv(`top-clientes-${period}.csv`, headers, rows);
+    else exportToPdf(`Top clientes (${period})`, headers, rows);
   };
 
   if (isLoading) return <SectionLoading />;
@@ -71,11 +56,11 @@ export function ClientsTab() {
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Button size="sm" variant="outline" onClick={handleExportTopClients}>
+              <Button size="sm" variant="outline" onClick={() => handleExportTopClients('csv')}>
                 <Download size={13} />
                 Exportar
               </Button>
-              <Button size="sm" variant="outline" onClick={handleExportTopClientsPdf}>
+              <Button size="sm" variant="outline" onClick={() => handleExportTopClients('pdf')}>
                 <Download size={13} />
                 PDF
               </Button>
